@@ -1,11 +1,12 @@
 import { Monster } from "./classes.js";
-import { battle } from "./renderer.js";
-import { animate } from "./renderer.js";
+// import { battle } from "./renderer.js";
+// import { animate } from "./renderer.js";
 import { animateBattleId } from "./battlescene.js";
 import { audio } from "./data/audio.js";
 import { playerMonsters, getRandomMonster } from "./data/monsters.js";
 import { attacks } from "./data/attacks.js";
 import { playerItems, UseItemFromButton } from "./data/playerBag.js";
+import { items } from "./data/items.js";
 
 //creating the monster sprites
 let enemy;
@@ -66,28 +67,43 @@ export function initBattle() {
     document.querySelector("#backBox").style.visibility = "visible";
   });
 
-  //load items in an array first to apply forEach
-  Items = [playerItems];
-  
-  playerItems.bag.restorative.forEach((ITEM) => {
-    const button = document.createElement("button");
-    button.innerHTML = ITEM.item.name + " x " + ITEM.quantity;
+  //loads the category objects from the player's bag
+  let ItemCategories = playerItems.bag;
 
-    // Set data attributes
-    button.setAttribute("data-category", ITEM.item.category);
-    button.setAttribute("data-item", ITEM.item.name);
+  //loops through the category objects in player's bag
+  Object.keys(ItemCategories).forEach((categoryKey) => {
+    const category = ItemCategories[categoryKey];
 
-    document.querySelector("#itemBox").append(button);
+    //loops through the items in each category in player's bag and creates button for them
+    category.forEach((ITEM) => {
+      const button = document.createElement("button");
+      button.innerHTML = ITEM.item.name + " x " + ITEM.quantity;
 
-    //checks which item is used and takes action accordingly
-    button.addEventListener("click", (e) => {
-      UseItemFromButton(e, button);
-      
-      //selectedItem = items[e.currentTarget.innerHTML]
+      // Set data attributes
+      button.setAttribute("data-category", categoryKey);
+      button.setAttribute("data-item", ITEM.item.name);
+      button.setAttribute("data-item-object", JSON.stringify(ITEM.item)); // Store the entire item object
 
-      // partner.heal({
-      //   restorative: selectedItem
-      // });
+      document.querySelector("#itemBox").append(button);
+
+      //checks which item is used and takes action accordingly
+      button.addEventListener("click", (e) => {
+        UseItemFromButton(e, button);
+
+        // Retrieves the entire item object that is selected
+        const selectedItemObject = JSON.parse(
+          e.currentTarget.getAttribute("data-item-object")
+        );
+        //console.log("Selected Item Object:", selectedItemObject);
+
+        // Now we can access the heal property
+        const healAmount = selectedItemObject.heal;
+        console.log("Heal Amount:", healAmount);
+
+        // partner.UseItem({
+        //   restorative: selectedItem
+        // });
+      });
     });
   });
 

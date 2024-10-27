@@ -421,6 +421,6 @@ addEventListener('click', () => {
   }
 })
 
-animate();
-// initBattle();     //maintaining this order of calling the two function is must
-// animateBattle();
+//animate();
+initBattle();     //maintaining this order of calling the two function is must
+animateBattle();

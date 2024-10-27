@@ -26,6 +26,7 @@ export class Sprite {
     sprites,
     animate = false,
     rotation = 0,
+    inventory
   }) {
     this.position = position;
     this.image = new Image();
@@ -144,7 +145,7 @@ export class Monster extends Sprite {
     }
   }
 
-  // heal({ restoratives }) {
+  // useItem({ restoratives }) {
   //     let healthBar = "#playerHealthBar";
       
   //     switch(restoratives.name) {

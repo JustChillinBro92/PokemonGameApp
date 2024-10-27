@@ -19,6 +19,7 @@ export const playerItems = {
     if(itemUsed && itemUsed.quantity > 0) {
         itemUsed.quantity--;
         button.innerHTML = itemName + " x " + itemUsed.quantity;
+
         console.log(itemName + " from category: " + category + " used & Remaining: " + itemUsed.quantity);
     } else {
         console.log(" No " + itemName + " left in category: " + category); 
