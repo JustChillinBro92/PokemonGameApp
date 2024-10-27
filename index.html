@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title></title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+	<style>
+		* {
+			font-family: "Press Start 2P", system-ui;
+			font-weight: 400;
+			font-style: normal;
+
+		}
+
+		html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: black; /* Full background color */
+            overflow: hidden; /* Prevents scrollbars */
+        }
+
+		h1 {
+			margin: 0;
+			font-size: 17px;
+		}
+
+		#attackTypeBox #AttackTypeBox, #backBox #Box{
+			width: 90%;
+			padding: 20px;
+			border-radius: 5px;
+			font-size: 17px;
+		}
+
+		button {
+			border-radius: 10px;
+			cursor: pointer;
+			font-size: 17px;
+		}
+
+		button:hover {
+			background-color: #ddd;
+		}
+	</style>
+</head>
+
+<body>
+	<div style="display: inline-block; position: relative">
+		<div id="OverlappingDiv" style="
+			background-color: black; 
+			position: absolute;
+		  	top: 0; 
+			bottom: 0; 
+			left: 0; 
+			right: 0; 
+			opacity: 0; 
+			pointer-events: none;
+			z-index: 10;">
+		</div>
+
+		<canvas></canvas>
+
+		<div id="Interface" style="display: none;">
+			<!-- Enemy's Monster Health Bar -->
+			<div
+				style="
+				background-color: white;
+				width: 250px;
+				position: absolute;
+				top: 40px;
+				left: 40px;
+				border: 2px black solid;
+				border-radius: 10px;
+				padding: 15px
+				">
+				<h1 id="enemyMon" style="font-size: 17px;"></h1>
+				<div style="
+					display: flex;
+					align-items: center;  
+					">
+					<h1 style="
+						font-size: 14px; 
+						margin-right: 3px;
+						margin-top: 12px
+			  		 	">HP:
+					</h1>
+					<div style="
+					     	position: relative;
+					    	width: 100%;">
+						<div style="
+							background-color: #e9e6e6;
+							border: 1.6px black solid;
+							border-radius: 4px;
+							height: 12px;
+							margin-top: 10px;
+							">
+						</div>
+						<div id="enemyHealthBar" style="
+							background-color: rgb(58, 227, 58);
+							border-radius: 3px;
+							position: absolute;
+							height: 12px;
+							top: 11.8px;
+							left: 1.5px;
+							right: 5px;
+							">
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Player's Monster Health Bar -->
+			<div 
+				style="
+				background-color: white;
+				width: 250px;
+				position: absolute;
+				bottom: 190px;
+				right: 40px;
+				border: 2px black solid;
+				border-radius: 10px;
+				padding: 15px
+				">
+				<h1 id="playerMon" style="font-size: 17px;"></h1>
+				<div style="
+					display: flex;
+					align-items: center;	   
+					">
+					<h1 style="
+						font-size: 14px; 
+						margin-right: 3px;
+						margin-top: 12px
+			  		 	">HP:
+					</h1>
+					<div style="
+						position: relative;
+						width: 100%;">
+						<div style="
+						background-color: #e9e6e6;
+						border: 1.6px black solid;
+						border-radius: 4px;
+						height: 12px;
+						margin-top: 10px;
+			   			">
+						</div>
+						<div id="playerHealthBar" style="
+							background-color: rgb(58, 227, 58);
+							border-radius: 3px;
+							position: absolute;
+							height: 12px;
+							top: 11.8px;
+							left: 1.5px;
+							right: 2px;	
+			  				">
+						</div>
+					</div>
+				</div>
+			</div>
+			<!-- User Panel -->
+			<div style="
+				background-color: white;
+				height: 145px;
+				position: absolute;
+				left: 0;
+				right: 0;
+				bottom: 0;
+				border-top: 2px black solid;
+				display: flex;
+				">
+
+				<!-- For Narrating the turns -->
+				<div id="DialogueBox" style="
+					position: absolute;
+					background-color: white;
+					font-size: 17px;
+					top: 0;
+					bottom: 0;
+					left: 0;
+					right: 0;
+					padding: 12px;
+					display: none;
+					cursor: pointer;
+					">
+				</div>
+				<!-- Narrating which monster encountered -->
+				<div 
+					id="encounterBox"
+					style="
+					position: absolute;
+					background-color: white;
+					font-size: 17px;
+					top: 0;
+					bottom: 0;
+					left: 0;
+					right: 0;
+					padding: 12px;
+					display: none;
+					">
+				</div>
+				<!-- shows options available for player during battle -->
+				<div 
+					id="BattleBox"
+					style="
+					position: absolute;
+					background-color: white;
+					font-size: 17px;
+					top: 0;
+					bottom: 0;
+					left: 0;
+					right: 0;
+					padding: 12px;
+					display: flex;
+					justify-content: space-between;
+					opacity: 0;
+					visibility: hidden;
+					">
+					What Will You Do?
+					<div 
+					id="UserChoiceBox"
+					style="
+					width: 45%;
+					display: grid;
+					grid-template-columns: repeat(2,1fr);
+					">	<button id="fight">Fight</button>
+						<button id="pokemon">Pokemon</button>
+						<button id="bag">Bag</button>
+						<button id="run">Run</button>
+					</div>	
+				</div>
+
+				<!-- Attack Panel -->
+				<div id="attacksBox" style="
+					width: 66.66%;
+					display: grid;
+					grid-template-columns: repeat(2,1fr);
+					padding: 2px
+					">
+				</div>
+				<!-- shows the type of attacks of player's monsters -->
+				<div
+					id="attackTypeBox" 
+					style="
+					width: 33.33%;
+					border-left: 2px black solid;
+					display: flex;
+					flex-direction: column;
+					align-items: center;
+					justify-content: center;
+					opacity: 0;
+					visibility: hidden;
+					">
+					<div><h1 id="AttackTypeBox">Attack Type</h1></div>
+					<div style="margin-right: 28px;"><button 
+						class="back" 
+						style="
+						font-size: 17px;
+						padding: 20px;
+						width: 120%;
+						">Back</button>
+					</div>
+				</div>
+
+				<div 
+					id="itemBox" 
+					style="
+					position: absolute;
+					background-color: white;
+					font-size: 17px;
+					top: 0;
+					bottom: 0;
+					left: 0;
+					right: 0;
+					padding: 12px;
+					width: 70%;
+					display: grid;
+					grid-template-columns: repeat(3,1fr);
+					opacity: 0;
+					visibility: hidden;
+					">
+				</div>
+
+				<div 
+					id="backBox"
+					style="
+					position: absolute;
+					width: 30%;
+					right: 0;
+					bottom: 0;
+					top: 0;
+					display: flex;
+					flex-direction: column;
+					align-items: center;
+					justify-content: center;
+					border-left: 2px black solid;
+					opacity: 0;
+					visibility: hidden;
+					">
+						<div><h1 id="Box">Items</h1></div>
+						<div style="margin-right: 28px;"><button 
+							class="back" 
+							style="
+							font-size: 17px;
+							padding: 20px;
+							width: 120%;
+							">Back</button>
+						</div>
+						<!-- <button 
+						class="back" 
+						style="
+						font-size: 17px;
+						padding: 40px;
+						width: 80%;
+						">Back</button> -->
+				</div>
+			</div>
+		</div>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js"
+			integrity="sha512-6+YN/9o9BWrk6wSfGxQGpt3EUK6XeHi6yeHV+TYD2GR0Sj/cggRpXr1BrAQf0as6XslxomMUxXp2vIl+fv0QRA=="
+			crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"
+			integrity="sha512-H6cPm97FAsgIKmlBA4s774vqoN24V5gSQL4yBTDOY2su2DeXZVhQPxFK4P6GPdnZqM9fg1G3cMv5wD7e6cFLZQ=="
+			crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+		<script src="./data/audio.js" type="module"></script>
+		<script src="./data/battlezones.js" type="module"></script>
+		<script src="./data/collisions.js" type="module"></script>
+		<script src="./data/items.js" type="module"></script>
+		<script src="./data/attacks.js" type="module"></script> <!--make sure to load attacks before classes-->
+		<script src="./data/monsters.js" type="module"></script>
+		<script src="./data/playerBag.js" type="module"></script>
+		<script src="./canvas.js" type="module"></script>
+		<script src="./classes.js" type="module"></script>
+		<script src="./initiateBattle.js" type="module"></script>
+		<script src="./renderer.js" type="module"></script>
+		<script src="./battlescene.js" type="module"></script>
+</body>
+
+</html>
