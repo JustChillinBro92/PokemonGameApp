@@ -1,5 +1,5 @@
-import { c } from './canvas.js';
-import { audio } from './data/audio.js';
+import { c } from "./canvas.js";
+import { audio } from "./data/audio.js";
 
 export class Boundary {
   static width = 36;
@@ -26,7 +26,7 @@ export class Sprite {
     sprites,
     animate = false,
     rotation = 0,
-    inventory
+    inventory,
   }) {
     this.position = position;
     this.image = new Image();
@@ -37,7 +37,7 @@ export class Sprite {
     this.image.onload = () => {
       this.width = (this.image.width / this.frames.max) * this.scale;
       this.height = this.image.height * this.scale;
-      console.log("Iamge Loaded:", this.image.src,this.width, this.height);
+      // console.log("Iamge Loaded:", this.image.src, this.width, this.height);
     };
 
     this.image.src = image.src;
@@ -99,6 +99,7 @@ export class Monster extends Sprite {
   //all methods of Sprite class are available here as well
   constructor({
     isEnemy = false,
+    isPartner = false,
     name,
     health,
     position,
@@ -110,7 +111,8 @@ export class Monster extends Sprite {
     rotation = 0,
     attack,
   }) {
-    super({      //all the assignment(this.position = position for example) of these properites depend on the parent class(Sprite)
+    super({
+      //all the assignment(this.position = position for example) of these properites depend on the parent class(Sprite)
       position,
       image,
       frames,
@@ -120,49 +122,113 @@ export class Monster extends Sprite {
       rotation,
     });
     // Store the initial position
-    this.initialPosition = {x: position.x , y: position.y}
+    this.initialPosition = { x: position.x, y: position.y };
     this.health = health;
-    this.maxHealth = this.health
+    this.maxHealth = this.health;
     this.name = name;
     this.isEnemy = isEnemy;
+    this.isPartner = isPartner;
     this.attack = attack;
   }
 
   healthbarColor(recipient) {
-    let healthBar = "#enemyHealthBar";
-    if (this.isEnemy) healthBar = "#playerHealthBar";
+    let healthBar = "#enemyHealthBar"; //player attacks
+    if (this.isEnemy) healthBar = "#playerHealthBar"; //enemy attacks or healing used by player
+
     const healthBarVisibility = document.querySelector(healthBar);
-  
+
     //const healthBarPercentage = (recipient.health/recipient.maxHealth) * 98.5
-    if(recipient.health <= 60) {
+    if (recipient.health <= 60) {
       healthBarVisibility.style.backgroundColor = "yellow";
       console.log("color change");
 
-    if(recipient.health <= 25) {
+      if (recipient.health <= 25) {
         healthBarVisibility.style.backgroundColor = "red";
         console.log("color change");
-      } 
+      }
+    } else healthBarVisibility.style.backgroundColor = "rgb(58, 227, 58)";
+  }
+
+  useItem({ ItemUsed }) {
+    let healthBar = "#playerHealthBar";
+    const healthBarVisibility = document.querySelector(healthBar);
+
+    //console.log(ItemUsedBy);
+    console.log("Current Health: " + this.health);
+
+    let diff = this.maxHealth - this.health;
+    let potion_heal = ItemUsed.heal;
+
+    switch (ItemUsed.name) {
+      case "Potion":
+        if (this.health < this.maxHealth) {
+          if (diff < potion_heal) potion_heal = diff;
+
+          this.health += potion_heal;
+          console.log("Restored Health: " + this.health);
+
+          gsap.to(healthBar, {
+            width: (this.health / this.maxHealth) * 98.5 + "%",
+            duration: 0.8,
+            onUpdate: () => {
+              //console.log("check");
+              if (this.health <= 60) {
+                healthBarVisibility.style.backgroundColor = "yellow";
+                console.log("color change");
+          
+                if (this.health <= 25) {
+                  healthBarVisibility.style.backgroundColor = "red";
+                  console.log("color change");
+                }
+              } else healthBarVisibility.style.backgroundColor = "rgb(58, 227, 58)";
+            },
+          });
+        } else if (this.health === this.maxHealth) console.log("Not possible");
+        break;
+
+      case "Super Potion":
+        if (this.health < this.maxHealth) {
+          if (diff < potion_heal) potion_heal = diff;
+
+          this.health += potion_heal;
+          console.log(this.health);
+
+          gsap.to(healthBar, {
+            width: (this.health / this.maxHealth) * 98.5 + "%",
+            duration: 0.8,
+            onUpdate: () => {
+              if (this.health <= 60) {
+                healthBarVisibility.style.backgroundColor = "yellow";
+                console.log("color change");
+          
+                if (this.health <= 25) {
+                  healthBarVisibility.style.backgroundColor = "red";
+                  console.log("color change");
+                }
+              } else healthBarVisibility.style.backgroundColor = "rgb(58, 227, 58)";
+            },
+          });
+        } else if (this.health === this.maxHealth) console.log("Not possible");
     }
   }
 
-  // useItem({ restoratives }) {
-  //     let healthBar = "#playerHealthBar";
-      
-  //     switch(restoratives.name) {
-        
-  //     }
-  // }
-
   Attack({ attack, recipient, renderedSprites }) {
     document.querySelector("#DialogueBox").style.display = "block";
-    document.querySelector("#DialogueBox").innerHTML = this.name + " used " + attack.name + "";
-
+   
+    if(this.isEnemy) {
+      document.querySelector("#DialogueBox").innerHTML =
+      "The Opposing " + this.name + " used " + attack.name + "!";
+    } else {
+      document.querySelector("#DialogueBox").innerHTML =
+      this.name + " used " + attack.name + "!";
+    }
+    
     let healthBar = "#enemyHealthBar";
     if (this.isEnemy) healthBar = "#playerHealthBar";
     const healthBarVisibility = document.querySelector(healthBar);
 
     recipient.health -= attack.damage; //health updates with each instance of attack being called
-    console.log(recipient.health);
+    console.log(recipient.name + " health: "+ recipient.health);
 
     let rotation = 1.2;
     if (this.isEnemy) rotation = -2.2;
@@ -196,7 +262,7 @@ export class Monster extends Sprite {
             //enemy gets hit
             audio.FireballHit.play();
             gsap.to(healthBar, {
-              width: ((recipient.health/recipient.maxHealth) * 98.5) + "%",
+              width: (recipient.health / recipient.maxHealth) * 98.5 + "%",
               duration: 0.8,
               onComplete: () => {
                 this.healthbarColor(recipient);
@@ -252,7 +318,7 @@ export class Monster extends Sprite {
             //enemy gets hit
             audio.FireballHit.play();
             gsap.to(healthBar, {
-              width: ((recipient.health/recipient.maxHealth) * 98.5) + "%",
+              width: (recipient.health / recipient.maxHealth) * 98.5 + "%",
               duration: 0.8,
               onComplete: () => {
                 this.healthbarColor(recipient);
@@ -298,7 +364,7 @@ export class Monster extends Sprite {
               //arrow function instead of noraml function given so that we can use/increase scope of 'this.health'
               audio.TackleHit.play();
               gsap.to(healthBar, {
-                width: ((recipient.health/recipient.maxHealth) * 98.5) + "%",
+                width: (recipient.health / recipient.maxHealth) * 98.5 + "%",
                 duration: 0.8,
                 onComplete: () => {
                   this.healthbarColor(recipient);
@@ -333,17 +399,17 @@ export class Monster extends Sprite {
 
   faint() {
     //console.log("faint");
-    document.querySelector('#DialogueBox').innerHTML = this.name + " Fainted! ";
+    document.querySelector("#DialogueBox").innerHTML = this.name + " Fainted! ";
     gsap.to(this.position, {
       y: this.position.y + 20,
-    })
+    });
     gsap.to(this, {
       opacity: 0,
       duration: 1,
       onComplete: () => {
         this.position.y = this.initialPosition.y;
-      }
-    })
+      },
+    });
     audio.battle.stop();
     audio.victory.play();
   }

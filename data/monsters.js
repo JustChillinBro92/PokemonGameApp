@@ -13,6 +13,7 @@ export const playerMonsters = {
     },
     scale: 1,
     animate: true,
+    isPartner: true,
     health: 150,
 },
 }
