@@ -14,7 +14,7 @@ let partner;
 let Items;
 export let renderedSprites; //array for storing rendered out projectile attacks
 let queue; //queue for pushing enemy attacks
-let variable = false;
+let item_used = false;
 
 export function initBattle() {
   document.querySelector("#Interface").style.display = "block";
@@ -230,24 +230,36 @@ export function initBattle() {
     //loops through the items in each category in player's bag and creates button for them
     category.forEach((ITEM) => {
       // Check for the current category for example "restoratives"
-      if (categoryKey === "restoratives") categoryId = "#restorativeBox"
-      else if (categoryKey === "status_heal" ) categoryId = "#statusHealBox"
+      if (categoryKey === "restoratives") categoryId = "#restorativeBox";
+      else if (categoryKey === "status_heal") categoryId = "#statusHealBox";
 
-        const item_button = document.createElement("button");
-        item_button.innerHTML = ITEM.item.name + " x " + ITEM.quantity;
+      //let initial_item_quantity = ITEM.quantity;
+    
+      const item_button = document.createElement("button");
+      item_button.innerHTML = ITEM.item.name + " x " + ITEM.quantity;
 
-        // Set data attributes
-        item_button.setAttribute("data-category", categoryKey);
-        item_button.setAttribute("data-item", ITEM.item.name);
-        item_button.setAttribute("data-item-object", JSON.stringify(ITEM.item)); // Store the entire item object
+      // Set data attributes
+      item_button.setAttribute("data-category", categoryKey);
+      item_button.setAttribute("data-item", ITEM.item.name);
+      item_button.setAttribute("data-item-object", JSON.stringify(ITEM.item)); // Store the entire item object
 
-        // Append the button only to the #restorativeBox
-        document.querySelector(categoryId).append(item_button);
+      // Append the button only to the #restorativeBox
+      document.querySelector(categoryId).append(item_button);
 
-        // Checks which item is used and takes action accordingly
-        item_button.addEventListener("click", (e) => {
-          UseItemFromButton(e, item_button);
-          variable = true;
+      item_button.addEventListener("mouseenter", () => {
+        document.querySelector("#description").innerHTML = ITEM.item.description;
+      })
+
+      // Checks which item is used and takes action accordingly
+      item_button.addEventListener("click", (e) => {
+        if (categoryKey === "restoratives" && partner.health < partner.maxHealth) item_used = true; 
+        else if (categoryKey === "status_heal" && partner.status != "NRML") item_used = true; 
+
+        console.log(partner.status);
+        console.log(item_used);
+
+        if (item_used) {
+          UseItemFromButton(e, item_button); //reduces quantity of item used
 
           document.querySelector("#backpack").style.display = "none";
           document.querySelector("#encounterBox").style.display = "none";
@@ -306,30 +318,33 @@ export function initBattle() {
             });
             //console.log(queue);
           }
-        });
+        } else {
+          document.querySelector("#description").innerHTML = "There is a time and place for each item!"
+        }
+      });
 
-        document.querySelector("#rest").addEventListener("click", (e) => {
-          document.querySelector("#statusHealBox").style.opacity = "0";
-          document.querySelector("#statusHealBox").style.visibility = "hidden";
-        })
-       
-        document.querySelector("#stat").addEventListener("click", (e) => {
-          document.querySelector("#statusHealBox").style.opacity = "1";
-          document.querySelector("#statusHealBox").style.visibility = "visible";
-        })
+      document.querySelector("#rest").addEventListener("click", (e) => {
+        document.querySelector("#statusHealBox").style.opacity = "0";
+        document.querySelector("#statusHealBox").style.visibility = "hidden";
+      });
+
+      document.querySelector("#stat").addEventListener("click", (e) => {
+        document.querySelector("#statusHealBox").style.opacity = "1";
+        document.querySelector("#statusHealBox").style.visibility = "visible";
+      });
     });
   });
 }
 
 document.querySelector("#DialogueBox").addEventListener("click", (e) => {
   console.log("clicked");
-  if (variable) {
+  if (item_used) {
     //for attack turn while player uses an item
     if (queue.length > 0) {
       queue[0]();
       queue.shift();
     } else {
-      variable = false;
+      item_used = false;
 
       // Only when queue is empty after item usage, show #BattleBox
       document.querySelector("#BattleBox").style.opacity = "1";

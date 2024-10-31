@@ -9,6 +9,11 @@ export const audio = {
         html5: true,
         volume: 0.15,
     }),
+    potion: new Howl({
+        src: './audio/potion.wav',
+        html5: true,
+        volume: 0.5,
+    }),
     initBattle : new Howl({
         src: './audio/initBattle.wav',
         html5: true,

@@ -15,6 +15,7 @@ export const playerMonsters = {
     animate: true,
     isPartner: true,
     health: 150,
+    status: "BRN",
 },
 }
 
@@ -33,6 +34,7 @@ export const monsters = {
         animate: true,
         isEnemy: true,
         health: 170,
+        status: "NRML",
       },
     draggle : {
           name: "Draggle",
@@ -48,6 +50,7 @@ export const monsters = {
           animate: true,
           isEnemy: true,
           health: 160,
+          status: "NRML",
         },
       draggle2 : {
           name: "Draggle",
@@ -63,6 +66,7 @@ export const monsters = {
           animate: true,
           isEnemy: true,
           health: 180,
+          status: "NRML",
         },
       terradon: {
           name: "Terradon",
@@ -78,6 +82,7 @@ export const monsters = {
           animate: true,
           isEnemy: true,
           health: 180,
+          status: "NRML",
         },
 }
 

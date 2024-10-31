@@ -26,7 +26,6 @@ export class Sprite {
     sprites,
     animate = false,
     rotation = 0,
-    inventory,
   }) {
     this.position = position;
     this.image = new Image();
@@ -110,6 +109,7 @@ export class Monster extends Sprite {
     animate = false,
     rotation = 0,
     attack,
+    status,
   }) {
     super({
       //all the assignment(this.position = position for example) of these properites depend on the parent class(Sprite)
@@ -129,6 +129,7 @@ export class Monster extends Sprite {
     this.isEnemy = isEnemy;
     this.isPartner = isPartner;
     this.attack = attack;
+    this.status = status;
   }
 
   healthbarColor(recipient) {
@@ -167,6 +168,7 @@ export class Monster extends Sprite {
           this.health += potion_heal;
           console.log("Restored Health: " + this.health);
 
+          audio.potion.play();
           gsap.to(healthBar, {
             width: (this.health / this.maxHealth) * 98.5 + "%",
             duration: 0.8,
@@ -175,15 +177,18 @@ export class Monster extends Sprite {
               if (this.health <= 60) {
                 healthBarVisibility.style.backgroundColor = "yellow";
                 console.log("color change");
-          
+
                 if (this.health <= 25) {
                   healthBarVisibility.style.backgroundColor = "red";
                   console.log("color change");
                 }
-              } else healthBarVisibility.style.backgroundColor = "rgb(58, 227, 58)";
+              } else
+                healthBarVisibility.style.backgroundColor = "rgb(58, 227, 58)";
             },
           });
-        } else if (this.health === this.maxHealth) console.log("Not possible");
+        } else if (this.health === this.maxHealth) {
+          // console.log("Not possible");
+        }
         break;
 
       case "Super Potion":
@@ -193,6 +198,7 @@ export class Monster extends Sprite {
           this.health += potion_heal;
           console.log(this.health);
 
+          audio.potion.play();
           gsap.to(healthBar, {
             width: (this.health / this.maxHealth) * 98.5 + "%",
             duration: 0.8,
@@ -200,35 +206,42 @@ export class Monster extends Sprite {
               if (this.health <= 60) {
                 healthBarVisibility.style.backgroundColor = "yellow";
                 console.log("color change");
-          
+
                 if (this.health <= 25) {
                   healthBarVisibility.style.backgroundColor = "red";
                   console.log("color change");
                 }
-              } else healthBarVisibility.style.backgroundColor = "rgb(58, 227, 58)";
+              } else
+                healthBarVisibility.style.backgroundColor = "rgb(58, 227, 58)";
             },
           });
         } else if (this.health === this.maxHealth) console.log("Not possible");
+        break;
+
+      case "Burn Heal":
+        if (this.status === "BRN") {
+          console.log("Pokemon is Burned");
+        }
     }
   }
 
   Attack({ attack, recipient, renderedSprites }) {
     document.querySelector("#DialogueBox").style.display = "block";
-   
-    if(this.isEnemy) {
+
+    if (this.isEnemy) {
       document.querySelector("#DialogueBox").innerHTML =
-      "The Opposing " + this.name + " used " + attack.name + "!";
+        "The Opposing " + this.name + " used " + attack.name + "!";
     } else {
       document.querySelector("#DialogueBox").innerHTML =
-      this.name + " used " + attack.name + "!";
+        this.name + " used " + attack.name + "!";
     }
-    
+
     let healthBar = "#enemyHealthBar";
     if (this.isEnemy) healthBar = "#playerHealthBar";
     const healthBarVisibility = document.querySelector(healthBar);
 
     recipient.health -= attack.damage; //health updates with each instance of attack being called
-    console.log(recipient.name + " health: "+ recipient.health);
+    console.log(recipient.name + " health: " + recipient.health);
 
     let rotation = 1.2;
     if (this.isEnemy) rotation = -2.2;
