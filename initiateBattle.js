@@ -1,6 +1,6 @@
 import { Monster } from "./classes.js";
-import { battle } from "./renderer.js";
-import { animate } from "./renderer.js";
+// import { battle } from "./renderer.js";
+// import { animate } from "./renderer.js";
 import { animateBattleId } from "./battlescene.js";
 import { audio } from "./data/audio.js";
 import { playerMonsters, getRandomMonster } from "./data/monsters.js";
@@ -31,7 +31,7 @@ export function initBattle() {
 
   document.querySelector("#enemyHealthBar").style.width = "98.5%";
   document.querySelector("#playerHealthBar").style.width = "98.5%";
-  document.querySelector("#itemBox").replaceChildren();
+  document.querySelector("#restorativeBox").replaceChildren();
   document.querySelector("#attacksBox").replaceChildren(); //removes the appended attack buttons with each battle
 
   enemy = new Monster(getRandomMonster());
@@ -52,15 +52,14 @@ export function initBattle() {
 
   //fight option implement
   document.querySelector("#fight").addEventListener("click", () => {
-
-    if ( document.querySelector("#BattleBox").style.visibility === "visible" ) {
+    if (document.querySelector("#BattleBox").style.visibility === "visible") {
       // Hide `BattleBox` and show `attacksBox`
       document.querySelector("#DialogueBox").style.display = "none";
       document.querySelector("#encounterBox").style.display = "none";
-      
+
       document.querySelector("#BattleBox").style.opacity = "0";
       document.querySelector("#BattleBox").style.visibility = "hidden";
-      
+
       document.querySelector("#attackTypeBox").style.opacity = "1";
       document.querySelector("#attackTypeBox").style.visibility = "visible";
 
@@ -71,10 +70,9 @@ export function initBattle() {
 
   //bag option implement
   document.querySelector("#bag").addEventListener("click", () => {
-    document.querySelector("#itemBox").style.opacity = "1";
-    document.querySelector("#itemBox").style.visibility = "visible";
-    document.querySelector("#BattleBox").style.opacity = "0";
-    document.querySelector("#BattleBox").style.visibility = "hidden";
+    // document.querySelector("#BattleBox").style.opacity = "0";
+    // document.querySelector("#BattleBox").style.visibility = "hidden";
+    document.querySelector("#backpack").style.display = "block";
     document.querySelector("#backBox").style.opacity = "1";
     document.querySelector("#backBox").style.visibility = "visible";
   });
@@ -84,8 +82,9 @@ export function initBattle() {
     button.addEventListener("click", () => {
       document.querySelector("#BattleBox").style.opacity = "1";
       document.querySelector("#BattleBox").style.visibility = "visible";
-      document.querySelector("#itemBox").style.opacity = "0";
-      document.querySelector("#itemBox").style.visibility = "hidden";
+      // document.querySelector("#itemBox").style.opacity = "0";
+      // document.querySelector("#itemBox").style.visibility = "hidden";
+      document.querySelector("#backpack").style.display = "none";
       document.querySelector("#backBox").style.opacity = "0";
       document.querySelector("#backBox").style.visibility = "hidden";
       document.querySelector("#attackTypeBox").style.opacity = "0";
@@ -222,6 +221,7 @@ export function initBattle() {
 
   //loads the category objects from the player's bag
   let ItemCategories = playerItems.bag;
+  let categoryId;
 
   //loops through the category objects in player's bag
   Object.keys(ItemCategories).forEach((categoryKey) => {
@@ -229,104 +229,106 @@ export function initBattle() {
 
     //loops through the items in each category in player's bag and creates button for them
     category.forEach((ITEM) => {
-      const item_button = document.createElement("button");
-      item_button.innerHTML = ITEM.item.name + " x " + ITEM.quantity;
+      // Check for the current category for example "restoratives"
+      if (categoryKey === "restoratives") categoryId = "#restorativeBox"
+      else if (categoryKey === "status_heal" ) categoryId = "#statusHealBox"
 
-      // Set data attributes
-      item_button.setAttribute("data-category", categoryKey);
-      item_button.setAttribute("data-item", ITEM.item.name);
-      item_button.setAttribute("data-item-object", JSON.stringify(ITEM.item)); // Store the entire item object
+        const item_button = document.createElement("button");
+        item_button.innerHTML = ITEM.item.name + " x " + ITEM.quantity;
 
-      document.querySelector("#itemBox").append(item_button);
+        // Set data attributes
+        item_button.setAttribute("data-category", categoryKey);
+        item_button.setAttribute("data-item", ITEM.item.name);
+        item_button.setAttribute("data-item-object", JSON.stringify(ITEM.item)); // Store the entire item object
 
-      //checks which item is used and takes action accordingly
-      item_button.addEventListener("click", (e) => {
-        UseItemFromButton(e, item_button);
-        variable = true;
+        // Append the button only to the #restorativeBox
+        document.querySelector(categoryId).append(item_button);
 
-        //console.log("working")
+        // Checks which item is used and takes action accordingly
+        item_button.addEventListener("click", (e) => {
+          UseItemFromButton(e, item_button);
+          variable = true;
 
-        document.querySelector("#itemBox").style.opacity = "0";
-        document.querySelector("#itemBox").style.visibility = "hidden";
-        document.querySelector("#backBox").style.opacity = "0";
-        document.querySelector("#backBox").style.visibility = "hidden";
+          document.querySelector("#backpack").style.display = "none";
+          document.querySelector("#encounterBox").style.display = "none";
+          document.querySelector("#BattleBox").style.opacity = "0";
+          document.querySelector("#BattleBox").style.visibility = "hidden";
 
-        document.querySelector("#encounterBox").style.display = "none";
+          document.querySelector("#DialogueBox").innerHTML =
+            partner.name + " recovered HP! ";
+          document.querySelector("#DialogueBox").style.display = "block";
 
-        
-        document.querySelector("#attackTypeBox").style.opacity = "0";
-        document.querySelector("#attackTypeBox").style.visibility = "hidden";
+          // Retrieves the entire item object that is selected
+          const selectedItemObject = JSON.parse(
+            e.currentTarget.getAttribute("data-item-object")
+          );
 
-        document.querySelector("#attacksBox").style.opacity = "0";
-        document.querySelector("#attacksBox").style.visibility = "hidden";
+          partner.useItem({
+            ItemUsed: selectedItemObject,
+          });
 
-        document.querySelector("#DialogueBox").innerHTML = partner.name + " recovered HP! ";
-        document.querySelector("#DialogueBox").style.display = "block";
+          if (partner.health > 0) {
+            const randomAttackV2 =
+              enemy.attack[Math.floor(Math.random() * enemy.attack.length)];
 
-        // Retrieves the entire item object that is selected
-        const selectedItemObject = JSON.parse(
-          e.currentTarget.getAttribute("data-item-object")
-        );
-        //console.log("Selected Item Object:", selectedItemObject);
+            // Enemy attacks upon using items
+            queue.push(() => {
+              enemy.Attack({
+                attack: randomAttackV2,
+                recipient: partner,
+                renderedSprites,
+              });
 
-        partner.useItem({
-          ItemUsed: selectedItemObject,
+              if (partner.health <= 0) {
+                // After each enemy attack check player monster's health
+                queue.push(() => {
+                  partner.faint();
+                });
+                queue.push(() => {
+                  gsap.to("#OverlappingDiv", {
+                    opacity: 1,
+                    onComplete: () => {
+                      window.cancelAnimationFrame(animateBattleId);
+                      animate();
+                      document.querySelector("#Interface").style.display =
+                        "none";
+
+                      gsap.to("#OverlappingDiv", {
+                        opacity: 0,
+                      });
+                      battle.initiated = false;
+                      audio.victory.stop();
+                      audio.Map.play();
+                    },
+                  });
+                });
+              }
+            });
+            //console.log(queue);
+          }
         });
 
-        if (partner.health > 0) {
-          //console.log("check item");
-
-          const randomAttackV2 =
-            enemy.attack[Math.floor(Math.random() * enemy.attack.length)];
-
-          //enemy attacks upon using items
-          queue.push(() => {
-            enemy.Attack({
-              attack: randomAttackV2,
-              recipient: partner,
-              renderedSprites,
-            });
-
-            if (partner.health <= 0) {
-              // after each enemy attack check player monster's health
-              queue.push(() => {
-                partner.faint();
-              });
-              queue.push(() => {
-                gsap.to("#OverlappingDiv", {
-                  opacity: 1,
-                  OnComplete: () => {
-                    window.cancelAnimationFrame(animateBattleId);
-                    animate();
-                    document.querySelector("#Interface").style.display = "none";
-
-                    gsap.to("#OverlappingDiv", {
-                      opacity: 0,
-                    });
-                    battle.initiated = false;
-                    audio.victory.stop();
-                    audio.Map.play();
-                  },
-                });
-              });
-            }
-          });
-          console.log(queue);
-        }
-      });
+        document.querySelector("#rest").addEventListener("click", (e) => {
+          document.querySelector("#statusHealBox").style.opacity = "0";
+          document.querySelector("#statusHealBox").style.visibility = "hidden";
+        })
+       
+        document.querySelector("#stat").addEventListener("click", (e) => {
+          document.querySelector("#statusHealBox").style.opacity = "1";
+          document.querySelector("#statusHealBox").style.visibility = "visible";
+        })
     });
   });
 }
 
 document.querySelector("#DialogueBox").addEventListener("click", (e) => {
-console.log("clicked")
-  if(variable) {
+  console.log("clicked");
+  if (variable) {
     //for attack turn while player uses an item
-    if(queue.length > 0 ) {
-      queue[0](); 
+    if (queue.length > 0) {
+      queue[0]();
       queue.shift();
-    } 
-    else {
+    } else {
       variable = false;
 
       // Only when queue is empty after item usage, show #BattleBox

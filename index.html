@@ -13,24 +13,27 @@
 			font-family: "Press Start 2P", system-ui;
 			font-weight: 400;
 			font-style: normal;
-
 		}
 
-		html, body {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            background-color: black; /* Full background color */
-            overflow: hidden; /* Prevents scrollbars */
-        }
+		html,
+		body {
+			margin: 0;
+			padding: 0;
+			width: 100%;
+			height: 100%;
+			background-color: black;
+			/* Full background color */
+			overflow: hidden;
+			/* Prevents scrollbars */
+		}
 
 		h1 {
 			margin: 0;
 			font-size: 17px;
 		}
 
-		#attackTypeBox #AttackTypeBox, #backBox #Box{
+		#attackTypeBox #AttackTypeBox,
+		#backBox #Box {
 			width: 90%;
 			padding: 20px;
 			border-radius: 5px;
@@ -67,8 +70,7 @@
 
 		<div id="Interface" style="display: none;">
 			<!-- Enemy's Monster Health Bar -->
-			<div
-				style="
+			<div style="
 				background-color: white;
 				width: 250px;
 				position: absolute;
@@ -115,8 +117,7 @@
 			</div>
 
 			<!-- Player's Monster Health Bar -->
-			<div 
-				style="
+			<div style="
 				background-color: white;
 				width: 250px;
 				position: absolute;
@@ -188,9 +189,7 @@
 					">
 				</div>
 				<!-- Narrating which monster encountered -->
-				<div 
-					id="encounterBox"
-					style="
+				<div id="encounterBox" style="
 					position: absolute;
 					background-color: white;
 					font-size: 17px;
@@ -203,9 +202,7 @@
 					">
 				</div>
 				<!-- shows options available for player during battle -->
-				<div 
-					id="BattleBox"
-					style="
+				<div id="BattleBox" style="
 					position: absolute;
 					background-color: white;
 					font-size: 17px;
@@ -220,17 +217,15 @@
 					visibility: hidden;
 					">
 					What Will You Do?
-					<div 
-					id="UserChoiceBox"
-					style="
+					<div id="UserChoiceBox" style="
 					width: 45%;
 					display: grid;
 					grid-template-columns: repeat(2,1fr);
-					">	<button id="fight">Fight</button>
+					"> <button id="fight">Fight</button>
 						<button id="pokemon">Pokemon</button>
 						<button id="bag">Bag</button>
 						<button id="run">Run</button>
-					</div>	
+					</div>
 				</div>
 
 				<!-- Attack Panel -->
@@ -244,9 +239,7 @@
 					">
 				</div>
 				<!-- shows the type of attacks of player's monsters -->
-				<div
-					id="attackTypeBox" 
-					style="
+				<div id="attackTypeBox" style="
 					width: 33.33%;
 					border-left: 2px black solid;
 					display: flex;
@@ -256,70 +249,146 @@
 					opacity: 0;
 					visibility: hidden;
 					">
-					<div><h1 id="AttackTypeBox">Attack Type</h1></div>
-					<div style="margin-right: 28px;"><button 
-						class="back" 
-						style="
+					<div>
+						<h1 id="AttackTypeBox">Attack Type</h1>
+					</div>
+					<div style="margin-right: 28px;"><button class="back" style="
 						font-size: 17px;
 						padding: 20px;
 						width: 120%;
 						">Back</button>
 					</div>
 				</div>
+			</div>
 
 				<div 
-					id="itemBox" 
+					id="backpack" 
 					style="
 					position: absolute;
 					background-color: white;
 					font-size: 17px;
 					top: 0;
-					bottom: 0;
 					left: 0;
 					right: 0;
-					padding: 12px;
-					width: 70%;
-					display: grid;
-					grid-template-columns: repeat(3,1fr);
-					opacity: 0;
-					visibility: hidden;
-					">
-				</div>
-
-				<div 
-					id="backBox"
-					style="
-					position: absolute;
-					width: 30%;
-					right: 0;
 					bottom: 0;
-					top: 0;
-					display: flex;
-					flex-direction: column;
-					align-items: center;
-					justify-content: center;
-					border-left: 2px black solid;
-					opacity: 0;
-					visibility: hidden;
+					display: none;
 					">
-						<div><h1 id="Box">Items</h1></div>
-						<div style="margin-right: 28px;"><button 
-							class="back" 
+					<div 
+						id="storage"
+						style="
+						position: absolute;
+						top: 0;
+						left: 0;
+						right: 0;
+						height: 430px;
+						">	
+							<div 
+								id="categories"
+								style="
+								position: absolute;
+								top: 0;
+								left: 0;
+								bottom: 0;
+								width: 30%;
+								padding: 12px;
+								display: grid;
+								">
+								  <button id="rest">Restoratives</button>
+								  <button id="stat">Status Heals</button>
+								  <button id="key">Key Items</button>
+							</div>
+							
+							<div 
+								id="restorativeBox" 
+								style="
+								position: absolute;
+								background-color: white;
+								border-left: 2px black solid;
+								font-size: 17px;
+								top: 0;
+								right: 0;
+								bottom: 0;
+								padding: 12px;
+								width: 65%;
+								display: grid;
+								/* grid-template-columns: repeat(1,1fr); */
+								/* opacity: 0;
+								visibility: hidden; */
+								">
+							</div>
+
+							<div
+							id="statusHealBox"
 							style="
+								position: absolute;
+								background-color: white;
+								border-left: 2px black solid;
+								font-size: 17px;
+								top: 0;
+								right: 0;
+								bottom: 0;
+								padding: 12px;
+								width: 65%;
+								display: grid;
+								opacity: 0;
+								visibility: hidden;
+								">
+								<!-- <button>Paralyze Heal</button>
+								<button>Burn Heal</button> -->
+							</div> 
+					</div>
+					
+					<div 
+						id="footer"
+						style="
+						border-top: 2px black solid;
+						position: absolute;
+						height: 145px;
+						bottom: 0;
+						left: 0;
+						right: 0;
+						">
+						<div 
+							id="description"
+							style="
+							border-right: 2px black solid;
+							position: absolute;
+							width: 70%;
+							height: 145px;
+							display: flex;
+							justify-content: center;
+							align-items: center;
+							font-size: 17px;
+							">A medicine that heals a pokemon by 50 Hp!
+						</div>
+
+						<div 
+							id="backBox" 
+							style="
+							position: absolute;
+							width: 30%;
+							right: 0;
+							bottom: 0;
+							top: 0;
+							display: flex;
+							flex-direction: column;
+							align-items: center;
+							justify-content: center;
+							/* opacity: 0;
+							visibility: hidden; */
+							">
+						<div>
+							<h1 id="Box">Items</h1>
+						</div>
+						<div style="margin-right: 28px;"><button class="back" style="
 							font-size: 17px;
 							padding: 20px;
 							width: 120%;
 							">Back</button>
 						</div>
-						<!-- <button 
-						class="back" 
-						style="
-						font-size: 17px;
-						padding: 40px;
-						width: 80%;
-						">Back</button> -->
+					</div>
+					</div>
 				</div>
-			</div>
 		</div>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js"
 			integrity="sha512-6+YN/9o9BWrk6wSfGxQGpt3EUK6XeHi6yeHV+TYD2GR0Sj/cggRpXr1BrAQf0as6XslxomMUxXp2vIl+fv0QRA=="
