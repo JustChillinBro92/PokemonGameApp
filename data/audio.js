@@ -9,6 +9,11 @@ export const audio = {
         html5: true,
         volume: 0.15,
     }),
+    button_press: new Howl({
+        src: './audio/button_press.wav',
+        html5: true,
+        volume: 0.1,
+    }),
     potion: new Howl({
         src: './audio/potion.wav',
         html5: true,

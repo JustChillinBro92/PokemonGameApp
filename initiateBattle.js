@@ -6,12 +6,21 @@ import { audio } from "./data/audio.js";
 import { playerMonsters, getRandomMonster } from "./data/monsters.js";
 import { attacks } from "./data/attacks.js";
 import { playerItems, UseItemFromButton } from "./data/playerBag.js";
-import { items } from "./data/items.js";
+
+
+// Select all buttons on the page
+const buttons = document.querySelectorAll('button');
+
+// Add an event listener to each button
+buttons.forEach(button => {
+  button.addEventListener('click', () => {
+    audio.button_press.play();
+  });
+});
 
 //creating the monster sprites
 let enemy;
 let partner;
-let Items;
 export let renderedSprites; //array for storing rendered out projectile attacks
 let queue; //queue for pushing enemy attacks
 let item_used = false;
