@@ -1,6 +1,7 @@
 # TO DO LIST
 
-* healing mechanics ( don't use heal if health full ) <br>
-* item button disapper if quantity 0
-* main character sprite
-* 
+* status problems when hit by certain attacks (fuck I have to make more attack sprites as well)
+* being able to switch pokemon
+* exp gain and lvl up system
+* save game mechanic
+* main character sprite (shits killing me fr)

@@ -72,7 +72,7 @@
 			<!-- Enemy's Monster Health Bar -->
 			<div style="
 				background-color: white;
-				width: 250px;
+				width: 320.2px;
 				position: absolute;
 				top: 40px;
 				left: 40px;
@@ -80,11 +80,33 @@
 				border-radius: 10px;
 				padding: 15px
 				">
-				<h1 id="enemyMon" style="font-size: 17px;"></h1>
+
 				<div style="
+					display: flex;
+					align-items: center;
+					justify-content: space-between;
+					">
+					<h1 id="enemyMon" style="font-size: 17px;"></h1>
+					<h1>Lv5</h1>
+				</div>
+
+				<div style="
+					height: 35px;
 					display: flex;
 					align-items: center;  
 					">
+					<h2 
+						id="enemyStat"
+						style="
+						font-size: 13px;
+						padding: 5px;
+						border: 2px black solid;
+						border-radius: 5px;
+						margin-right: 5px;
+						margin-top: 22px;
+						color: #2a2a2a;
+						">
+					</h2>
 					<h1 style="
 						font-size: 14px; 
 						margin-right: 3px;
@@ -107,8 +129,8 @@
 							border-radius: 3px;
 							position: absolute;
 							height: 12px;
-							top: 11.8px;
-							left: 1.5px;
+							top: 11.5px;
+							left: 1.6px;
 							right: 5px;
 							">
 						</div>
@@ -119,7 +141,7 @@
 			<!-- Player's Monster Health Bar -->
 			<div style="
 				background-color: white;
-				width: 250px;
+				width: 320.2px;
 				position: absolute;
 				bottom: 190px;
 				right: 40px;
@@ -127,11 +149,33 @@
 				border-radius: 10px;
 				padding: 15px
 				">
-				<h1 id="playerMon" style="font-size: 17px;"></h1>
+
 				<div style="
+					display: flex;
+					align-items: center;
+					justify-content: space-between;
+					">
+					<h1 id="playerMon" style="font-size: 17px;"></h1>
+					<h1>Lv5</h1>
+				</div>
+
+				<div style="
+					height: 35px;
 					display: flex;
 					align-items: center;	   
 					">
+					<h2 
+						id="playerStat"
+						style="
+						font-size: 13px;
+						padding: 5px;
+						border: 2px black solid;
+						border-radius: 5px;
+						margin-right: 5px;
+						margin-top: 22px;
+						color: #2a2a2a;
+						">NRML
+					</h2>
 					<h1 style="
 						font-size: 14px; 
 						margin-right: 3px;
@@ -154,8 +198,8 @@
 							border-radius: 3px;
 							position: absolute;
 							height: 12px;
-							top: 11.8px;
-							left: 1.5px;
+							top: 11.5px;
+							left: 1.6px;
 							right: 2px;	
 			  				">
 						</div>
@@ -261,9 +305,7 @@
 				</div>
 			</div>
 
-				<div 
-					id="backpack" 
-					style="
+			<div id="backpack" style="
 					position: absolute;
 					background-color: white;
 					font-size: 17px;
@@ -273,18 +315,14 @@
 					bottom: 0;
 					display: none;
 					">
-					<div 
-						id="storage"
-						style="
+				<div id="storage" style="
 						position: absolute;
 						top: 0;
 						left: 0;
 						right: 0;
 						height: 430px;
-						">	
-							<div 
-								id="categories"
-								style="
+						">
+					<div id="categories" style="
 								position: absolute;
 								top: 0;
 								left: 0;
@@ -293,14 +331,12 @@
 								padding: 12px;
 								display: grid;
 								">
-								  <button id="rest">Restoratives</button>
-								  <button id="stat">Status Heals</button>
-								  <button id="key">Key Items</button>
-							</div>
-							
-							<div 
-								id="restorativeBox" 
-								style="
+						<button id="rest">Restoratives</button>
+						<button id="stat">Status Heals</button>
+						<button id="key">Key Items</button>
+					</div>
+
+					<div id="restorativeBox" style="
 								position: absolute;
 								background-color: white;
 								border-left: 2px black solid;
@@ -315,11 +351,9 @@
 								/* opacity: 0;
 								visibility: hidden; */
 								">
-							</div>
+					</div>
 
-							<div
-							id="statusHealBox"
-							style="
+					<div id="statusHealBox" style="
 								position: absolute;
 								background-color: white;
 								border-left: 2px black solid;
@@ -333,14 +367,12 @@
 								opacity: 0;
 								visibility: hidden;
 								">
-								<!-- <button>Paralyze Heal</button>
+						<!-- <button>Paralyze Heal</button>
 								<button>Burn Heal</button> -->
-							</div> 
 					</div>
-					
-					<div 
-						id="footer"
-						style="
+				</div>
+
+				<div id="footer" style="
 						border-top: 2px black solid;
 						position: absolute;
 						height: 145px;
@@ -348,9 +380,7 @@
 						left: 0;
 						right: 0;
 						">
-						<div 
-							id="description"
-							style="
+					<div id="description" style="
 							border-right: 2px black solid;
 							position: absolute;
 							width: 75%;
@@ -360,11 +390,9 @@
 							align-items: center;
 							font-size: 17px;
 							">Item description
-						</div>
+					</div>
 
-						<div 
-							id="backBox" 
-							style="
+					<div id="backBox" style="
 							position: absolute;
 							width: 30%;
 							right: 0;
@@ -381,17 +409,15 @@
 							<h1 id="Box" style="margin-left: 45px;">Items</h1>
 						</div>
 						<div style="margin-left: 30px;">
-							<button 
-							class="back" 
-							style="
+							<button class="back" style="
 							font-size: 17px;
 							padding: 20px;
 							width: 120%;
 							">Back</button>
 						</div>
 					</div>
-					</div>
 				</div>
+			</div>
 		</div>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js"
 			integrity="sha512-6+YN/9o9BWrk6wSfGxQGpt3EUK6XeHi6yeHV+TYD2GR0Sj/cggRpXr1BrAQf0as6XslxomMUxXp2vIl+fv0QRA=="

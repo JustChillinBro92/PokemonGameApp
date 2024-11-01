@@ -15,7 +15,7 @@ export const playerMonsters = {
     animate: true,
     isPartner: true,
     health: 150,
-    status: "BRN",
+    status: "BRND",
 },
 }
 

@@ -14,6 +14,11 @@ export const audio = {
         html5: true,
         volume: 0.5,
     }),
+    status_heal: new Howl({
+        src: './audio/status_heal.wav',
+        html5: true,
+        volume: 0.5,
+    }),
     initBattle : new Howl({
         src: './audio/initBattle.wav',
         html5: true,

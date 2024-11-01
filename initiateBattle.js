@@ -31,6 +31,10 @@ export function initBattle() {
 
   document.querySelector("#enemyHealthBar").style.width = "98.5%";
   document.querySelector("#playerHealthBar").style.width = "98.5%";
+
+  document.querySelector("#enemyStat").innerHTML = getRandomMonster().status;
+  document.querySelector("#playerStat").innerHTML = playerMonsters.emby.status;
+
   document.querySelector("#restorativeBox").replaceChildren();
   document.querySelector("#attacksBox").replaceChildren(); //removes the appended attack buttons with each battle
 
@@ -253,10 +257,11 @@ export function initBattle() {
       // Checks which item is used and takes action accordingly
       item_button.addEventListener("click", (e) => {
         if (categoryKey === "restoratives" && partner.health < partner.maxHealth) item_used = true; 
-        else if (categoryKey === "status_heal" && partner.status != "NRML") item_used = true; 
+        else if (item_button.getAttribute("data-item") === "Burn Heal" && partner.status === "BRND") item_used = true; 
+        else if (item_button.getAttribute("data-item") === "Paralyze Heal" && partner.status === "PRLZ") item_used = true; 
 
-        console.log(partner.status);
-        console.log(item_used);
+        //console.log(item_button.getAttribute("data-item"))
+        //console.log(item_used);
 
         if (item_used) {
           UseItemFromButton(e, item_button); //reduces quantity of item used
@@ -266,9 +271,14 @@ export function initBattle() {
           document.querySelector("#BattleBox").style.opacity = "0";
           document.querySelector("#BattleBox").style.visibility = "hidden";
 
-          document.querySelector("#DialogueBox").innerHTML =
-            partner.name + " recovered HP! ";
+          if(categoryKey === "restoratives") document.querySelector("#DialogueBox").innerHTML =
+          partner.name + "'s" + " HP has been restored! ";
+          
+          if(categoryKey === "status_heal") document.querySelector("#DialogueBox").innerHTML =
+          partner.name + "'s" + " status has been restored! ";
+          
           document.querySelector("#DialogueBox").style.display = "block";
+
 
           // Retrieves the entire item object that is selected
           const selectedItemObject = JSON.parse(

@@ -219,9 +219,18 @@ export class Monster extends Sprite {
         break;
 
       case "Burn Heal":
-        if (this.status === "BRN") {
-          console.log("Pokemon is Burned");
-        }
+        audio.status_heal.play();
+
+        if (this.status === "BRND") this.status = "NRML";
+        document.querySelector("#playerStat").innerHTML = this.status;
+      break;
+
+      case "Paralyze Heal": 
+        audio.status_heal.play();
+        
+        if (this.status === "PRLZ") this.status = "NRML";
+        document.querySelector("#playerStat").innerHTML = this.status;
+      break;
     }
   }
 
