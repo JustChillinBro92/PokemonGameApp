@@ -132,6 +132,38 @@ export class Monster extends Sprite {
     this.status = status;
   }
 
+  status_effect() {
+    if (this.status === "BRND") {
+      this.health -= 25;
+      console.log("status hurt => current hp: " + this.health);
+      document.querySelector("#DialogueBox").innerHTML =
+        this.name + " was hurt due to its burn! ";
+      document.querySelector("#DialogueBox").style.display = "block";
+
+      let healthBar = "#playerHealthBar";
+      if (this.isEnemy) healthBar = "#enemyHealthBar";
+      const healthBarVisibility = document.querySelector(healthBar);
+
+      audio.burn_damage.play();
+      gsap.to(healthBar, {
+        width: (this.health / this.maxHealth) * 98.5 + "%",
+        duration: 0.8,
+        onComplete: () => {
+          //console.log("check");
+          if (this.health <= 60) {
+            healthBarVisibility.style.backgroundColor = "yellow";
+            console.log("color change");
+
+            if (this.health <= 25) {
+              healthBarVisibility.style.backgroundColor = "red";
+              console.log("color change");
+            }
+          } else healthBarVisibility.style.backgroundColor = "rgb(58, 227, 58)";
+        },
+      });
+    }
+  }
+
   healthbarColor(recipient) {
     let healthBar = "#enemyHealthBar"; //player attacks
     if (this.isEnemy) healthBar = "#playerHealthBar"; //enemy attacks or healing used by player
@@ -176,11 +208,11 @@ export class Monster extends Sprite {
               //console.log("check");
               if (this.health <= 60) {
                 healthBarVisibility.style.backgroundColor = "yellow";
-                console.log("color change");
+                //console.log("color change");
 
                 if (this.health <= 25) {
                   healthBarVisibility.style.backgroundColor = "red";
-                  console.log("color change");
+                  //console.log("color change");
                 }
               } else
                 healthBarVisibility.style.backgroundColor = "rgb(58, 227, 58)";
@@ -223,14 +255,14 @@ export class Monster extends Sprite {
 
         if (this.status === "BRND") this.status = "NRML";
         document.querySelector("#playerStat").innerHTML = this.status;
-      break;
+        break;
 
-      case "Paralyze Heal": 
+      case "Paralyze Heal":
         audio.status_heal.play();
-        
+
         if (this.status === "PRLZ") this.status = "NRML";
         document.querySelector("#playerStat").innerHTML = this.status;
-      break;
+        break;
     }
   }
 
@@ -366,6 +398,70 @@ export class Monster extends Sprite {
             renderedSprites.splice(1, 1); //removing the fireball after hitting target
           },
         });
+        break;
+
+      case "BurnUp":
+        let flag = true;
+        if (recipient.status === "BRND") {
+          document.querySelector("#DialogueBox").innerHTML =
+            recipient.name + " is already under a status effect! ";
+          flag = false;
+        }
+
+        if (flag) {
+          audio.initFireball.play();
+          const BurnUpImg = new Image();
+          BurnUpImg.src = "./img/fireball.png";
+
+          const burnUp = new Monster({
+            position: {
+              x: this.position.x,
+              y: this.position.y,
+            },
+            image: BurnUpImg,
+            frames: {
+              max: 4,
+              hold: 25,
+            },
+            animate: true,
+            rotation,
+          });
+          renderedSprites.splice(1, 0, burnUp);
+
+          gsap.to(burnUp.position, {
+            x: recipient.position.x,
+            y: recipient.position.y,
+
+            onComplete: () => {
+              //enemy gets hit
+              audio.FireballHit.play();
+
+              recipient.status = "BRND";
+              if (this.isEnemy) {
+                document.querySelector("#playerStat").innerHTML = "BRND";
+                document.querySelector("#playerStat").style.color = "Orangered";
+              } else {
+                document.querySelector("#enemyStat").style.color = "Orangered";
+                document.querySelector("#enemyStat").innerHTML = "BRND";
+              }
+
+              gsap.to(recipient.position, {
+                x: recipient.position.x + 10,
+                yoyo: true,
+                repeat: 5,
+                duration: 0.08,
+              });
+
+              gsap.to(recipient, {
+                opacity: 0,
+                yoyo: true,
+                repeat: 3,
+                duration: 0.08,
+              });
+              renderedSprites.splice(1, 1); //removing the fireball after hitting target
+            },
+          });
+        }
         break;
 
       case "Tackle":

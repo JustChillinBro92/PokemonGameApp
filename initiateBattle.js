@@ -147,6 +147,7 @@ export function initBattle() {
   renderedSprites = [enemy, partner];
   queue = [];
 
+
   partner.attack.forEach((attack) => {
     const button = document.createElement("button");
     button.innerHTML = attack.name;
@@ -168,33 +169,10 @@ export function initBattle() {
         recipient: enemy,
         renderedSprites,
       });
-
-      if (enemy.health <= 0) {
-        queue.push(() => {
-          enemy.faint();
-        });
-        queue.push(() => {
-          gsap.to("#OverlappingDiv", {
-            opacity: 1,
-            OnComplete: () => {
-              window.cancelAnimationFrame(animateBattleId);
-              animate();
-              document.querySelector("#Interface").style.display = "none";
-
-              gsap.to("#OverlappingDiv", {
-                opacity: 0,
-              });
-              battle.initiated = false;
-              audio.victory.stop();
-              audio.Map.play();
-            },
-          });
-        });
-      }
+      battle_end_check(enemy);
 
       //enemy attacks
-      const randomAttack =
-        enemy.attack[Math.floor(Math.random() * enemy.attack.length)];
+      const randomAttack = enemy.attack[Math.floor(Math.random() * enemy.attack.length)];
 
       queue.push(() => {
         enemy.Attack({
@@ -202,31 +180,20 @@ export function initBattle() {
           recipient: partner,
           renderedSprites,
         });
-
+        battle_end_check(partner);
+        
         //console.log(queue.length);
-
-        if (partner.health <= 0) {
-          // after each enemy attack check player monster's health
+        if(partner.status != "NRML") {
           queue.push(() => {
-            partner.faint();
-          });
+            partner.status_effect();
+            battle_end_check(partner);
+          })
+        }
+        if(enemy.status != "NRML") {
           queue.push(() => {
-            gsap.to("#OverlappingDiv", {
-              opacity: 1,
-              OnComplete: () => {
-                window.cancelAnimationFrame(animateBattleId);
-                animate();
-                document.querySelector("#Interface").style.display = "none";
-
-                gsap.to("#OverlappingDiv", {
-                  opacity: 0,
-                });
-                battle.initiated = false;
-                audio.victory.stop();
-                audio.Map.play();
-              },
-            });
-          });
+            enemy.status_effect();
+            battle_end_check(enemy);
+          })
         }
       });
     });
@@ -309,31 +276,7 @@ export function initBattle() {
                 recipient: partner,
                 renderedSprites,
               });
-
-              if (partner.health <= 0) {
-                // After each enemy attack check player monster's health
-                queue.push(() => {
-                  partner.faint();
-                });
-                queue.push(() => {
-                  gsap.to("#OverlappingDiv", {
-                    opacity: 1,
-                    onComplete: () => {
-                      window.cancelAnimationFrame(animateBattleId);
-                      animate();
-                      document.querySelector("#Interface").style.display =
-                        "none";
-
-                      gsap.to("#OverlappingDiv", {
-                        opacity: 0,
-                      });
-                      battle.initiated = false;
-                      audio.victory.stop();
-                      audio.Map.play();
-                    },
-                  });
-                });
-              }
+              battle_end_check(partner);
             });
             //console.log(queue);
           }
@@ -377,3 +320,29 @@ document.querySelector("#DialogueBox").addEventListener("click", (e) => {
     } else e.currentTarget.style.display = "none";
   }
 });
+
+ function battle_end_check (e) {
+  if (e.health <= 0) {
+    // after each enemy attack check player monster's health
+    queue.push(() => {
+      e.faint();
+    });
+    queue.push(() => {
+      gsap.to("#OverlappingDiv", {
+        opacity: 1,
+        OnComplete: () => {
+          window.cancelAnimationFrame(animateBattleId);
+          animate();
+          document.querySelector("#Interface").style.display = "none";
+
+          gsap.to("#OverlappingDiv", {
+            opacity: 0,
+          });
+          battle.initiated = false;
+          audio.victory.stop();
+          audio.Map.play();
+        },
+      });
+    });
+  }
+}

@@ -44,6 +44,11 @@ export const audio = {
         html5: true,
         volume: 0.15,
     }),
+    burn_damage: new Howl({
+        src: './audio/burn_damage.wav',
+        html5: true,
+        volume: 0.15,
+    }),
     TackleHit : new Howl({
         src: './audio/tackleHit.wav',
         html5: true,

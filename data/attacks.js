@@ -11,6 +11,12 @@ export const attacks = {
         type: 'Fire',
         color: 'Orangered',
     },
+    BurnUp : {
+        name: 'BurnUp',
+        damage: 0,
+        type: 'Fire',
+        color: 'Orangered',
+    },
     DragonBreath : {
         name: 'DragonBreath',
         damage: 65,

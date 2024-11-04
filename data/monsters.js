@@ -6,7 +6,7 @@ export const playerMonsters = {
     image: {
       src: "./img/embySprite.png",
     },
-    attack: [attacks.Tackle, attacks.FireBall,attacks.DragonBreath],
+    attack: [attacks.Tackle, attacks.FireBall,attacks.DragonBreath,attacks.BurnUp],
     frames: {
       max: 4,
       hold: 60,
@@ -15,7 +15,7 @@ export const playerMonsters = {
     animate: true,
     isPartner: true,
     health: 150,
-    status: "BRND",
+    status: "NRML",
 },
 }
 
