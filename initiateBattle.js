@@ -7,13 +7,12 @@ import { playerMonsters, getRandomMonster } from "./data/monsters.js";
 import { attacks } from "./data/attacks.js";
 import { playerItems, UseItemFromButton } from "./data/playerBag.js";
 
-
 // Select all buttons on the page
-const buttons = document.querySelectorAll('button');
+const buttons = document.querySelectorAll("button");
 
 // Add an event listener to each button
-buttons.forEach(button => {
-  button.addEventListener('click', () => {
+buttons.forEach((button) => {
+  button.addEventListener("click", () => {
     audio.button_press.play();
   });
 });
@@ -147,7 +146,6 @@ export function initBattle() {
   renderedSprites = [enemy, partner];
   queue = [];
 
-
   partner.attack.forEach((attack) => {
     const button = document.createElement("button");
     button.innerHTML = attack.name;
@@ -164,38 +162,23 @@ export function initBattle() {
       //console.log(attacks[e.currentTarget.innerHTML]);
       const selectedAttack = attacks[e.currentTarget.innerHTML];
 
-      partner.Attack({
-        attack: selectedAttack,
-        recipient: enemy,
-        renderedSprites,
-      });
-      battle_end_check(enemy);
+      let attack_happen_player = partner.status_effect_nonDamage();
 
-      //enemy attacks
-      const randomAttack = enemy.attack[Math.floor(Math.random() * enemy.attack.length)];
-
-      queue.push(() => {
-        enemy.Attack({
-          attack: randomAttack,
-          recipient: partner,
+      if (attack_happen_player) {    
+        partner.Attack({
+          attack: selectedAttack,
+          recipient: enemy,
           renderedSprites,
         });
-        battle_end_check(partner);
-        
+        battle_end_check(enemy);
         //console.log(queue.length);
-        if(partner.status != "NRML") {
-          queue.push(() => {
-            partner.status_effect();
-            battle_end_check(partner);
-          })
-        }
-        if(enemy.status != "NRML") {
-          queue.push(() => {
-            enemy.status_effect();
-            battle_end_check(enemy);
-          })
-        }
-      });
+
+        //enemy attacks
+        enemy_attacks(enemy);
+      } else {
+        //enemy attacks
+        enemy_attacks(enemy);
+      }
     });
   });
 
@@ -214,7 +197,7 @@ export function initBattle() {
       else if (categoryKey === "status_heal") categoryId = "#statusHealBox";
 
       //let initial_item_quantity = ITEM.quantity;
-    
+
       const item_button = document.createElement("button");
       item_button.innerHTML = ITEM.item.name + " x " + ITEM.quantity;
 
@@ -227,14 +210,27 @@ export function initBattle() {
       document.querySelector(categoryId).append(item_button);
 
       item_button.addEventListener("mouseenter", () => {
-        document.querySelector("#description").innerHTML = ITEM.item.description;
-      })
+        document.querySelector("#description").innerHTML =
+          ITEM.item.description;
+      });
 
       // Checks which item is used and takes action accordingly
       item_button.addEventListener("click", (e) => {
-        if (categoryKey === "restoratives" && partner.health < partner.maxHealth) item_used = true; 
-        else if (item_button.getAttribute("data-item") === "Burn Heal" && partner.status === "BRND") item_used = true; 
-        else if (item_button.getAttribute("data-item") === "Paralyze Heal" && partner.status === "PRLZ") item_used = true; 
+        if (
+          categoryKey === "restoratives" &&
+          partner.health < partner.maxHealth
+        )
+          item_used = true;
+        else if (
+          item_button.getAttribute("data-item") === "Burn Heal" &&
+          partner.status === "BRND"
+        )
+          item_used = true;
+        else if (
+          item_button.getAttribute("data-item") === "Paralyze Heal" &&
+          partner.status === "PRLZ"
+        )
+          item_used = true;
 
         //console.log(item_button.getAttribute("data-item"))
         //console.log(item_used);
@@ -247,14 +243,15 @@ export function initBattle() {
           document.querySelector("#BattleBox").style.opacity = "0";
           document.querySelector("#BattleBox").style.visibility = "hidden";
 
-          if(categoryKey === "restoratives") document.querySelector("#DialogueBox").innerHTML =
-          partner.name + "'s" + " HP has been restored! ";
-          
-          if(categoryKey === "status_heal") document.querySelector("#DialogueBox").innerHTML =
-          partner.name + "'s" + " status has been restored! ";
-          
-          document.querySelector("#DialogueBox").style.display = "block";
+          if (categoryKey === "restoratives")
+            document.querySelector("#DialogueBox").innerHTML =
+              partner.name + "'s" + " HP has been restored! ";
 
+          if (categoryKey === "status_heal")
+            document.querySelector("#DialogueBox").innerHTML =
+              partner.name + "'s" + " status has been restored! ";
+
+          document.querySelector("#DialogueBox").style.display = "block";
 
           // Retrieves the entire item object that is selected
           const selectedItemObject = JSON.parse(
@@ -270,18 +267,11 @@ export function initBattle() {
               enemy.attack[Math.floor(Math.random() * enemy.attack.length)];
 
             // Enemy attacks upon using items
-            queue.push(() => {
-              enemy.Attack({
-                attack: randomAttackV2,
-                recipient: partner,
-                renderedSprites,
-              });
-              battle_end_check(partner);
-            });
-            //console.log(queue);
+            enemy_attacks(enemy);
           }
         } else {
-          document.querySelector("#description").innerHTML = "There is a time and place for each item!"
+          document.querySelector("#description").innerHTML =
+            "There is a time and place for each item!";
         }
       });
 
@@ -300,6 +290,9 @@ export function initBattle() {
 
 document.querySelector("#DialogueBox").addEventListener("click", (e) => {
   console.log("clicked");
+  console.log(queue.length);
+  console.log(queue);
+
   if (item_used) {
     //for attack turn while player uses an item
     if (queue.length > 0) {
@@ -311,17 +304,52 @@ document.querySelector("#DialogueBox").addEventListener("click", (e) => {
       // Only when queue is empty after item usage, show #BattleBox
       document.querySelector("#BattleBox").style.opacity = "1";
       document.querySelector("#BattleBox").style.visibility = "visible";
+
+      e.currentTarget.style.display = queue.length > 0 ? "block" : "none";
     }
+  //e.currentTarget.style.display = queue.length > 0 ? "block" : "none";
   } else {
-    // for normal attack turns
     if (queue.length > 0) {
       queue[0](); //calling the 0th index of queue i.e., the attack that was pushed in enemy queue
       queue.shift(); //popping the attack from enemy attack queue
-    } else e.currentTarget.style.display = "none";
+    } else { e.currentTarget.style.display = queue.length > 0 ? "block" : "none"; }
   }
 });
 
- function battle_end_check (e) {
+function enemy_attacks(e) {
+  let attack_happen_enemy = e.status_effect_nonDamage();
+
+  if (attack_happen_enemy) {
+    const randomAttack = e.attack[Math.floor(Math.random() * e.attack.length)];
+
+    queue.push(() => {
+      e.Attack({
+        attack: randomAttack,
+        recipient: partner,
+        renderedSprites,
+      });
+      battle_end_check(partner);
+      // console.log(queue.length);
+
+      //check for status effect(damage type) at the end of both side attack
+      if (partner.status === "BRND") {
+        queue.push(() => {
+          partner.status_effect_damage();
+          battle_end_check(partner);
+        });
+      } 
+      if (e.status === "BRND") {
+        queue.push(() => {
+          e.status_effect_damage();
+          battle_end_check(e);
+        });
+      }
+    });
+  }
+  //console.log("current: " + queue.length);
+}
+
+function battle_end_check(e) {
   if (e.health <= 0) {
     // after each enemy attack check player monster's health
     queue.push(() => {

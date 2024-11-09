@@ -25,7 +25,7 @@ export const monsters = {
         image: {
           src: "./img/embySprite2.png",
         },
-        attack: [attacks.Tackle, attacks.FireBall,attacks.DragonBreath],
+        attack: [attacks.Tackle, attacks.FireBall,attacks.DragonBreath,attacks.BurnUp],
         frames: {
           max: 4,
           hold: 60,
@@ -41,7 +41,7 @@ export const monsters = {
           image: {
             src: "./img/draggleSprite.png",
           },
-          attack: [attacks.Tackle, attacks.FireBall,attacks.DragonBreath],
+          attack: [attacks.Tackle, attacks.FireBall,attacks.DragonBreath,attacks.BurnUp],
           frames: {
             max: 4,
             hold: 70,
@@ -57,7 +57,7 @@ export const monsters = {
           image: {
             src: "./img/draggleSprite2.png",
           },
-          attack: [attacks.Tackle, attacks.FireBall,attacks.DragonBreath],
+          attack: [attacks.Tackle, attacks.FireBall,attacks.DragonBreath,attacks.BurnUp],
           frames: {
             max: 4,
             hold: 70,

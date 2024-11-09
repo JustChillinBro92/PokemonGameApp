@@ -132,10 +132,30 @@ export class Monster extends Sprite {
     this.status = status;
   }
 
-  status_effect() {
+  status_effect_nonDamage() {
+    let attack_occur = true;
+
+    if(this.status === "PRLZ") {
+      let paralyzed = Math.random();
+
+      if(paralyzed < 0.65) {
+        attack_occur = false;
+        audio.paralyzed.play();
+        console.log(this.name + " is paralyzed! ");
+
+        document.querySelector("#DialogueBox").innerHTML =
+        this.name + " was paralyzed and couldn't move! ";
+        document.querySelector("#DialogueBox").style.display = "block";
+      }
+    }
+    return attack_occur;
+  }
+
+  status_effect_damage() {
     if (this.status === "BRND") {
       this.health -= 25;
       console.log("status hurt => current hp: " + this.health);
+      
       document.querySelector("#DialogueBox").innerHTML =
         this.name + " was hurt due to its burn! ";
       document.querySelector("#DialogueBox").style.display = "block";
@@ -159,6 +179,11 @@ export class Monster extends Sprite {
               console.log("color change");
             }
           } else healthBarVisibility.style.backgroundColor = "rgb(58, 227, 58)";
+
+          // // Introduce a slight delay after burn damage effect
+          // setTimeout(() => {
+          //   document.querySelector("#DialogueBox").style.display = "none";
+          // }, 1000); // 1-second delay for visibility
         },
       });
     }
@@ -267,15 +292,11 @@ export class Monster extends Sprite {
   }
 
   Attack({ attack, recipient, renderedSprites }) {
-    document.querySelector("#DialogueBox").style.display = "block";
 
-    if (this.isEnemy) {
-      document.querySelector("#DialogueBox").innerHTML =
-        "The Opposing " + this.name + " used " + attack.name + "!";
-    } else {
-      document.querySelector("#DialogueBox").innerHTML =
-        this.name + " used " + attack.name + "!";
-    }
+    if(!this.isEnemy) document.querySelector("#DialogueBox").innerHTML = this.name + " used " + attack.name + "!";
+    else document.querySelector("#DialogueBox").innerHTML = "The Opposing " + this.name + " used " + attack.name + "!";
+
+    document.querySelector("#DialogueBox").style.display = "block";
 
     let healthBar = "#enemyHealthBar";
     if (this.isEnemy) healthBar = "#playerHealthBar";
@@ -402,7 +423,8 @@ export class Monster extends Sprite {
 
       case "BurnUp":
         let flag = true;
-        if (recipient.status === "BRND") {
+        
+        if (recipient.status != "NRML") {
           document.querySelector("#DialogueBox").innerHTML =
             recipient.name + " is already under a status effect! ";
           flag = false;
