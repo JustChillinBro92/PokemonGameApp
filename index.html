@@ -68,6 +68,37 @@
 
 		<canvas></canvas>
 
+		<div 
+			id="MenuBox"
+			style="
+			position: absolute;
+			left: 700px;
+			right: 60px;
+			top: 100px;
+			bottom: 120px;
+			background-color: white;
+			border: 3.5px solid rgb(0, 31, 84);
+			border-radius: 12px;
+			box-shadow: 1.2px 0px grey;
+			display: none;
+			">
+			<div 
+				style="
+				display: flex;
+				flex-direction: column;
+				justify-content: space-evenly;
+				padding: 12px;
+				height: 93%;
+				">
+				<button style="height: 15%">PokeDex</button>
+				<button style="height: 15%">Pokemon</button>
+				<button  id="menu-bag" style="height: 15%">Bag</button>
+				<button style="height: 15%">Save</button>
+				<button style="height: 15%">Options</button>
+				<button id="menu-exit" style="height: 15%">Exit</button>
+			</div>
+		</div>
+
 		<div id="Interface" style="display: none;">
 			<!-- Enemy's Monster Health Bar -->
 			<div style="
@@ -405,11 +436,15 @@
 							<h1 id="Box" style="margin-left: 45px;">Items</h1>
 						</div>
 						<div style="margin-left: 30px;">
-							<button class="back" style="
-							font-size: 17px;
-							padding: 20px;
-							width: 120%;
-							">Back</button>
+							<button 
+								id="back_overworld"
+								class="back" 
+								style="
+								font-size: 17px;
+								padding: 20px;
+								width: 120%;
+								">Back
+							</button>
 						</div>
 					</div>
 				</div>
@@ -428,6 +463,7 @@
 		<script src="./data/attacks.js" type="module"></script> <!--make sure to load attacks before classes-->
 		<script src="./data/monsters.js" type="module"></script>
 		<script src="./data/playerBag.js" type="module"></script>
+		<script src="./backpack.js" type="module"></script>
 		<script src="./canvas.js" type="module"></script>
 		<script src="./classes.js" type="module"></script>
 		<script src="./initiateBattle.js" type="module"></script>

@@ -1,10 +1,10 @@
 import { Monster } from "./classes.js";
-// import { battle } from "./renderer.js";
-// import { animate } from "./renderer.js";
+import { battle, animate } from "./renderer.js";
 import { animateBattleId } from "./battlescene.js";
 import { audio } from "./data/audio.js";
 import { playerMonsters, getRandomMonster } from "./data/monsters.js";
 import { attacks } from "./data/attacks.js";
+// import { load_backpack } from "./backpack.js";
 import { playerItems, UseItemFromButton } from "./data/playerBag.js";
 
 // Select all buttons on the page
@@ -18,10 +18,11 @@ buttons.forEach((button) => {
 });
 
 //creating the monster sprites
-let enemy;
-let partner;
+export let enemy;
+export let partner;
 export let renderedSprites; //array for storing rendered out projectile attacks
-let queue; //queue for pushing enemy attacks
+export let queue; //queue for pushing enemy attacks
+
 let item_used = false;
 
 export function initBattle() {
@@ -43,7 +44,7 @@ export function initBattle() {
   document.querySelector("#enemyStat").innerHTML = getRandomMonster().status;
   document.querySelector("#playerStat").innerHTML = playerMonsters.emby.status;
 
-  document.querySelector("#restorativeBox").replaceChildren();
+  // document.querySelector("#restorativeBox").replaceChildren();
   document.querySelector("#attacksBox").replaceChildren(); //removes the appended attack buttons with each battle
 
   enemy = new Monster(getRandomMonster());
@@ -94,8 +95,6 @@ export function initBattle() {
     button.addEventListener("click", () => {
       document.querySelector("#BattleBox").style.opacity = "1";
       document.querySelector("#BattleBox").style.visibility = "visible";
-      // document.querySelector("#itemBox").style.opacity = "0";
-      // document.querySelector("#itemBox").style.visibility = "hidden";
       document.querySelector("#backpack").style.display = "none";
       document.querySelector("#backBox").style.opacity = "0";
       document.querySelector("#backBox").style.visibility = "hidden";
@@ -108,7 +107,7 @@ export function initBattle() {
   document.querySelector("#run").addEventListener("click", () => {
     document.querySelector("#BattleBox").style.visibility = "hidden";
     document.querySelector("#encounterBox").style.display = "none";
-    document.querySelector("#DialogueBox").innerHTML = " Ran away safely! ";
+    document.querySelector("#DialogueBox").innerHTML = " Got away safely! ";
     document.querySelector("#DialogueBox").style.display = "block";
 
     audio.run.volume = 0.15;
@@ -157,7 +156,8 @@ export function initBattle() {
     });
 
     //event listeners for our attack buttons
-    button.addEventListener("click", (e) => {
+    button.addEventListener("click", (e) => 
+      {
       //console.log(e.currentTarget.innerHTML);
       //console.log(attacks[e.currentTarget.innerHTML]);
       const selectedAttack = attacks[e.currentTarget.innerHTML];
@@ -170,8 +170,8 @@ export function initBattle() {
           recipient: enemy,
           renderedSprites,
         });
+        console.log(queue.length);
         battle_end_check(enemy);
-        //console.log(queue.length);
 
         //enemy attacks
         enemy_attacks(enemy);
@@ -182,7 +182,7 @@ export function initBattle() {
     });
   });
 
-  //loads the category objects from the player's bag
+  // //loads the category objects from the player's bag
   let ItemCategories = playerItems.bag;
   let categoryId;
 
@@ -289,9 +289,10 @@ export function initBattle() {
 }
 
 document.querySelector("#DialogueBox").addEventListener("click", (e) => {
-  console.log("clicked");
-  console.log(queue.length);
-  console.log(queue);
+  // console.log(item_used);
+  // console.log("clicked");
+  // console.log(queue.length);
+  // console.log(queue);
 
   if (item_used) {
     //for attack turn while player uses an item
@@ -305,18 +306,18 @@ document.querySelector("#DialogueBox").addEventListener("click", (e) => {
       document.querySelector("#BattleBox").style.opacity = "1";
       document.querySelector("#BattleBox").style.visibility = "visible";
 
-      e.currentTarget.style.display = queue.length > 0 ? "block" : "none";
+      //e.currentTarget.style.display = queue.length > 0 ? "block" : "none";
     }
-  //e.currentTarget.style.display = queue.length > 0 ? "block" : "none";
   } else {
     if (queue.length > 0) {
       queue[0](); //calling the 0th index of queue i.e., the attack that was pushed in enemy queue
       queue.shift(); //popping the attack from enemy attack queue
     } else { e.currentTarget.style.display = queue.length > 0 ? "block" : "none"; }
   }
+  console.log(queue.length);
 });
 
-function enemy_attacks(e) {
+export function enemy_attacks(e) {
   let attack_happen_enemy = e.status_effect_nonDamage();
 
   if (attack_happen_enemy) {
@@ -349,7 +350,7 @@ function enemy_attacks(e) {
   //console.log("current: " + queue.length);
 }
 
-function battle_end_check(e) {
+export function battle_end_check(e) {
   if (e.health <= 0) {
     // after each enemy attack check player monster's health
     queue.push(() => {

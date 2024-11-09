@@ -1,10 +1,11 @@
-import { canvas } from './canvas.js';
-import { Boundary, Sprite} from './classes.js';
-import { collisions } from './data/collisions.js';
-import { battleZonesData } from './data/battlezones.js';
-import { audio } from './data/audio.js'
-import { initBattle } from './initiateBattle.js';
-import { animateBattle } from './battlescene.js';
+import { canvas } from "./canvas.js";
+import { Boundary, Sprite } from "./classes.js";
+import { collisions } from "./data/collisions.js";
+import { battleZonesData } from "./data/battlezones.js";
+import { audio } from "./data/audio.js";
+import { initBattle } from "./initiateBattle.js";
+import { animateBattle } from "./battlescene.js";
+import { load_backpack } from "./backpack.js";
 
 //console.log(gsap)
 //console.log(battleZonesData);
@@ -26,8 +27,8 @@ for (let i = 0; i <= battleZonesData.length; i += 120) {
 
 const boundaries = [];
 const offset = {
-  x: -224,
-  y: 55,
+  x: -244,
+  y: 28,
 };
 
 collisionsMap.forEach((row, i) => {
@@ -88,7 +89,7 @@ const player = new Sprite({
   image: playerDownImage,
   frames: {
     max: 4,
-    hold: 25
+    hold: 25,
   },
   sprites: {
     up: playerUpImage,
@@ -128,7 +129,12 @@ const keys = {
   d: {
     pressed: false,
   },
+  Enter: {
+    pressed: false,
+  },
 };
+
+load_backpack();
 
 const movables = [background, foreground, ...boundaries, ...battleZones];
 
@@ -141,12 +147,12 @@ function RectangularCollision({ rectangle1, rectangle2 }) {
   );
 }
 
-
 export const battle = {
-  initiated: false
-}
+  initiated: false,
+};
 
 let grassAudioPlay = false;
+export let menu = false; // user menu
 
 export function animate() {
   // Animation logic...
@@ -167,52 +173,51 @@ export function animate() {
   let moving = true; // for collison blocks
   player.animate = false; // for player movement animation
 
-  if(battle.initiated) return
+  if (battle.initiated) return;
 
   //activate a battle
   if (keys.w.pressed || keys.a.pressed || keys.s.pressed || keys.d.pressed) {
     for (let i = 0; i < battleZones.length; i++) {
-
       const battleZone = battleZones[i];
       const OverlappingArea =
         (Math.min(
           player.position.x + player.width,
           battleZone.position.x + battleZone.width
         ) -
-        Math.max(player.position.x, battleZone.position.x)) *
+          Math.max(player.position.x, battleZone.position.x)) *
         (Math.min(
-            player.position.y + player.height,
-            battleZone.position.y + battleZone.height
-          ) -
-        Math.max(player.position.y, battleZone.position.y));
+          player.position.y + player.height,
+          battleZone.position.y + battleZone.height
+        ) -
+          Math.max(player.position.y, battleZone.position.y));
 
-      if(RectangularCollision({
-        rectangle1: player,
-        rectangle2: battleZone,
-      }) &&
-      OverlappingArea > (player.height * player.width) / 2) {
-
-        if(!grassAudioPlay) {
-          grassAudioPlay = true;
-          audio.grass.play();
-        }
-
-        setTimeout(() => {
-          grassAudioPlay = false;
-        }, 100)
-      }
-      
       if (
         RectangularCollision({
           rectangle1: player,
           rectangle2: battleZone,
         }) &&
         OverlappingArea > (player.height * player.width) / 2
-        && 
+      ) {
+        if (!grassAudioPlay) {
+          grassAudioPlay = true;
+          audio.grass.play();
+        }
+
+        setTimeout(() => {
+          grassAudioPlay = false;
+        }, 100);
+      }
+
+      if (
+        RectangularCollision({
+          rectangle1: player,
+          rectangle2: battleZone,
+        }) &&
+        OverlappingArea > (player.height * player.width) / 2 &&
         Math.random() < 0.01
       ) {
         //console.log("battleZone Activate");
-        window.cancelAnimationFrame(animateId) //deactivates current animation loop
+        window.cancelAnimationFrame(animateId); //deactivates current animation loop
         audio.Map.stop(); //stops map music
 
         battle.initiated = true;
@@ -221,30 +226,29 @@ export function animate() {
         audio.battle.play(); //starts battle music
 
         //flashing animation on battle activation
-        gsap.to('#OverlappingDiv', {
+        gsap.to("#OverlappingDiv", {
           opacity: 1,
           repeat: 3,
-          yoyo: true,  //smoothes out animation by bringing counter to 0 i.e., default state
+          yoyo: true, //smoothes out animation by bringing counter to 0 i.e., default state
           duration: 0.4,
           onComplete() {
-            gsap.to('#OverlappingDiv', {  
+            gsap.to("#OverlappingDiv", {
               //keeps the canvas covered by the 'overlapping div' as no yoyo property present...done to change the canvas behind it to battle scene
               opacity: 1,
               duration: 0.4,
               onComplete() {
-
                 //activate a new animation loop (battle sequence)
                 initBattle();
                 animateBattle();
 
-                gsap.to('#OverlappingDiv', {
+                gsap.to("#OverlappingDiv", {
                   opacity: 0,
-                  duration: 0.4
-                })
-              }
-            })
-          }
-        })
+                  duration: 0.4,
+                });
+              },
+            });
+          },
+        });
 
         break;
       }
@@ -363,64 +367,90 @@ export function animate() {
 }
 
 let lastkey = "";
-window.addEventListener("keydown", (e) => {
-  switch (e.key) {
-    case "w":
-      keys.w.pressed = true;
-      lastkey = "w";
-      break;
+  window.addEventListener("keydown", (e) => {
+    console.log(menu);
+    switch (e.key) {
+      case "w":
+        keys.w.pressed = true;
+        lastkey = "w";
+        break;
 
-    case "a":
-      keys.a.pressed = true;
-      lastkey = "a";
-      break;
+      case "a":
+        keys.a.pressed = true;
+        lastkey = "a";
+        break;
 
-    case "s":
-      keys.s.pressed = true;
-      lastkey = "s";
-      break;
+      case "s":
+        keys.s.pressed = true;
+        lastkey = "s";
+        break;
 
-    case "d":
-      keys.d.pressed = true;
-      lastkey = "d";
-      break;
+      case "d":
+        keys.d.pressed = true;
+        lastkey = "d";
+        break;
+
+      case "Enter":
+        document.querySelector("#MenuBox").style.display = "block";
+
+        document.querySelector("#menu-bag").addEventListener("click", () => {
+          //console.log("click");
+          //load_backpack();
+          document.querySelector("#Interface").style.display = "block";
+          document.querySelector("#backpack").style.display = "block";
+
+          document
+            .querySelector("#back_overworld")
+            .addEventListener("click", () => {
+              document.querySelector("#backpack").style.display = "none";
+              document.querySelector("#Interface").style.display = "none";
+            });
+        });
+
+        document.querySelector("#menu-exit").addEventListener("click", () => {
+          console.log("click");
+          document.querySelector("#MenuBox").style.display = "none";
+        });
+        break;
+    }
+  });
+
+  window.addEventListener("keyup", (e) => {
+    switch (e.key) {
+      case "w":
+        keys.w.pressed = false;
+        break;
+
+      case "a":
+        keys.a.pressed = false;
+        break;
+
+      case "s":
+        keys.s.pressed = false;
+        break;
+
+      case "d":
+        keys.d.pressed = false;
+        break;
+    }
+
+    if (keys.w.pressed) lastkey = "w";
+    else if (keys.a.pressed) lastkey = "a";
+    else if (keys.s.pressed) lastkey = "s";
+    else if (keys.d.pressed) lastkey = "d";
+  });
+
+  if (keys.Enter.pressed) {
   }
-});
 
-window.addEventListener("keyup", (e) => {
-  switch (e.key) {
-    case "w":
-      keys.w.pressed = false;
-      break;
+  let clicked = false;
+  addEventListener("click", () => {
+    if (!clicked) {
+      audio.Map.play();
+      clicked = true;
+    }
+  });
 
-    case "a":
-      keys.a.pressed = false;
-      break;
-
-    case "s":
-      keys.s.pressed = false;
-      break;
-
-    case "d":
-      keys.d.pressed = false;
-      break;
-  }
-
-  if (keys.w.pressed) lastkey = "w";
-  else if (keys.a.pressed) lastkey = "a";
-  else if (keys.s.pressed) lastkey = "s";
-  else if (keys.d.pressed) lastkey = "d";
-});
-
-
-let clicked = false;
-addEventListener('click', () => {
-  if(!clicked) {
-    audio.Map.play()
-    clicked = true
-  }
-})
-
-// animate();
-initBattle();     //maintaining this order of calling the two function is must
-animateBattle();
+animate();
+// initBattle();     //maintaining this order of calling the two function is must
+// animateBattle();
