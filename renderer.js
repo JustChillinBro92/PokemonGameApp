@@ -159,6 +159,8 @@ export function animate() {
   const animateId = window.requestAnimationFrame(animate);
   //console.log("aimate");
 
+  if (menu) return;
+  
   background.draw();
   boundaries.forEach((boundary) => {
     boundary.draw();
@@ -367,8 +369,12 @@ export function animate() {
 }
 
 let lastkey = "";
+let keys_active = true;
+
   window.addEventListener("keydown", (e) => {
-    console.log(menu);
+    //console.log(keys_active);
+
+    if(!keys_active) return;
     switch (e.key) {
       case "w":
         keys.w.pressed = true;
@@ -391,6 +397,9 @@ let lastkey = "";
         break;
 
       case "Enter":
+        menu = true;
+        keys_active = false;
+
         document.querySelector("#MenuBox").style.display = "block";
 
         document.querySelector("#menu-bag").addEventListener("click", () => {
@@ -408,14 +417,17 @@ let lastkey = "";
         });
 
         document.querySelector("#menu-exit").addEventListener("click", () => {
-          console.log("click");
+          menu = false;
+          keys_active = true;
+          //console.log("click");
           document.querySelector("#MenuBox").style.display = "none";
         });
         break;
     }
   });
 
-  window.addEventListener("keyup", (e) => {
+  window.addEventListener("keyup", (e) => { 
+    if(menu) return;
     switch (e.key) {
       case "w":
         keys.w.pressed = false;

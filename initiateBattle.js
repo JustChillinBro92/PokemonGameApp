@@ -1,5 +1,5 @@
 import { Monster } from "./classes.js";
-import { battle, animate } from "./renderer.js";
+import { battle, animate, menu } from "./renderer.js";
 import { animateBattleId } from "./battlescene.js";
 import { audio } from "./data/audio.js";
 import { playerMonsters, getRandomMonster } from "./data/monsters.js";
@@ -44,7 +44,9 @@ export function initBattle() {
   document.querySelector("#enemyStat").innerHTML = getRandomMonster().status;
   document.querySelector("#playerStat").innerHTML = playerMonsters.emby.status;
 
-  // document.querySelector("#restorativeBox").replaceChildren();
+  document.querySelector("#restorativeBox").replaceChildren();
+  document.querySelector("#statusHealBox").replaceChildren();
+
   document.querySelector("#attacksBox").replaceChildren(); //removes the appended attack buttons with each battle
 
   enemy = new Monster(getRandomMonster());
@@ -216,6 +218,7 @@ export function initBattle() {
 
       // Checks which item is used and takes action accordingly
       item_button.addEventListener("click", (e) => {
+        if(menu) return;
         if (
           categoryKey === "restoratives" &&
           partner.health < partner.maxHealth
