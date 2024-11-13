@@ -1,4 +1,4 @@
-import { Monster } from "./classes.js";
+import { Monster, health_tracker, health_width_tracker, status_tracker, status_color_tracker } from "./classes.js";
 import { battle, animate, menu } from "./renderer.js";
 import { animateBattleId } from "./battlescene.js";
 import { audio } from "./data/audio.js";
@@ -26,23 +26,38 @@ export let queue; //queue for pushing enemy attacks
 let item_used = false;
 
 export function initBattle() {
+  console.log(status_tracker);
+  console.log(status_color_tracker);
+
   document.querySelector("#Interface").style.display = "block";
   document.querySelector("#encounterBox").style.display = "block";
   document.querySelector("#BattleBox").style.display = "flex";
 
   document.querySelector("#DialogueBox").style.display = "none";
+
   document.querySelector("#enemyHealthBar").style.display = "block";
   document.querySelector("#playerHealthBar").style.display = "block";
+  
   document.querySelector("#enemyHealthBar").style.backgroundColor =
     "rgb(58, 227, 58)";
-  document.querySelector("#playerHealthBar").style.backgroundColor =
-    "rgb(58, 227, 58)";
+  document.querySelector("#enemyHealthBar").style.visibility = "visible";
+  
+  if(health_tracker <= 60) {
+    document.querySelector("#playerHealthBar").style.backgroundColor = "yellow";
+     if(health_tracker <= 25) document.querySelector("#playerHealthBar").style.backgroundColor = "red";
+  } else document.querySelector("#playerHealthBar").style.backgroundColor =
+  "rgb(58, 227, 58)";
+  
+  document.querySelector("#playerHealthBar").style.visibility = "visible";
 
   document.querySelector("#enemyHealthBar").style.width = "98.5%";
-  document.querySelector("#playerHealthBar").style.width = "98.5%";
+  document.querySelector("#playerHealthBar").style.width = health_width_tracker;
 
   document.querySelector("#enemyStat").innerHTML = getRandomMonster().status;
-  document.querySelector("#playerStat").innerHTML = playerMonsters.emby.status;
+  document.querySelector("#enemyStat").style.color = "#2a2a2a";
+
+  document.querySelector("#playerStat").innerHTML = status_tracker;
+  document.querySelector("#playerStat").style.color = status_color_tracker;
 
   document.querySelector("#restorativeBox").replaceChildren();
   document.querySelector("#statusHealBox").replaceChildren();
@@ -52,7 +67,8 @@ export function initBattle() {
   enemy = new Monster(getRandomMonster());
   partner = new Monster(playerMonsters.emby);
   enemy.health = enemy.maxHealth;
-  partner.health = partner.maxHealth;
+  partner.health = health_tracker;
+  console.log(" status: " + partner.status);
 
   //enemy encounter text
   document.querySelector("#encounterBox").innerHTML =
@@ -221,17 +237,20 @@ export function initBattle() {
         if(menu) return;
         if (
           categoryKey === "restoratives" &&
-          partner.health < partner.maxHealth
+          partner.health < partner.maxHealth || categoryKey === "restoratives" &&
+          health_tracker < partner.maxHealth
         )
           item_used = true;
         else if (
           item_button.getAttribute("data-item") === "Burn Heal" &&
-          partner.status === "BRND"
+          partner.status === "BRND" || item_button.getAttribute("data-item") === "Burn Heal" &&
+          status_tracker === "BRND"
         )
           item_used = true;
         else if (
           item_button.getAttribute("data-item") === "Paralyze Heal" &&
-          partner.status === "PRLZ"
+          partner.status === "PRLZ" || item_button.getAttribute("data-item") === "Burn Heal" &&
+          status_tracker === "PRLZ"
         )
           item_used = true;
 
@@ -336,7 +355,7 @@ export function enemy_attacks(e) {
       // console.log(queue.length);
 
       //check for status effect(damage type) at the end of both side attack
-      if (partner.status === "BRND") {
+      if (partner.status === "BRND" || status_tracker === "BRND") {
         queue.push(() => {
           partner.status_effect_damage();
           battle_end_check(partner);

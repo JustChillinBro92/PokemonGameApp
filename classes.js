@@ -1,5 +1,6 @@
 import { c } from "./canvas.js";
 import { audio } from "./data/audio.js";
+import { playerMonsters } from "./data/monsters.js";
 
 export class Boundary {
   static width = 36;
@@ -94,6 +95,15 @@ export class Sprite {
   }
 }
 
+export let health_tracker = playerMonsters.emby.health;
+export let health_width_tracker = 98.5 + "%";
+
+export let status_tracker = "NRML";
+export let status_color_tracker = "#2a2a2a";
+
+// export let enemy_status_tracker = "NRML";
+// export let enemy_status_color_tracker = "#2a2a2a";
+
 export class Monster extends Sprite {
   //all methods of Sprite class are available here as well
   constructor({
@@ -130,12 +140,15 @@ export class Monster extends Sprite {
     this.isPartner = isPartner;
     this.attack = attack;
     this.status = status;
+    this.current_status = status_tracker;
   }
 
   status_effect_nonDamage() {
     let attack_occur = true;
 
-    if (this.status === "PRLZ") {
+    if (this.status === "PRLZ" ||
+      (this.status != "PRLZ" && status_tracker === "PRLZ")
+    ) {
       let paralyzed = Math.random();
 
       if (paralyzed < 0.65) {
@@ -152,7 +165,10 @@ export class Monster extends Sprite {
   }
 
   status_effect_damage() {
-    if (this.status === "BRND") {
+    if (
+      this.status === "BRND" ||
+      (this.status != "BRND" && status_tracker === "BRND")
+    ) {
       this.health -= 25;
       console.log("status hurt => current hp: " + this.health);
 
@@ -179,13 +195,61 @@ export class Monster extends Sprite {
               console.log("color change");
             }
           } else healthBarVisibility.style.backgroundColor = "rgb(58, 227, 58)";
-
-          // // Introduce a slight delay after burn damage effect
-          // setTimeout(() => {
-          //   document.querySelector("#DialogueBox").style.display = "none";
-          // }, 1000); // 1-second delay for visibility
         },
       });
+    }
+  }
+
+  status_color(recipient) {
+    let target = "#enemyStat";
+    if (this.isEnemy) target = "#playerStat";
+
+    switch (recipient.status) {
+      case "NRML":
+        document.querySelector(target).style.color = "#2a2a2a";
+
+        //specifically for player monster stat color
+        if (target === "#playerStat" && status_tracker === "NRML") {
+          status_color_tracker = "#2a2a2a";
+          document.querySelector(target).style.color = status_color_tracker;
+        } else if (target === "#playerStat" && status_tracker === "BRND") {
+          status_color_tracker = "Orangered";
+          document.querySelector(target).style.color = status_color_tracker;
+        } else if (target === "#playerStat" && status_tracker === "PRLZ") {
+          status_color_tracker = "yellow";
+          document.querySelector(target).style.color = status_color_tracker;
+        }
+        break;
+      case "BRND":
+        document.querySelector(target).style.color = "Orangered";
+
+        //specifically for player monster stat color
+        if (target === "#playerStat" && status_tracker === "BRND") {
+          status_color_tracker = "Orangered";
+          document.querySelector(target).style.color = status_color_tracker;
+        } else if (target === "#playerStat" && status_tracker === "NRML") {
+          status_color_tracker = "#2a2a2a";
+          document.querySelector(target).style.color = status_color_tracker;
+        } else if (target === "#playerStat" && status_tracker === "PRLZ") {
+          status_color_tracker = "yellow";
+          document.querySelector(target).style.color = status_color_tracker;
+        }
+        break;
+      case "PRLZ":
+        document.querySelector(target).style.color = "yellow";
+
+        //specifically for player monster stat color
+        if (target === "#playerStat" && status_tracker === "PRLZ") {
+          status_color_tracker = "yellow";
+          document.querySelector(target).style.color = status_color_tracker;
+        } else if (target === "#playerStat" && status_tracker === "NRML") {
+          status_color_tracker = "#2a2a2a";
+          document.querySelector(target).style.color = status_color_tracker;
+        } else if (target === "#playerStat" && status_tracker === "BRND") {
+          status_color_tracker = "Orangered";
+          document.querySelector(target).style.color = status_color_tracker;
+        }
+        break;
     }
   }
 
@@ -198,11 +262,11 @@ export class Monster extends Sprite {
     //const healthBarPercentage = (recipient.health/recipient.maxHealth) * 98.5
     if (recipient.health <= 60) {
       healthBarVisibility.style.backgroundColor = "yellow";
-      console.log("color change");
+      //console.log("color change");
 
       if (recipient.health <= 25) {
         healthBarVisibility.style.backgroundColor = "red";
-        console.log("color change");
+        //console.log("color change");
       }
     } else healthBarVisibility.style.backgroundColor = "rgb(58, 227, 58)";
   }
@@ -213,17 +277,20 @@ export class Monster extends Sprite {
 
     //console.log(ItemUsedBy);
     console.log("Current Health: " + this.health);
+    console.log("Current Health: " + health_tracker);
 
-    let diff = this.maxHealth - this.health;
+    let diff = this.maxHealth - health_tracker;
     let potion_heal = ItemUsed.heal;
 
     switch (ItemUsed.name) {
       case "Potion":
-        if (this.health < this.maxHealth) {
+        if (this.health < this.maxHealth || health_tracker < this.maxHealth) {
           if (diff < potion_heal) potion_heal = diff;
 
           this.health += potion_heal;
+          health_tracker += potion_heal;
           console.log("Restored Health: " + this.health);
+          console.log("Restored Health: " + health_tracker);
 
           audio.potion.play();
           gsap.to(healthBar, {
@@ -249,10 +316,11 @@ export class Monster extends Sprite {
         break;
 
       case "Super Potion":
-        if (this.health < this.maxHealth) {
+        if (this.health < this.maxHealth || health_tracker < this.maxHealth) {
           if (diff < potion_heal) potion_heal = diff;
 
           this.health += potion_heal;
+          health_tracker += potion_heal;
           console.log(this.health);
 
           audio.potion.play();
@@ -278,8 +346,9 @@ export class Monster extends Sprite {
       case "Burn Heal":
         audio.status_heal.play();
 
-        if (this.status === "BRND") {
+        if (this.status === "BRND" || status_tracker === "BRND") {
           this.status = "NRML";
+          status_tracker = "NRML";
           document.querySelector("#playerStat").style.color = "#2a2a2a";
         }
         document.querySelector("#playerStat").innerHTML = this.status;
@@ -288,13 +357,21 @@ export class Monster extends Sprite {
       case "Paralyze Heal":
         audio.status_heal.play();
 
-        if (this.status === "PRLZ") this.status = "NRML";
-        document.querySelector("#playerStat").innerHTML = this.status;
+        if (this.status === "PRLZ" || status_tracker === "PRLZ") {
+          this.status = "NRML";
+          status_tracker = "NRML";
+          document.querySelector("#playerStat").innerHTML = this.status;
+        }
         break;
     }
   }
 
   Attack({ attack, recipient, renderedSprites }) {
+    // console.log(status_tracker);
+    // console.log(status_color_tracker);
+    //console.log(" current: " + this.current_status);
+
+    //attack dialogue update
     if (!this.isEnemy)
       document.querySelector("#DialogueBox").innerHTML =
         this.name + " used " + attack.name + "!";
@@ -308,9 +385,27 @@ export class Monster extends Sprite {
     if (this.isEnemy) healthBar = "#playerHealthBar";
     const healthBarVisibility = document.querySelector(healthBar);
 
-    recipient.health -= attack.damage; //health updates with each instance of attack being called
+    //health updates with each instance of attack being called
+    recipient.health -= attack.damage;
     console.log(recipient.name + " health: " + recipient.health);
 
+    //keeps track of player monster's current health for upcoming battles
+    if (this.isEnemy) {
+      health_tracker = recipient.health;
+      console.log(health_tracker);
+
+      health_width_tracker = (health_tracker / recipient.maxHealth) * 98.5 + "%";
+    }
+
+    // if(recipient.health < 0) {
+    //   health_tracker = this.health;
+    //   console.log("current hp: " + health_tracker);
+    // }
+
+    //healthbar width tracking
+    // if(this.isEnemy) health_width_tracker = (this.health / this.maxHealth) * 98.5 + "%";
+
+    //rotation for certain attacks
     let rotation = 1.2;
     if (this.isEnemy) rotation = -2.2;
 
@@ -342,16 +437,37 @@ export class Monster extends Sprite {
           onComplete: () => {
             //enemy gets hit
             audio.FireballHit.play();
-            gsap.to(healthBar, {
-              width: (recipient.health / recipient.maxHealth) * 98.5 + "%",
-              duration: 0.8,
-              onComplete: () => {
-                this.healthbarColor(recipient);
-                if (recipient.health <= 0) {
-                  healthBarVisibility.style.display = "none";
-                }
-              },
-            });
+
+            if (recipient.isEnemy) {
+              gsap.to(healthBar, {
+                width: (recipient.health / recipient.maxHealth) * 98.5 + "%",
+                duration: 0.8,
+                onComplete: () => {
+                  this.healthbarColor(recipient);
+                  if (recipient.health <= 0) {
+                    healthBarVisibility.style.visibility = "hidden";
+                  }
+                },
+              });
+              //status_tracker = this.current_status;
+            } else {
+              gsap.to(healthBar, {
+                width: health_width_tracker,
+                duration: 0.8,
+                onComplete: () => {
+                  this.healthbarColor(recipient);
+                  if (recipient.health <= 0) {
+                    healthBarVisibility.style.visibility = "hidden";
+                  }
+                },
+              });
+              //status_tracker = recipient.status;
+            }
+            this.current_status = status_tracker;
+            this.status_color(recipient);
+            // console.log(" current: " + this.current_status);
+            // console.log(" track: " + status_tracker);
+            // console.log(" color: " + status_color_tracker);
 
             gsap.to(recipient.position, {
               x: recipient.position.x + 10,
@@ -398,16 +514,38 @@ export class Monster extends Sprite {
           onComplete: () => {
             //enemy gets hit
             audio.FireballHit.play();
-            gsap.to(healthBar, {
-              width: (recipient.health / recipient.maxHealth) * 98.5 + "%",
-              duration: 0.8,
-              onComplete: () => {
-                this.healthbarColor(recipient);
-                if (recipient.health <= 0) {
-                  healthBarVisibility.style.display = "none";
-                }
-              },
-            });
+
+            if (recipient.isEnemy) {
+              gsap.to(healthBar, {
+                width: (recipient.health / recipient.maxHealth) * 98.5 + "%",
+                duration: 0.8,
+                onComplete: () => {
+                  this.healthbarColor(recipient);
+                  if (recipient.health <= 0) {
+                    healthBarVisibility.style.visibility = "hidden";
+                  }
+                },
+              });
+              //status_tracker = this.status;
+            } else {
+              gsap.to(healthBar, {
+                width: health_width_tracker,
+                duration: 0.8,
+                onComplete: () => {
+                  this.healthbarColor(recipient);
+                  if (recipient.health <= 0) {
+                    healthBarVisibility.style.visibility = "hidden";
+                  }
+                },
+              });
+              //status_tracker = recipient.status;
+            }
+            //status_tracker = this.current_status;
+            this.current_status = status_tracker;
+            this.status_color(recipient);
+            // console.log(" current: " + this.current_status);
+            // console.log(" track: " + status_tracker);
+            // console.log(" color: " + status_color_tracker);
 
             gsap.to(recipient.position, {
               x: recipient.position.x + 10,
@@ -430,7 +568,11 @@ export class Monster extends Sprite {
       case "BurnUp":
         let flag = true;
 
-        if (recipient.status != "NRML") {
+        if (
+          recipient.status != "NRML" ||
+          (recipient.isPartner && status_tracker != "NRML") ||
+          (recipient.isEnemy && recipient.status != "NRML")
+        ) {
           document.querySelector("#DialogueBox").innerHTML =
             recipient.name + " is already under a status effect! ";
           flag = false;
@@ -456,6 +598,9 @@ export class Monster extends Sprite {
           });
           renderedSprites.splice(1, 0, burnUp);
 
+          recipient.status = "BRND";
+          if (this.isEnemy) this.current_status = "BRND";
+
           gsap.to(burnUp.position, {
             x: recipient.position.x,
             y: recipient.position.y,
@@ -464,14 +609,19 @@ export class Monster extends Sprite {
               //enemy gets hit
               audio.FireballHit.play();
 
-              recipient.status = "BRND";
-              if (this.isEnemy) {
-                document.querySelector("#playerStat").innerHTML = "BRND";
-                document.querySelector("#playerStat").style.color = "Orangered";
-              } else {
-                document.querySelector("#enemyStat").style.color = "Orangered";
+              if (recipient.isEnemy) {
                 document.querySelector("#enemyStat").innerHTML = "BRND";
+                //status_tracker = this.current_status;
+                //document.querySelector("#playerStat").style.color = "Orangered";
+              } else {
+                //document.querySelector("#enemyStat").style.color = "Orangered";
+                document.querySelector("#playerStat").innerHTML = "BRND";
+                status_tracker = "BRND";
               }
+              this.status_color(recipient);
+              console.log(" current: " + this.current_status);
+              console.log(" track: " + status_tracker);
+              console.log(" color: " + status_color_tracker);
 
               gsap.to(recipient.position, {
                 x: recipient.position.x + 10,
@@ -509,16 +659,36 @@ export class Monster extends Sprite {
             onComplete: () => {
               //arrow function instead of noraml function given so that we can use/increase scope of 'this.health'
               audio.TackleHit.play();
-              gsap.to(healthBar, {
-                width: (recipient.health / recipient.maxHealth) * 98.5 + "%",
-                duration: 0.8,
-                onComplete: () => {
-                  this.healthbarColor(recipient);
-                  if (recipient.health <= 0) {
-                    healthBarVisibility.style.visibility = "hidden";
-                  }
-                },
-              });
+
+              if (recipient.isEnemy) {
+                gsap.to(healthBar, {
+                  width: (recipient.health / recipient.maxHealth) * 98.5 + "%",
+                  duration: 0.8,
+                  onComplete: () => {
+                    this.healthbarColor(recipient);
+                    if (recipient.health <= 0) {
+                      healthBarVisibility.style.visibility = "hidden";
+                    }
+                  },
+                });
+              } else {
+                gsap.to(healthBar, {
+                  width: health_width_tracker,
+                  duration: 0.8,
+                  onComplete: () => {
+                    this.healthbarColor(recipient);
+                    if (recipient.health <= 0) {
+                      healthBarVisibility.style.visibility = "hidden";
+                    }
+                  },
+                });
+              }
+
+              this.current_status = status_tracker;
+              this.status_color(recipient);
+              // console.log(" current: " + this.current_status);
+              // console.log(" track: " + status_tracker);
+              // console.log(" color: " + status_color_tracker);
 
               gsap.to(recipient.position, {
                 x: recipient.position.x + 10,
@@ -546,6 +716,13 @@ export class Monster extends Sprite {
   faint() {
     //console.log("faint");
     document.querySelector("#DialogueBox").innerHTML = this.name + " Fainted! ";
+    if (this.isPartner) {
+      health_tracker = this.maxHealth;
+      health_width_tracker = 98.5 + "%";
+      this.current_status = "NRML";
+      //console.log(health_width_tracker);
+    }
+
     gsap.to(this.position, {
       y: this.position.y + 20,
     });

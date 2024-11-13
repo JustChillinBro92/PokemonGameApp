@@ -3,9 +3,10 @@ import { Boundary, Sprite } from "./classes.js";
 import { collisions } from "./data/collisions.js";
 import { battleZonesData } from "./data/battlezones.js";
 import { audio } from "./data/audio.js";
-import { initBattle } from "./initiateBattle.js";
+import { initBattle} from "./initiateBattle.js";
 import { animateBattle } from "./battlescene.js";
 import { load_backpack } from "./backpack.js";
+
 
 //console.log(gsap)
 //console.log(battleZonesData);
@@ -28,7 +29,7 @@ for (let i = 0; i <= battleZonesData.length; i += 120) {
 const boundaries = [];
 const offset = {
   x: -244,
-  y: 28,
+  y: -120,
 };
 
 collisionsMap.forEach((row, i) => {

@@ -13,9 +13,9 @@ export const playerItems = {
     },
   };
 
-  export function UseItemFromButton(event, button) {
-    const category = event.currentTarget.getAttribute("data-category");
-    const itemName = event.currentTarget.getAttribute("data-item");
+  export function UseItemFromButton(e, button) {
+    const category = e.currentTarget.getAttribute("data-category");
+    const itemName = e.currentTarget.getAttribute("data-item");
 
     const itemCategory = playerItems.bag[category];
     const itemUsed = itemCategory.find(i => i.item.name === itemName);
