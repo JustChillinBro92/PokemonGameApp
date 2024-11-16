@@ -98,8 +98,18 @@ export class Sprite {
 export let health_tracker = playerMonsters.emby.health;
 export let health_width_tracker = 98.5 + "%";
 
+export let level_tracker = playerMonsters.emby.level;
+
+export let exp_tracker = playerMonsters.emby.exp;
+export let max_exp_tracker = playerMonsters.emby.max_exp;
+
+export let exp_width_tracker = document.querySelector("#ExpBar");
+// export let max_exp_width_tracker = document.querySelector("#ExpContainer");
+
 export let status_tracker = "NRML";
 export let status_color_tracker = "#2a2a2a";
+
+export let stats_tracker = playerMonsters.emby.stats;
 
 // export let enemy_status_tracker = "NRML";
 // export let enemy_status_color_tracker = "#2a2a2a";
@@ -111,6 +121,10 @@ export class Monster extends Sprite {
     isPartner = false,
     name,
     health,
+    level,
+    exp,
+    max_exp,
+    base_exp_yield,
     position,
     image,
     frames = { max: 1, hold: 25 },
@@ -120,6 +134,7 @@ export class Monster extends Sprite {
     rotation = 0,
     attack,
     status,
+    stats,
   }) {
     super({
       //all the assignment(this.position = position for example) of these properites depend on the parent class(Sprite)
@@ -131,9 +146,12 @@ export class Monster extends Sprite {
       animate,
       rotation,
     });
-    // Store the initial position
-    this.initialPosition = { x: position.x, y: position.y };
+    this.initialPosition = { x: position.x, y: position.y }; // Store the initial position
     this.health = health;
+    this.level = level;
+    this.exp = exp;
+    this.max_exp = max_exp;
+    this.base_exp_yield = base_exp_yield;
     this.maxHealth = this.health;
     this.name = name;
     this.isEnemy = isEnemy;
@@ -141,6 +159,7 @@ export class Monster extends Sprite {
     this.attack = attack;
     this.status = status;
     this.current_status = status_tracker;
+    this.stats = stats;
   }
 
   status_effect_nonDamage() {
@@ -721,19 +740,38 @@ export class Monster extends Sprite {
       health_width_tracker = 98.5 + "%";
       this.current_status = "NRML";
       //console.log(health_width_tracker);
-    }
+    } else {
+      let exp_yield = Math.floor((this.base_exp_yield * this.level) / 7)
+      exp_tracker += exp_yield;
 
-    gsap.to(this.position, {
-      y: this.position.y + 20,
-    });
-    gsap.to(this, {
-      opacity: 0,
-      duration: 1,
-      onComplete: () => {
-        this.position.y = this.initialPosition.y;
-      },
-    });
-    audio.battle.stop();
-    audio.victory.play();
+      gsap.to(exp_width_tracker, {
+        width: (exp_tracker/max_exp_tracker) * 100 + "%",
+        duration: 1,
+        onComplete: () => {
+          if(exp_tracker >= max_exp_tracker) {
+            level_tracker += 1;
+          }
+
+          gsap.to(this.position, {
+            y: this.position.y + 20,
+          });
+          gsap.to(this, {
+            opacity: 0,
+            duration: 1,
+            onComplete: () => {
+              this.position.y = this.initialPosition.y;
+            },
+          });
+          audio.battle.stop();
+          audio.victory.play();
+        }
+      })
+
+      stats_tracker.ATK += 1;
+      stats_tracker.DEF += 1;
+      stats_tracker.SPD += 1;
+      stats_tracker.SDEF += 1;
+      stats_tracker.SATK += 1;
+    }
   }
 }

@@ -1,7 +1,5 @@
 import { attacks } from "./attacks.js";
 
-export let status_tracker = "NRML";
-
 export const playerMonsters = {
   emby: {
     name: "Emby",
@@ -22,7 +20,17 @@ export const playerMonsters = {
     animate: true,
     isPartner: true,
     health: 150,
+    level: 5,
+    exp: 0,
+    max_exp: max_exp(5),
     status: "NRML",
+    stats: {
+      ATK: 25,
+      DEF: 20,
+      SPD: 25,
+      SDEF: 20,
+      SATK: 30
+    }
   },
 };
 
@@ -46,7 +54,16 @@ export const monsters = {
     animate: true,
     isEnemy: true,
     health: 170,
+    level: getRandomLevel(5,11),
+    base_exp_yield: 90,
     status: "NRML",
+    stats: {
+      ATK: 25,
+      DEF: 20,
+      SPD: 25,
+      SDEF: 20,
+      SATK: 30
+    }
   },
   draggle: {
     name: "Draggle",
@@ -67,7 +84,16 @@ export const monsters = {
     animate: true,
     isEnemy: true,
     health: 160,
+    level: getRandomLevel(5,11),
+    base_exp_yield: 90,
     status: "NRML",
+    stats: {
+      ATK: 25,
+      DEF: 20,
+      SPD: 25,
+      SDEF: 20,
+      SATK: 30
+    }
   },
   draggle2: {
     name: "Draggle",
@@ -88,7 +114,16 @@ export const monsters = {
     animate: true,
     isEnemy: true,
     health: 180,
+    level: getRandomLevel(5,11),
+    base_exp_yield: 90,
     status: "NRML",
+    stats: {
+      ATK: 25,
+      DEF: 20,
+      SPD: 25,
+      SDEF: 20,
+      SATK: 30
+    }
   },
   terradon: {
     name: "Terradon",
@@ -108,7 +143,16 @@ export const monsters = {
     animate: true,
     isEnemy: true,
     health: 180,
+    level: getRandomLevel(5,11),
+    base_exp_yield: 90,
     status: "NRML",
+    stats: {
+      ATK: 25,
+      DEF: 20,
+      SPD: 25,
+      SDEF: 20,
+      SATK: 30
+    }
   },
 };
 
@@ -132,4 +176,13 @@ export function getRandomMonster() {
   const monsterKeys = Object.keys(monsters); //gets the keys of the monsters in "monsters" object and stores in an array
   const randomKey = monsterKeys[Math.floor(Math.random() * monsterKeys.length)];
   return monsters[randomKey]; //returns a random monster
+}
+
+function getRandomLevel(min,max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min; //Adding min shifts the range to start at min.
+}
+
+function max_exp(current_level) {
+  let L = current_level;
+  return Math.floor(1.2*(L^3) - 15*(L^2) + 100*L - 140);
 }

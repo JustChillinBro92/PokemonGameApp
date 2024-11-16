@@ -1,5 +1,5 @@
-import { Monster, health_tracker, health_width_tracker, status_tracker, status_color_tracker } from "./classes.js";
-import { battle, animate, menu } from "./renderer.js";
+import { Monster, health_tracker, health_width_tracker, status_tracker, status_color_tracker,exp_tracker} from "./classes.js";
+// import { battle, animate, menu } from "./renderer.js";
 import { animateBattleId } from "./battlescene.js";
 import { audio } from "./data/audio.js";
 import { playerMonsters, getRandomMonster } from "./data/monsters.js";
@@ -66,6 +66,12 @@ export function initBattle() {
 
   enemy = new Monster(getRandomMonster());
   partner = new Monster(playerMonsters.emby);
+
+  console.log(partner);
+  console.log(enemy);
+
+  console.log(exp_tracker);
+
   enemy.health = enemy.maxHealth;
   partner.health = health_tracker;
   console.log(" status: " + partner.status);
