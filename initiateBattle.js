@@ -1,5 +1,5 @@
-import { Monster, health_tracker, health_width_tracker, status_tracker, status_color_tracker,exp_tracker} from "./classes.js";
-// import { battle, animate, menu } from "./renderer.js";
+import { Monster, health_tracker, health_width_tracker, status_tracker, status_color_tracker,exp_tracker, max_exp_tracker, level_tracker} from "./classes.js";
+import { battle, animate, menu } from "./renderer.js";
 import { animateBattleId } from "./battlescene.js";
 import { audio } from "./data/audio.js";
 import { playerMonsters, getRandomMonster } from "./data/monsters.js";
@@ -26,8 +26,10 @@ export let queue; //queue for pushing enemy attacks
 let item_used = false;
 
 export function initBattle() {
-  console.log(status_tracker);
-  console.log(status_color_tracker);
+  // console.log(status_tracker);
+  // console.log(status_color_tracker);
+  console.log("lvl: " + level_tracker);
+  console.log("max exp: " + max_exp_tracker);
 
   document.querySelector("#Interface").style.display = "block";
   document.querySelector("#encounterBox").style.display = "block";
@@ -67,14 +69,17 @@ export function initBattle() {
   enemy = new Monster(getRandomMonster());
   partner = new Monster(playerMonsters.emby);
 
+  document.querySelector("#enemy_lvl").innerHTML = enemy.level;
+  document.querySelector("#player_lvl").innerHTML = level_tracker;
+
   console.log(partner);
   console.log(enemy);
 
-  console.log(exp_tracker);
+  // console.log(exp_tracker);
 
   enemy.health = enemy.maxHealth;
   partner.health = health_tracker;
-  console.log(" status: " + partner.status);
+  //console.log(" status: " + partner.status);
 
   //enemy encounter text
   document.querySelector("#encounterBox").innerHTML =
@@ -342,7 +347,7 @@ document.querySelector("#DialogueBox").addEventListener("click", (e) => {
       queue.shift(); //popping the attack from enemy attack queue
     } else { e.currentTarget.style.display = queue.length > 0 ? "block" : "none"; }
   }
-  console.log(queue.length);
+  //console.log(queue.length);
 });
 
 export function enemy_attacks(e) {

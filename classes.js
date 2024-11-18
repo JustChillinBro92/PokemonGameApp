@@ -1,6 +1,6 @@
 import { c } from "./canvas.js";
 import { audio } from "./data/audio.js";
-import { playerMonsters } from "./data/monsters.js";
+import { playerMonsters, max_exp } from "./data/monsters.js";
 
 export class Boundary {
   static width = 36;
@@ -165,7 +165,8 @@ export class Monster extends Sprite {
   status_effect_nonDamage() {
     let attack_occur = true;
 
-    if (this.status === "PRLZ" ||
+    if (
+      this.status === "PRLZ" ||
       (this.status != "PRLZ" && status_tracker === "PRLZ")
     ) {
       let paralyzed = Math.random();
@@ -413,7 +414,8 @@ export class Monster extends Sprite {
       health_tracker = recipient.health;
       console.log(health_tracker);
 
-      health_width_tracker = (health_tracker / recipient.maxHealth) * 98.5 + "%";
+      health_width_tracker =
+        (health_tracker / recipient.maxHealth) * 98.5 + "%";
     }
 
     // if(recipient.health < 0) {
@@ -733,7 +735,7 @@ export class Monster extends Sprite {
   }
 
   faint() {
-    //console.log("faint");
+    let lvl_up = false;
     document.querySelector("#DialogueBox").innerHTML = this.name + " Fainted! ";
     if (this.isPartner) {
       health_tracker = this.maxHealth;
@@ -741,16 +743,34 @@ export class Monster extends Sprite {
       this.current_status = "NRML";
       //console.log(health_width_tracker);
     } else {
-      let exp_yield = Math.floor((this.base_exp_yield * this.level) / 7)
+      let exp_yield = Math.floor((this.base_exp_yield * this.level) / 7);
       exp_tracker += exp_yield;
 
       gsap.to(exp_width_tracker, {
-        width: (exp_tracker/max_exp_tracker) * 100 + "%",
+        width: (exp_tracker / max_exp_tracker) * 100 + "%",
         duration: 1,
-        onComplete: () => {
-          if(exp_tracker >= max_exp_tracker) {
-            level_tracker += 1;
+        onUpdate: () => {
+          let EXP_WIDTH = parseFloat(exp_width_tracker.style.width);
+          if (EXP_WIDTH >= 100) {
+            if(!lvl_up) {
+              level_tracker += 1;
+              lvl_up = true;
+            }
+            document.querySelector("#ExpBar").style.width = "0%";
+            document.querySelector("#player_lvl").innerHTML = level_tracker;
           }
+        },
+        onComplete: () => {
+          lvl_up = false;
+          if(exp_tracker >= max_exp_tracker) {
+            exp_tracker = 0;
+            max_exp_tracker = max_exp(level_tracker);
+          }
+          stats_tracker.ATK += 1;
+          stats_tracker.DEF += 1;
+          stats_tracker.SPD += 1;
+          stats_tracker.SDEF += 1;
+          stats_tracker.SATK += 1;
 
           gsap.to(this.position, {
             y: this.position.y + 20,
@@ -764,14 +784,8 @@ export class Monster extends Sprite {
           });
           audio.battle.stop();
           audio.victory.play();
-        }
-      })
-
-      stats_tracker.ATK += 1;
-      stats_tracker.DEF += 1;
-      stats_tracker.SPD += 1;
-      stats_tracker.SDEF += 1;
-      stats_tracker.SATK += 1;
+        },
+      });
     }
   }
 }

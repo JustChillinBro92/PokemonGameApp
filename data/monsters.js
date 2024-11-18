@@ -182,7 +182,7 @@ function getRandomLevel(min,max) {
   return Math.floor(Math.random() * (max - min + 1)) + min; //Adding min shifts the range to start at min.
 }
 
-function max_exp(current_level) {
+export function max_exp(current_level) {
   let L = current_level;
   return Math.floor(1.2*(L^3) - 15*(L^2) + 100*L - 140);
 }
