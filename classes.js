@@ -103,8 +103,11 @@ export let level_tracker = playerMonsters.emby.level;
 export let exp_tracker = playerMonsters.emby.exp;
 export let max_exp_tracker = playerMonsters.emby.max_exp;
 
+export let excess_exp;
+
 export let exp_width_tracker = document.querySelector("#ExpBar");
-// export let max_exp_width_tracker = document.querySelector("#ExpContainer");
+
+export let lvl_up = false;
 
 export let status_tracker = "NRML";
 export let status_color_tracker = "#2a2a2a";
@@ -735,14 +738,16 @@ export class Monster extends Sprite {
   }
 
   faint() {
-    let lvl_up = false;
     document.querySelector("#DialogueBox").innerHTML = this.name + " Fainted! ";
+
+    //partner faints
     if (this.isPartner) {
       health_tracker = this.maxHealth;
       health_width_tracker = 98.5 + "%";
       this.current_status = "NRML";
       //console.log(health_width_tracker);
     } else {
+      //enemy faints
       let exp_yield = Math.floor((this.base_exp_yield * this.level) / 7);
       exp_tracker += exp_yield;
 
@@ -754,18 +759,33 @@ export class Monster extends Sprite {
           if (EXP_WIDTH >= 100) {
             if(!lvl_up) {
               level_tracker += 1;
+              max_exp_tracker = max_exp(level_tracker);
+
+              let marginal_exp_diff = max_exp_tracker - exp_tracker;
+              excess_exp = exp_yield - marginal_exp_diff;
+
+              exp_tracker = excess_exp;
+
               lvl_up = true;
+            //document.querySelector("#DialogueBox").innerHTML = playerMonsters.emby.name + " grew to Level " + level_tracker + " ! ";
             }
             document.querySelector("#ExpBar").style.width = "0%";
             document.querySelector("#player_lvl").innerHTML = level_tracker;
           }
         },
         onComplete: () => {
+          if(lvl_up) document.querySelector("#DialogueBox").innerHTML = playerMonsters.emby.name + " grew to Level " + level_tracker + " ! ";
+
+          gsap.to(exp_width_tracker, { 
+            width: (exp_tracker / max_exp_tracker) * 100 + "%",
+            duration: 1,
+          })
           lvl_up = false;
-          if(exp_tracker >= max_exp_tracker) {
-            exp_tracker = 0;
-            max_exp_tracker = max_exp(level_tracker);
-          }
+
+          // if(exp_tracker >= max_exp_tracker) {
+          //   exp_tracker = 0;
+          //   max_exp_tracker = max_exp(level_tracker);
+          // }
           stats_tracker.ATK += 1;
           stats_tracker.DEF += 1;
           stats_tracker.SPD += 1;
@@ -775,6 +795,7 @@ export class Monster extends Sprite {
           gsap.to(this.position, {
             y: this.position.y + 20,
           });
+
           gsap.to(this, {
             opacity: 0,
             duration: 1,

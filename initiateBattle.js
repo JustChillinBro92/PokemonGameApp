@@ -1,4 +1,4 @@
-import { Monster, health_tracker, health_width_tracker, status_tracker, status_color_tracker,exp_tracker, max_exp_tracker, level_tracker} from "./classes.js";
+import { Monster, health_tracker, health_width_tracker, status_tracker, status_color_tracker,exp_tracker, max_exp_tracker, level_tracker, lvl_up} from "./classes.js";
 import { battle, animate, menu } from "./renderer.js";
 import { animateBattleId } from "./battlescene.js";
 import { audio } from "./data/audio.js";
