@@ -2,6 +2,9 @@ import { c } from "./canvas.js";
 import { audio } from "./data/audio.js";
 import { playerMonsters, max_exp } from "./data/monsters.js";
 
+export const progress_gif = new Image();
+progress_gif.src = "./img/progress.gif";
+
 export class Boundary {
   static width = 36;
   static height = 36;
@@ -181,6 +184,7 @@ export class Monster extends Sprite {
 
         document.querySelector("#DialogueBox").innerHTML =
           this.name + " was paralyzed and couldn't move! ";
+        document.querySelector("#DialogueBox").appendChild(progress_gif);
         document.querySelector("#DialogueBox").style.display = "block";
       }
     }
@@ -197,6 +201,7 @@ export class Monster extends Sprite {
 
       document.querySelector("#DialogueBox").innerHTML =
         this.name + " was hurt due to its burn! ";
+      document.querySelector("#DialogueBox").appendChild(progress_gif);
       document.querySelector("#DialogueBox").style.display = "block";
 
       let healthBar = "#playerHealthBar";
@@ -299,8 +304,8 @@ export class Monster extends Sprite {
     const healthBarVisibility = document.querySelector(healthBar);
 
     //console.log(ItemUsedBy);
-    console.log("Current Health: " + this.health);
-    console.log("Current Health: " + health_tracker);
+    //console.log("Current Health: " + this.health);
+    //console.log("Current Health: " + health_tracker);
 
     let diff = this.maxHealth - health_tracker;
     let potion_heal = ItemUsed.heal;
@@ -401,6 +406,8 @@ export class Monster extends Sprite {
     else
       document.querySelector("#DialogueBox").innerHTML =
         "The Opposing " + this.name + " used " + attack.name + "!";
+
+    document.querySelector("#DialogueBox").appendChild(progress_gif);
 
     document.querySelector("#DialogueBox").style.display = "block";
 
@@ -774,7 +781,10 @@ export class Monster extends Sprite {
           }
         },
         onComplete: () => {
-          if(lvl_up) document.querySelector("#DialogueBox").innerHTML = playerMonsters.emby.name + " grew to Level " + level_tracker + " ! ";
+          if(lvl_up) { 
+            document.querySelector("#DialogueBox").innerHTML = playerMonsters.emby.name + " grew to Level " + level_tracker + " ! ";
+            document.querySelector("#DialogueBox").appendChild(progress_gif);
+          }
 
           gsap.to(exp_width_tracker, { 
             width: (exp_tracker / max_exp_tracker) * 100 + "%",

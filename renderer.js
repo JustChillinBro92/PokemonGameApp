@@ -3,10 +3,9 @@ import { Boundary, Sprite } from "./classes.js";
 import { collisions } from "./data/collisions.js";
 import { battleZonesData } from "./data/battlezones.js";
 import { audio } from "./data/audio.js";
-import { initBattle} from "./initiateBattle.js";
+import { initBattle } from "./initiateBattle.js";
 import { animateBattle } from "./battlescene.js";
 import { load_backpack } from "./backpack.js";
-
 
 //console.log(gsap)
 //console.log(battleZonesData);
@@ -161,7 +160,7 @@ export function animate() {
   //console.log("aimate");
 
   if (menu) return;
-  
+
   background.draw();
   boundaries.forEach((boundary) => {
     boundary.draw();
@@ -371,98 +370,141 @@ export function animate() {
 
 let lastkey = "";
 let keys_active = true;
+let bag_open = false;
 
-  window.addEventListener("keydown", (e) => {
-    //console.log(keys_active);
+// Handle opening the menu
+function openMenu() {
+  if(bag_open) return; // Prevent opening the menu if the bag is open
 
-    if(!keys_active) return;
-    switch (e.key) {
-      case "w":
-        keys.w.pressed = true;
-        lastkey = "w";
-        break;
+  menu = true;
+  keys_active = false;
 
-      case "a":
-        keys.a.pressed = true;
-        lastkey = "a";
-        break;
+    gsap.from("#MenuBox", {
+      opacity: 0,
+      duration: 0.3,
+    });
+    document.querySelector("#MenuBox").style.display = "block";
+}
 
-      case "s":
-        keys.s.pressed = true;
-        lastkey = "s";
-        break;
+// Handle closing the menu
+function closeMenu() {
+  if (bag_open) return; // Prevent closing the menu if the bag is open
 
-      case "d":
-        keys.d.pressed = true;
-        lastkey = "d";
-        break;
+  menu = false;
+  keys_active = true;
+  lastkey = "";
 
-      case "Enter":
-        menu = true;
-        keys_active = false;
+  document.querySelector("#MenuBox").style.display = "none";
+}
 
-        document.querySelector("#MenuBox").style.display = "block";
+// Handle opening the bag
+document.querySelector("#menu-bag").addEventListener("click", () => {
+  if(!menu) return;
+  if(bag_open) return;
 
-        document.querySelector("#menu-bag").addEventListener("click", () => {
-          //console.log("click");
-          //load_backpack();
-          document.querySelector("#Interface").style.display = "block";
-          document.querySelector("#backpack").style.display = "block";
+  bag_open = true;
 
-          document
-            .querySelector("#back_overworld")
-            .addEventListener("click", () => {
-              document.querySelector("#backpack").style.display = "none";
-              document.querySelector("#Interface").style.display = "none";
-            });
-        });
+  document.querySelector("#Interface").style.display = "block";
+  document.querySelector("#backBox").style.opacity = "1";
+  document.querySelector("#player_health").style.opacity = "0";
+  document.querySelector("#enemy_health").style.opacity = "0";
 
-        document.querySelector("#menu-exit").addEventListener("click", () => {
-          menu = false;
-          keys_active = true;
-          //console.log("click");
-          document.querySelector("#MenuBox").style.display = "none";
-        });
-        break;
-    }
+  gsap.from("#backpack", {
+    opacity: 0.6,
+    duration: 0.3,
   });
+  document.querySelector("#backpack").style.display = "block";
 
-  window.addEventListener("keyup", (e) => { 
-    if(menu) return;
-    switch (e.key) {
-      case "w":
-        keys.w.pressed = false;
-        break;
+  // Close the bag and return to the overworld
+  document.querySelector("#back_overworld").addEventListener("click", () => {
+    bag_open = false;
 
-      case "a":
-        keys.a.pressed = false;
-        break;
-
-      case "s":
-        keys.s.pressed = false;
-        break;
-
-      case "d":
-        keys.d.pressed = false;
-        break;
-    }
-
-    if (keys.w.pressed) lastkey = "w";
-    else if (keys.a.pressed) lastkey = "a";
-    else if (keys.s.pressed) lastkey = "s";
-    else if (keys.d.pressed) lastkey = "d";
+    document.querySelector("#backpack").style.display = "none";
+    
+    if(battle.initiated) return;
+    document.querySelector("#Interface").style.display = "none";
   });
+});
 
-  if (keys.Enter.pressed) {
+// Handle exiting the menu
+document.querySelector("#menu-exit").addEventListener("click", () => {
+  if (!bag_open) closeMenu(); // Only close the menu if the bag is not open
+});
+
+// Handle keydown events
+window.addEventListener("keydown", (e) => {
+  if(menu) {
+    if(bag_open) return; // Prevent actions while the bag is open
+
+    if(e.key === "Enter") closeMenu(); // Close the menu if Enter is pressed
+    return;
+  }
+  // console.log("keysActive");
+  if (!keys_active) return;
+  switch (e.key) {
+    case "w":
+      keys.w.pressed = true;
+      lastkey = "w";
+      break;
+
+    case "a":
+      keys.a.pressed = true;
+      lastkey = "a";
+      break;
+
+    case "s":
+      keys.s.pressed = true;
+      lastkey = "s";
+      break;
+
+    case "d":
+      keys.d.pressed = true;
+      lastkey = "d";
+      break;
+
+    case "Enter":
+      openMenu(); // Open the menu if it's not already open
+      break;
+  }
+});
+
+window.addEventListener("keyup", (e) => {
+  if (menu) return;
+  console.log("active");
+  switch (e.key) {
+    case "w":
+      keys.w.pressed = false;
+      break;
+
+    case "a":
+      keys.a.pressed = false;
+      break;
+
+    case "s":
+      keys.s.pressed = false;
+      break;
+
+    case "d":
+      keys.d.pressed = false;
+      break;
   }
 
-  let clicked = false;
-  addEventListener("click", () => {
-    if (!clicked) {
-      audio.Map.play();
-      clicked = true;
-    }
-  });
+  if (keys.w.pressed) lastkey = "w";
+  else if (keys.a.pressed) lastkey = "a";
+  else if (keys.s.pressed) lastkey = "s";
+  else if (keys.d.pressed) lastkey = "d";
+});
+
+if (keys.Enter.pressed) {
+}
+
+let clicked = false;
+addEventListener("click", () => {
+  if (!clicked) {
+    audio.Map.play();
+    clicked = true;
+  }
+});
 
 animate();
 // initBattle();     //maintaining this order of calling the two function is must

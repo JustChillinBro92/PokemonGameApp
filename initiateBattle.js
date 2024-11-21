@@ -1,4 +1,4 @@
-import { Monster, health_tracker, health_width_tracker, status_tracker, status_color_tracker,exp_tracker, max_exp_tracker, level_tracker, lvl_up} from "./classes.js";
+import { Monster, progress_gif, health_tracker, health_width_tracker, status_tracker, status_color_tracker,exp_tracker, max_exp_tracker, level_tracker, lvl_up} from "./classes.js";
 import { battle, animate, menu } from "./renderer.js";
 import { animateBattleId } from "./battlescene.js";
 import { audio } from "./data/audio.js";
@@ -17,6 +17,7 @@ buttons.forEach((button) => {
   });
 });
 
+
 //creating the monster sprites
 export let enemy;
 export let partner;
@@ -26,6 +27,7 @@ export let queue; //queue for pushing enemy attacks
 let item_used = false;
 
 export function initBattle() {
+  console.log(menu);
   // console.log(status_tracker);
   // console.log(status_color_tracker);
   console.log("lvl: " + level_tracker);
@@ -36,6 +38,9 @@ export function initBattle() {
   document.querySelector("#BattleBox").style.display = "flex";
 
   document.querySelector("#DialogueBox").style.display = "none";
+
+  document.querySelector("#player_health").style.opacity = "1";
+  document.querySelector("#enemy_health").style.opacity = "1";
 
   document.querySelector("#enemyHealthBar").style.display = "block";
   document.querySelector("#playerHealthBar").style.display = "block";
@@ -126,7 +131,7 @@ export function initBattle() {
       document.querySelector("#BattleBox").style.visibility = "visible";
       document.querySelector("#backpack").style.display = "none";
       document.querySelector("#backBox").style.opacity = "0";
-      document.querySelector("#backBox").style.visibility = "hidden";
+      // document.querySelector("#backBox").style.visibility = "hidden";
       document.querySelector("#attackTypeBox").style.opacity = "0";
       document.querySelector("#attackTypeBox").style.visibility = "hidden";
     });
@@ -137,6 +142,7 @@ export function initBattle() {
     document.querySelector("#BattleBox").style.visibility = "hidden";
     document.querySelector("#encounterBox").style.display = "none";
     document.querySelector("#DialogueBox").innerHTML = " Got away safely! ";
+    document.querySelector("#DialogueBox").appendChild(progress_gif);
     document.querySelector("#DialogueBox").style.display = "block";
 
     audio.run.volume = 0.15;
@@ -284,6 +290,7 @@ export function initBattle() {
             document.querySelector("#DialogueBox").innerHTML =
               partner.name + "'s" + " status has been restored! ";
 
+          document.querySelector("#DialogueBox").appendChild(progress_gif);
           document.querySelector("#DialogueBox").style.display = "block";
 
           // Retrieves the entire item object that is selected

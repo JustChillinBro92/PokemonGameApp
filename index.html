@@ -25,11 +25,21 @@
 			/* Full background color */
 			overflow: hidden;
 			/* Prevents scrollbars */
+			cursor: url("img/pointer.png"), auto;
 		}
 
 		h1 {
 			margin: 0;
 			font-size: 17px;
+		}
+
+		#attacksBox button:hover {
+			cursor: url("img/battle.png"), auto;
+		}
+
+		#restorativeBox button,
+		#statusHealBox button {
+			cursor: url("img/healing.png"), auto;
 		}
 
 		#attackTypeBox #AttackTypeBox,
@@ -40,14 +50,66 @@
 			font-size: 17px;
 		}
 
+		#back_overworld {
+			background-color: rgb(0, 180, 255);
+		}
+
+		#back_overworld:hover {
+			background-color: rgb(0, 166, 255); /* Darker blue on hover */
+			transform: scale(1.05); /* Slightly enlarge the button */
+		}
+
+		/* #backBox button:hover{
+			background-color: white;
+		} */
+
 		button {
 			border-radius: 10px;
 			cursor: pointer;
 			font-size: 17px;
+			cursor: url("img/pointer.png"), auto;
 		}
 
 		button:hover {
 			background-color: #ddd;
+		}
+
+		#List button {
+			height: 15%;
+			background-color: rgba(0, 0, 0, 0.4);
+			box-shadow: 0 0 1px rgba(2, 31, 59, 0.7),
+				1px 1.5px 2px -1px rgba(2, 31, 59, 0.65),
+				4px 4px 12px -2.5px rgba(2, 31, 59, 0.65);
+			border: 3px dotted black;
+			color: white;
+		}
+
+		#List button:hover {
+			border: 3.5px dotted rgb(5, 131, 112);
+		}
+
+		#categories button,
+		#statusHealBox button,
+		#restorativeBox button {
+			font-size: 18px;
+			border: 3px solid black;
+			height: 93%;
+		}
+
+		#categories button:hover {
+			border: 3.5px solid orangered;
+		}
+
+		#restorativeBox button,
+		#statusHealBox button {
+			margin-top: 8px;
+			height: 92%;
+			border: 2.5px solid black
+		}
+
+		#restorativeBox button:hover,
+		#statusHealBox button:hover {
+			border: 3.5px solid rgb(3, 199, 183);
 		}
 	</style>
 </head>
@@ -68,40 +130,44 @@
 
 		<canvas></canvas>
 
-		<div 
-			id="MenuBox"
-			style="
+		<div id="MenuBox" style="
 			position: absolute;
 			left: 700px;
 			right: 60px;
 			top: 100px;
 			bottom: 120px;
-			background-color: white;
 			border: 3.5px solid rgb(0, 31, 84);
 			border-radius: 12px;
-			box-shadow: 1.2px 0px grey;
+
+			box-shadow: 0 0 1px rgba(2, 31, 59, 0.7),
+        	1px 1.5px 2px -1px rgba(2, 31, 59, 0.65),
+       		4px 4px 12px -2.5px rgba(2, 31, 59, 0.65);
+			background-color: rgba(0, 0, 0, 0.4);
+			
 			display: none;
 			">
-			<div 
-				style="
+			<div id="List" style="
 				display: flex;
 				flex-direction: column;
 				justify-content: space-evenly;
 				padding: 12px;
 				height: 93%;
+				box-shadow: 0 0 1px rgba(2, 31, 59, 0.7),
+        		1px 1.5px 2px -1px rgba(2, 31, 59, 0.65),
+       			4px 4px 12px -2.5px rgba(2, 31, 59, 0.65);
 				">
-				<button style="height: 15%">PokeDex</button>
-				<button style="height: 15%">Pokemon</button>
-				<button  id="menu-bag" style="height: 15%">Bag</button>
-				<button style="height: 15%">Save</button>
-				<button style="height: 15%">Options</button>
-				<button id="menu-exit" style="height: 15%">Exit</button>
+				<button id="archive">PokeDex</button>
+				<button id="partners">Pokemon</button>
+				<button id="menu-bag">Bag</button>
+				<button id="save">Save</button>
+				<button id="options">Options</button>
+				<button id="menu-exit">Exit</button>
 			</div>
 		</div>
 
 		<div id="Interface" style="display: none;">
 			<!-- Enemy's Monster Health Bar -->
-			<div style="
+			<div id="enemy_health" style="
 				background-color: white;
 				width: 320.2px;
 				position: absolute;
@@ -173,7 +239,7 @@
 			</div>
 
 			<!-- Player's Monster Health Bar -->
-			<div style="
+			<div id="player_health" style="
 				background-color: white;
 				width: 320.2px;
 				position: absolute;
@@ -243,12 +309,10 @@
 					</div>
 				</div>
 
-				<div 
-					style="
+				<div style="
 						display: flex;
 					">
-					<h2
-						style="
+					<h2 style="
 						font-size: 10px;
 						margin-left: 2px;
 						margin-right: 5px;
@@ -263,9 +327,7 @@
 						position: relative;
 						width: 100%;
 						">
-						<div
-							id = "ExpContainer" 
-							style="
+						<div id="ExpContainer" style="
 							background-color: #e9e6e6;
 							border: 2px solid black;
 							border-radius: 2.5px;
@@ -274,9 +336,7 @@
 							">
 						</div>
 
-						<div 
-							id = "ExpBar"
-							style="
+						<div id="ExpBar" style="
 							background-color: rgb(0, 166, 255);
 							border-radius: 1px;
 							position: absolute;
@@ -314,7 +374,6 @@
 					right: 0;
 					padding: 12px;
 					display: none;
-					cursor: pointer;
 					">
 				</div>
 				<!-- Narrating which monster encountered -->
@@ -353,7 +412,7 @@
 					"> <button id="fight">Fight</button>
 						<button id="pokemon">Pokemon</button>
 						<button id="bag">Bag</button>
-						<button id="run">Run</button>
+						<button id="run" style="cursor: url(img/run.png),auto;">Run</button>
 					</div>
 				</div>
 
@@ -365,6 +424,7 @@
 					padding: 2px;
 					opacity: 0;
 					visibility: hidden;
+					cursor: url(img/battle.png),auto;
 					">
 				</div>
 				<!-- shows the type of attacks of player's monsters -->
@@ -381,11 +441,13 @@
 					<div>
 						<h1 id="AttackTypeBox">Attack Type</h1>
 					</div>
-					<div style="margin-right: 28px;"><button class="back" style="
-						font-size: 17px;
-						padding: 20px;
-						width: 120%;
-						">Back</button>
+					<div style="margin-right: 28px;">
+						<button class="back" style="
+							font-size: 17px;
+							padding: 20px;
+							width: 120%;
+						">Back
+						</button>
 					</div>
 				</div>
 			</div>
@@ -408,6 +470,7 @@
 						height: 430px;
 						">
 					<div id="categories" style="
+								background-color: bisque;
 								position: absolute;
 								top: 0;
 								left: 0;
@@ -423,50 +486,50 @@
 
 					<div id="restorativeBox" style="
 								position: absolute;
-								background-color: white;
-								border-left: 2px black solid;
-								font-size: 17px;
+								background-color: rgb(236, 224, 166);
+								border-left: 3px black solid;
+								font-size: 18px;
 								top: 0;
 								right: 0;
 								bottom: 0;
 								padding: 12px;
-								width: 65%;
+								width: 65.5%;
 								display: grid;
 								/* grid-template-columns: repeat(1,1fr); */
 								/* opacity: 0;
 								visibility: hidden; */
-								">
+							">
 					</div>
 
 					<div id="statusHealBox" style="
 								position: absolute;
-								background-color: white;
-								border-left: 2px black solid;
-								font-size: 17px;
+								background-color: rgb(240, 208, 149);
+								border-left: 3px black solid;
+								font-size: 18px;
 								top: 0;
 								right: 0;
 								bottom: 0;
 								padding: 12px;
-								width: 65%;
+								width: 65.5%;
 								display: grid;
 								opacity: 0;
 								visibility: hidden;
-								">
-						<!-- <button>Paralyze Heal</button>
-								<button>Burn Heal</button> -->
+							">
 					</div>
 				</div>
 
 				<div id="footer" style="
-						border-top: 2px black solid;
+						border-top: 3px solid black;
 						position: absolute;
 						height: 145px;
 						bottom: 0;
 						left: 0;
 						right: 0;
+
+						background-color: rgba(0, 0, 0, 0.2);
 						">
 					<div id="description" style="
-							border-right: 2px black solid;
+							border-right: 3px solid black;
 							position: absolute;
 							width: 75%;
 							height: 145px;
@@ -494,10 +557,10 @@
 							<h1 id="Box" style="margin-left: 45px;">Items</h1>
 						</div>
 						<div style="margin-left: 30px;">
-							<button 
-								id="back_overworld"
-								class="back" 
-								style="
+							<button id="back_overworld" class="back" style="
+								/* background-color: rgb(0, 166, 255); */
+								border: 2.5px solid black;
+								color: white;
 								font-size: 17px;
 								padding: 20px;
 								width: 120%;
