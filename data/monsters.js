@@ -1,6 +1,6 @@
 import { attacks } from "./attacks.js";
 
-export const playerMonsters = {
+export let playerMonsters = {
   emby: {
     name: "Emby",
     image: {

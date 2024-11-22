@@ -6,6 +6,12 @@ import { audio } from "./data/audio.js";
 import { initBattle } from "./initiateBattle.js";
 import { animateBattle } from "./battlescene.js";
 import { load_backpack } from "./backpack.js";
+import { savegame, loadgame, gameLoaded } from "./save_load.js";
+import { gameState } from "./gameState.js";
+
+// import { gameState } from "./save_load.js";
+
+//import { playerItems } from "./data/playerBag";
 
 //console.log(gsap)
 //console.log(battleZonesData);
@@ -25,7 +31,7 @@ for (let i = 0; i <= battleZonesData.length; i += 120) {
 }
 //console.log(battlezonesMap);
 
-const boundaries = [];
+export const boundaries = [];
 const offset = {
   x: -244,
   y: -120,
@@ -46,7 +52,7 @@ collisionsMap.forEach((row, i) => {
 });
 //console.log(boundaries);
 
-const battleZones = [];
+export const battleZones = [];
 
 battleZonesMap.forEach((row, i) => {
   row.forEach((symbol, j) => {
@@ -100,21 +106,29 @@ const player = new Sprite({
   scale: 0.8,
 });
 
-const background = new Sprite({
+export const background = new Sprite({
   position: {
     x: offset.x,
     y: offset.y,
   },
   image: image,
 });
+// if(loadgame()) {
+//   background.position = gameState.background.position
+//   console.log(background)
+// }
 
-const foreground = new Sprite({
+export const foreground = new Sprite({
   position: {
     x: offset.x,
     y: offset.y,
   },
   image: foregroundimage,
 });
+// if(loadgame()) {
+//   foreground.position = gameState.foreground.position
+//   console.log(foreground)
+// }
 
 const keys = {
   w: {
@@ -397,6 +411,16 @@ function closeMenu() {
   document.querySelector("#MenuBox").style.display = "none";
 }
 
+//saving the game
+document.querySelector("#save").addEventListener("click", () => {
+  savegame();
+})
+
+//loading the game
+document.querySelector("#load").addEventListener("click", () => {
+  loadgame();
+})
+
 // Handle opening the bag
 document.querySelector("#menu-bag").addEventListener("click", () => {
   if(!menu) return;
@@ -470,7 +494,7 @@ window.addEventListener("keydown", (e) => {
 
 window.addEventListener("keyup", (e) => {
   if (menu) return;
-  console.log("active");
+  // console.log("active");
   switch (e.key) {
     case "w":
       keys.w.pressed = false;

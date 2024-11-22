@@ -31,6 +31,7 @@ export function initBattle() {
   // console.log(status_tracker);
   // console.log(status_color_tracker);
   console.log("lvl: " + level_tracker);
+  console.log("current_exp: " + exp_tracker);
   console.log("max exp: " + max_exp_tracker);
 
   document.querySelector("#Interface").style.display = "block";
