@@ -20,21 +20,21 @@ import { gameState } from "./gameState.js";
 // console.log('Canvas Height:', canvas.height);
 
 const collisionsMap = [];
-for (let i = 0; i <= collisions.length; i += 120) {
-  collisionsMap.push(collisions.slice(i, 120 + i)); //slicing the array of collisons(acc to width of map 120 tiles) into sub-arrays and storing/pushing them in another Array
+for (let i = 0; i <= collisions.length; i += 180) {
+  collisionsMap.push(collisions.slice(i, 180 + i)); //slicing the array of collisons(acc to width of map 120 tiles) into sub-arrays and storing/pushing them in another Array
 }
 //console.log(collisionsMap)
 
 const battleZonesMap = [];
-for (let i = 0; i <= battleZonesData.length; i += 120) {
-  battleZonesMap.push(battleZonesData.slice(i, 120 + i)); //slicing the array of battlezones(acc to width of map 120 tiles) into sub-arrays and storing/pushing them in another Array
+for (let i = 0; i <= battleZonesData.length; i += 180) {
+  battleZonesMap.push(battleZonesData.slice(i, 180 + i)); //slicing the array of battlezones(acc to width of map 120 tiles) into sub-arrays and storing/pushing them in another Array
 }
 //console.log(battlezonesMap);
 
 export const boundaries = [];
 const offset = {
-  x: -244,
-  y: -120,
+  x: -1361,
+  y: -712,
 };
 
 collisionsMap.forEach((row, i) => {
@@ -103,7 +103,7 @@ const player = new Sprite({
     right: playerRightImage,
     down: playerDownImage,
   },
-  scale: 0.8,
+  scale: 0.75,
 });
 
 export const background = new Sprite({
@@ -113,10 +113,6 @@ export const background = new Sprite({
   },
   image: image,
 });
-// if(loadgame()) {
-//   background.position = gameState.background.position
-//   console.log(background)
-// }
 
 export const foreground = new Sprite({
   position: {
@@ -125,10 +121,23 @@ export const foreground = new Sprite({
   },
   image: foregroundimage,
 });
-// if(loadgame()) {
-//   foreground.position = gameState.foreground.position
-//   console.log(foreground)
-// }
+
+if(loadgame()) {
+  background.position = gameState.background.position
+  foreground.position = gameState.foreground.position
+
+  const offset_changeX = gameState.background.position.x - offset.x
+  const offset_changeY = gameState.background.position.y - offset.y 
+
+  boundaries.forEach((boundary) => {
+    boundary.updateOffset(offset_changeX, offset_changeY)
+  })
+
+  battleZones.forEach((battlezones => {
+    battlezones.updateOffset(offset_changeX, offset_changeY)
+  }))
+  //console.log(foreground)
+}
 
 const keys = {
   w: {
