@@ -42,9 +42,9 @@ export const monsters = {
     },
     attack: [
       attacks.Tackle,
-      //attacks.FireBall,
-      // attacks.DragonBreath,
-      attacks.BurnUp,
+      attacks.FireBall,
+      attacks.DragonBreath,
+      // attacks.BurnUp,
     ],
     frames: {
       max: 4,
@@ -72,9 +72,9 @@ export const monsters = {
     },
     attack: [
       attacks.Tackle,
-      //attacks.FireBall,
-      // attacks.DragonBreath,
-      attacks.BurnUp,
+      attacks.FireBall,
+      attacks.DragonBreath,
+      // attacks.BurnUp,
     ],
     frames: {
       max: 4,
@@ -102,9 +102,9 @@ export const monsters = {
     },
     attack: [
       attacks.Tackle,
-      // attacks.FireBall,
-      // attacks.DragonBreath,
-      attacks.BurnUp,
+      attacks.FireBall,
+      attacks.DragonBreath,
+      // attacks.BurnUp,
     ],
     frames: {
       max: 4,
@@ -132,8 +132,8 @@ export const monsters = {
     },
     attack: [
       attacks.Tackle,
-      // attacks.FireBall,
-      // attacks.DragonBreath
+      attacks.FireBall,
+      attacks.DragonBreath
       ],
     frames: {
       max: 4,

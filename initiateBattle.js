@@ -6,6 +6,8 @@ import { playerMonsters, getRandomMonster } from "./data/monsters.js";
 import { attacks } from "./data/attacks.js";
 // import { load_backpack } from "./backpack.js";
 import { playerItems, UseItemFromButton } from "./data/playerBag.js";
+// import { gameState } from "./gameState.js";
+// import { gameLoaded } from "./save_load.js";
 
 // Select all buttons on the page
 const buttons = document.querySelectorAll("button");
@@ -80,6 +82,9 @@ export function initBattle() {
 
   console.log(partner);
   console.log(enemy);
+
+  console.log(health_tracker);
+  console.log(health_width_tracker);
 
   // console.log(exp_tracker);
 

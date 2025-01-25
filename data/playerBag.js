@@ -1,6 +1,6 @@
 import { items } from './items.js'
 
-export const playerItems = {
+export let playerItems = {
     bag: {
       restoratives: [
         { item: items.potion, quantity: 3 },

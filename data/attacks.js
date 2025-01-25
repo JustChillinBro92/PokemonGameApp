@@ -19,7 +19,7 @@ export const attacks = {
     },
     DragonBreath : {
         name: 'DragonBreath',
-        damage: 200,
+        damage: 70,
         type: 'Dragon',
         color: 'Purple',
     }

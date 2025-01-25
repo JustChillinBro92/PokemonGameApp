@@ -6,8 +6,7 @@ import { audio } from "./data/audio.js";
 import { initBattle } from "./initiateBattle.js";
 import { animateBattle } from "./battlescene.js";
 import { load_backpack } from "./backpack.js";
-import { savegame, loadgame, gameLoaded } from "./save_load.js";
-import { gameState } from "./gameState.js";
+import { savegame, loadgame } from "./save_load.js";
 
 // import { gameState } from "./save_load.js";
 
@@ -32,7 +31,7 @@ for (let i = 0; i <= battleZonesData.length; i += 180) {
 //console.log(battlezonesMap);
 
 export const boundaries = [];
-const offset = {
+export const offset = {
   x: -1361,
   y: -712,
 };
@@ -121,23 +120,7 @@ export const foreground = new Sprite({
   },
   image: foregroundimage,
 });
-
-if(loadgame()) {
-  background.position = gameState.background.position
-  foreground.position = gameState.foreground.position
-
-  const offset_changeX = gameState.background.position.x - offset.x
-  const offset_changeY = gameState.background.position.y - offset.y 
-
-  boundaries.forEach((boundary) => {
-    boundary.updateOffset(offset_changeX, offset_changeY)
-  })
-
-  battleZones.forEach((battlezones => {
-    battlezones.updateOffset(offset_changeX, offset_changeY)
-  }))
-  //console.log(foreground)
-}
+// loadgame()
 
 const keys = {
   w: {
@@ -428,6 +411,7 @@ document.querySelector("#save").addEventListener("click", () => {
 //loading the game
 document.querySelector("#load").addEventListener("click", () => {
   loadgame();
+  closeMenu();
 })
 
 // Handle opening the bag
