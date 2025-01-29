@@ -3,7 +3,7 @@ export const attacks = {
         name: 'Tackle',
         damage: 30,
         type: 'Normal',
-        color: 'Black',
+        color: 'rgb(222, 219, 219)',
     },
     FireBall : {
         name: 'FireBall',

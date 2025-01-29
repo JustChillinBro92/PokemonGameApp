@@ -29,12 +29,12 @@ export let queue; //queue for pushing enemy attacks
 let item_used = false;
 
 export function initBattle() {
-  console.log(menu);
+  // console.log(menu);
   // console.log(status_tracker);
   // console.log(status_color_tracker);
-  console.log("lvl: " + level_tracker);
-  console.log("current_exp: " + exp_tracker);
-  console.log("max exp: " + max_exp_tracker);
+  // console.log("lvl: " + level_tracker);
+  // console.log("current_exp: " + exp_tracker);
+  // console.log("max exp: " + max_exp_tracker);
 
   document.querySelector("#Interface").style.display = "block";
   document.querySelector("#encounterBox").style.display = "block";
@@ -52,19 +52,19 @@ export function initBattle() {
     "rgb(58, 227, 58)";
   document.querySelector("#enemyHealthBar").style.visibility = "visible";
   
-  if(health_tracker <= 60) {
+  if(health_tracker.value <= 60) {
     document.querySelector("#playerHealthBar").style.backgroundColor = "yellow";
-     if(health_tracker <= 25) document.querySelector("#playerHealthBar").style.backgroundColor = "red";
+     if(health_tracker.value <= 25) document.querySelector("#playerHealthBar").style.backgroundColor = "red";
   } else document.querySelector("#playerHealthBar").style.backgroundColor =
   "rgb(58, 227, 58)";
   
   document.querySelector("#playerHealthBar").style.visibility = "visible";
 
   document.querySelector("#enemyHealthBar").style.width = "98.5%";
-  document.querySelector("#playerHealthBar").style.width = health_width_tracker;
+  document.querySelector("#playerHealthBar").style.width = health_width_tracker.value;
 
   document.querySelector("#enemyStat").innerHTML = getRandomMonster().status;
-  document.querySelector("#enemyStat").style.color = "#2a2a2a";
+  document.querySelector("#enemyStat").style.color = "rgb(211, 210, 210)";
 
   document.querySelector("#playerStat").innerHTML = status_tracker;
   document.querySelector("#playerStat").style.color = status_color_tracker;
@@ -80,16 +80,16 @@ export function initBattle() {
   document.querySelector("#enemy_lvl").innerHTML = enemy.level;
   document.querySelector("#player_lvl").innerHTML = level_tracker;
 
-  console.log(partner);
-  console.log(enemy);
+  // console.log(partner);
+  // console.log(enemy);
 
-  console.log(health_tracker);
-  console.log(health_width_tracker);
+  // console.log(health_tracker.value);
+  // console.log(health_width_tracker.value);
 
   // console.log(exp_tracker);
 
   enemy.health = enemy.maxHealth;
-  partner.health = health_tracker;
+  partner.health = health_tracker.value;
   //console.log(" status: " + partner.status);
 
   //enemy encounter text
@@ -99,6 +99,7 @@ export function initBattle() {
   //VERY IMPORTANT
   document.querySelector("#encounterBox").addEventListener("click", () => {
     //console.log("box clicked")
+    document.querySelector("#encounterBox").replaceChildren();
     document.querySelector("#BattleBox").style.opacity = "1";
     document.querySelector("#BattleBox").style.visibility = "visible";
   });
@@ -138,6 +139,8 @@ export function initBattle() {
       document.querySelector("#backpack").style.display = "none";
       document.querySelector("#backBox").style.opacity = "0";
       // document.querySelector("#backBox").style.visibility = "hidden";
+      document.querySelector("#attacksBox").style.opacity = "0";
+      document.querySelector("#attacksBox").style.visibility = "hidden";
       document.querySelector("#attackTypeBox").style.opacity = "0";
       document.querySelector("#attackTypeBox").style.visibility = "hidden";
     });
@@ -261,7 +264,7 @@ export function initBattle() {
         if (
           categoryKey === "restoratives" &&
           partner.health < partner.maxHealth || categoryKey === "restoratives" &&
-          health_tracker < partner.maxHealth
+          health_tracker.value < partner.maxHealth
         )
           item_used = true;
         else if (
@@ -288,10 +291,11 @@ export function initBattle() {
           document.querySelector("#BattleBox").style.opacity = "0";
           document.querySelector("#BattleBox").style.visibility = "hidden";
 
-          if (categoryKey === "restoratives")
-            document.querySelector("#DialogueBox").innerHTML =
+          if (categoryKey === "restoratives") {
+              document.querySelector("#DialogueBox").innerHTML =
               partner.name + "'s" + " HP has been restored! ";
-
+          }
+            
           if (categoryKey === "status_heal")
             document.querySelector("#DialogueBox").innerHTML =
               partner.name + "'s" + " status has been restored! ";
@@ -351,6 +355,7 @@ document.querySelector("#DialogueBox").addEventListener("click", (e) => {
       // Only when queue is empty after item usage, show #BattleBox
       document.querySelector("#BattleBox").style.opacity = "1";
       document.querySelector("#BattleBox").style.visibility = "visible";
+      e.currentTarget.style.display = "none";
 
       //e.currentTarget.style.display = queue.length > 0 ? "block" : "none";
     }
@@ -358,7 +363,14 @@ document.querySelector("#DialogueBox").addEventListener("click", (e) => {
     if (queue.length > 0) {
       queue[0](); //calling the 0th index of queue i.e., the attack that was pushed in enemy queue
       queue.shift(); //popping the attack from enemy attack queue
-    } else { e.currentTarget.style.display = queue.length > 0 ? "block" : "none"; }
+    } else { 
+      e.currentTarget.style.display = queue.length > 0 ? "block" : "none";
+
+      document.querySelector("#attacksBox").style.opacity = "1";
+      document.querySelector("#attacksBox").style.visibility = "visible";
+      document.querySelector("#attackTypeBox").style.opacity = "1";
+      document.querySelector("#attackTypeBox").style.visibility = "visible";
+    }
   }
   //console.log(queue.length);
 });

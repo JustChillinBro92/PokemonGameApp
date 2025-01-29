@@ -41,10 +41,11 @@ export function savegame() {
   const saveData = {
     background_position: background.position,
     foreground_position: foreground.position,
+    offset_position: offset,
     party: cleanParty,
     items: cleanItems,
-    health: parseFloat(health_tracker),
-    healthBarWidth: parseFloat(health_width_tracker),
+    health: parseFloat(health_tracker.value),
+    healthBarWidth: parseFloat(health_width_tracker.value),
     exp: parseFloat(exp_tracker),
     expBarWidth: parseFloat(exp_width_tracker.style.width),
     status: status_tracker,
@@ -76,6 +77,7 @@ export function loadgame() {
   //restore data
   gameState.background.position = data.background_position;
   gameState.foreground.position = data.foreground_position;
+  gameState.offset.position = data.offset_position;
   gameState.playerMonsters = data.party;
   gameState.playerItems = data.items;
   gameState.health_tracker = data.health;
@@ -89,8 +91,14 @@ export function loadgame() {
   background.position = gameState.background.position;
   foreground.position = gameState.foreground.position;
 
-  const offset_changeX = gameState.background.position.x - offset.x;
-  const offset_changeY = gameState.background.position.y - offset.y;
+  // offset.x = gameState.offset.position.x;
+  // offset.y = gameState.offset.position.y;
+
+  const offset_changeX = background.position.x - offset.x;
+  const offset_changeY = background.position.y - offset.y;
+
+  // offset.x = gameState.offset.position;
+  // offset.y = gameState.offset.position;
 
   boundaries.forEach((boundary) => {
     boundary.updateOffset(offset_changeX, offset_changeY);
@@ -99,6 +107,14 @@ export function loadgame() {
   battleZones.forEach((battlezones) => {
     battlezones.updateOffset(offset_changeX, offset_changeY);
   });
+
+  offset.x = background.position.x;
+  offset.y = background.position.y;
+
+
+  console.log("Offset Before Load:", offset);
+  console.log("Loaded Background Position:", gameState.background.position);
+  console.log("Offset Change:", offset_changeX, offset_changeY);
 
   // Update `playerMonsters`
   for (const key in data.party) {
@@ -120,7 +136,7 @@ export function loadgame() {
   // Update trackers and DOM elements
   updateTrackers();
 
-  console.log(gameState);
+  // console.log(gameState);
   // return gameLoaded;
 }
 
@@ -129,16 +145,16 @@ export function updateTrackers() {
   const currentMonster = playerMonsters.emby;
 
   // Update health tracker
-  health_tracker = gameState.health_tracker;
-  health_width_tracker = gameState.health_width_tracker;
-  
+  health_tracker.value = gameState.health_tracker;
+  health_width_tracker.value = gameState.health_width_tracker;
+
   // const maxHealth = 150; // Replace this with your actual max health logic
   // health_width_tracker = (health_tracker / maxHealth) * 98.5 + "%";
 
   // Update the health bar's width
   const healthBar = document.querySelector("#playerHealthBar");
   if (healthBar) {
-    healthBar.style.width = health_width_tracker;
+    healthBar.style.width = health_width_tracker.value;
   }
 
   // Update other trackers if necessary
@@ -148,7 +164,7 @@ export function updateTrackers() {
   // status_color_tracker = gameState.status_color_tracker;
 
   console.log("Trackers updated:");
-  console.log("Health:", health_tracker, health_width_tracker);
+  console.log("Health:", health_tracker.value, health_width_tracker.value);
   // console.log("Exp:", exp_tracker, exp_width_tracker.style.width);
   // console.log("Status:", status_tracker, status_color_tracker);
 }

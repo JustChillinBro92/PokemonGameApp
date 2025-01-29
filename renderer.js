@@ -163,7 +163,7 @@ export let menu = false; // user menu
 export function animate() {
   // Animation logic...
   const animateId = window.requestAnimationFrame(animate);
-  //console.log("aimate");
+  // console.log("aimate");
 
   if (menu) return;
 
@@ -374,6 +374,37 @@ export function animate() {
   }
 }
 
+const timeElement = document.querySelector("#clock");
+
+let virtualSeconds = 8 * 3600; // Start at 8:00 AM
+let lastUpdate = performance.now(); // High-precision timestamp
+
+function updateClock() {
+  let now = performance.now(); // Get current high-precision time
+  let elapsedRealSeconds = (now - lastUpdate) / 1000; // Calculate elapsed real seconds
+  lastUpdate = now; // Update lastUpdate timestamp
+
+  virtualSeconds += elapsedRealSeconds * 48; // Scale real seconds to virtual time
+
+  // Convert virtual time into hours and minutes
+  let hours = Math.floor((virtualSeconds / 3600) % 24);
+  let minutes = Math.floor((virtualSeconds % 3600) / 60);
+
+  let interval = hours >= 12 ? "PM" : "AM";
+  hours = (hours % 12) || 12; // Convert to 12-hour format (12 instead of 0)
+
+  let formattedHours = hours.toString().padStart(2, "0");
+  let formattedMinutes = minutes.toString().padStart(2, "0");
+
+  timeElement.innerHTML = formattedHours + ":" + formattedMinutes + " " + interval;
+
+  requestAnimationFrame(updateClock); // More precise than `setTimeout()`
+}
+
+// Start the clock
+updateClock();
+
+
 let lastkey = "";
 let keys_active = true;
 let bag_open = false;
@@ -390,6 +421,7 @@ function openMenu() {
       duration: 0.3,
     });
     document.querySelector("#MenuBox").style.display = "block";
+    document.querySelector("#clockContainer").style.display = "block";
 }
 
 // Handle closing the menu
@@ -401,6 +433,7 @@ function closeMenu() {
   lastkey = "";
 
   document.querySelector("#MenuBox").style.display = "none";
+  document.querySelector("#clockContainer").style.display = "none";
 }
 
 //saving the game
@@ -456,8 +489,10 @@ window.addEventListener("keydown", (e) => {
     if(e.key === "Enter") closeMenu(); // Close the menu if Enter is pressed
     return;
   }
+
   // console.log("keysActive");
   if (!keys_active) return;
+
   switch (e.key) {
     case "w":
       keys.w.pressed = true;

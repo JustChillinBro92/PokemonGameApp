@@ -106,9 +106,9 @@ export class Sprite {
   }
 }
 
-export let health_tracker = playerMonsters.emby.health;
+export let health_tracker = { value:playerMonsters.emby.health }
 
-export let health_width_tracker = 98.5 + "%";
+export let health_width_tracker = { value: 98.5 + "%" }
 
 export let level_tracker = playerMonsters.emby.level;
 
@@ -122,7 +122,7 @@ export let exp_width_tracker = document.querySelector("#ExpBar");
 export let lvl_up = false;
 
 export let status_tracker = "NRML";
-export let status_color_tracker = "#2a2a2a";
+export let status_color_tracker = "rgb(211, 210, 210)";
 
 export let stats_tracker = playerMonsters.emby.stats;
 
@@ -213,12 +213,12 @@ export class Monster extends Sprite {
     ) {
       this.health -= 25;
       if (this.isPartner) {
-        health_tracker -= 25;
-        health_width_tracker = (health_tracker / this.maxHealth) * 98.5 + "%";
+        health_tracker.value -= 25;
+        health_width_tracker.value = (health_tracker.value / this.maxHealth) * 98.5 + "%";
       }
-      console.log("status hurt => current hp: " + this.health);
-      console.log("status hurt => current hp: " + health_tracker);
-      console.log("status hurt => current hp_width: " + health_width_tracker);
+      // console.log("status hurt => current hp: " + this.health);
+      // console.log("status hurt => current hp: " + health_tracker.value);
+      // console.log("status hurt => current hp_width: " + health_width_tracker.value);
 
       document.querySelector("#DialogueBox").innerHTML =
         this.name + " was hurt due to its burn! ";
@@ -256,11 +256,11 @@ export class Monster extends Sprite {
 
     switch (recipient.status) {
       case "NRML":
-        document.querySelector(target).style.color = "#2a2a2a";
+        document.querySelector(target).style.color = "rgb(211, 210, 210)";
 
         //specifically for player monster stat color
         if (target === "#playerStat" && status_tracker === "NRML") {
-          status_color_tracker = "#2a2a2a";
+          status_color_tracker = "rgb(211, 210, 210)";
           document.querySelector(target).style.color = status_color_tracker;
         } else if (target === "#playerStat" && status_tracker === "BRND") {
           status_color_tracker = "Orangered";
@@ -278,7 +278,7 @@ export class Monster extends Sprite {
           status_color_tracker = "Orangered";
           document.querySelector(target).style.color = status_color_tracker;
         } else if (target === "#playerStat" && status_tracker === "NRML") {
-          status_color_tracker = "#2a2a2a";
+          status_color_tracker = "rgb(211, 210, 210)";
           document.querySelector(target).style.color = status_color_tracker;
         } else if (target === "#playerStat" && status_tracker === "PRLZ") {
           status_color_tracker = "yellow";
@@ -293,7 +293,7 @@ export class Monster extends Sprite {
           status_color_tracker = "yellow";
           document.querySelector(target).style.color = status_color_tracker;
         } else if (target === "#playerStat" && status_tracker === "NRML") {
-          status_color_tracker = "#2a2a2a";
+          status_color_tracker = "rgb(211, 210, 210)";
           document.querySelector(target).style.color = status_color_tracker;
         } else if (target === "#playerStat" && status_tracker === "BRND") {
           status_color_tracker = "Orangered";
@@ -322,25 +322,26 @@ export class Monster extends Sprite {
   }
 
   useItem({ ItemUsed }) {
+    // document.querySelector("#DialogueBox").style.display = "block";
     let healthBar = "#playerHealthBar";
     const healthBarVisibility = document.querySelector(healthBar);
 
     //console.log(ItemUsedBy);
     //console.log("Current Health: " + this.health);
-    //console.log("Current Health: " + health_tracker);
+    //console.log("Current Health: " + health_tracker.value);
 
-    let diff = this.maxHealth - health_tracker;
+    let diff = this.maxHealth - health_tracker.value;
     let potion_heal = ItemUsed.heal;
 
     switch (ItemUsed.name) {
       case "Potion":
-        if (this.health < this.maxHealth || health_tracker < this.maxHealth) {
+        if (this.health < this.maxHealth || health_tracker.value < this.maxHealth) {
           if (diff < potion_heal) potion_heal = diff;
 
           this.health += potion_heal;
-          health_tracker += potion_heal;
-          console.log("Restored Health: " + this.health);
-          console.log("Restored Health: " + health_tracker);
+          health_tracker.value += potion_heal;
+          // console.log("Restored Health: " + this.health);
+          // console.log("Restored Health: " + health_tracker.value);
 
           audio.potion.play();
           gsap.to(healthBar, {
@@ -366,12 +367,12 @@ export class Monster extends Sprite {
         break;
 
       case "Super Potion":
-        if (this.health < this.maxHealth || health_tracker < this.maxHealth) {
+        if (this.health < this.maxHealth || health_tracker.value < this.maxHealth) {
           if (diff < potion_heal) potion_heal = diff;
 
           this.health += potion_heal;
-          health_tracker += potion_heal;
-          console.log(this.health);
+          health_tracker.value += potion_heal;
+          // console.log(this.health);
 
           audio.potion.play();
           gsap.to(healthBar, {
@@ -380,11 +381,11 @@ export class Monster extends Sprite {
             onUpdate: () => {
               if (this.health <= 60) {
                 healthBarVisibility.style.backgroundColor = "yellow";
-                console.log("color change");
+                // console.log("color change");
 
                 if (this.health <= 25) {
                   healthBarVisibility.style.backgroundColor = "red";
-                  console.log("color change");
+                  // console.log("color change");
                 }
               } else
                 healthBarVisibility.style.backgroundColor = "rgb(58, 227, 58)";
@@ -421,13 +422,25 @@ export class Monster extends Sprite {
     // console.log(status_color_tracker);
     //console.log(" current: " + this.current_status);
 
+    document.querySelector("#attacksBox").style.opacity = "0";
+    document.querySelector("#attacksBox").style.visibility = "hidden";
+    document.querySelector("#attackTypeBox").style.opacity = "0";
+    document.querySelector("#attackTypeBox").style.visibility = "hidden";
+
     //attack dialogue update
     if (!this.isEnemy)
       document.querySelector("#DialogueBox").innerHTML =
         this.name + " used " + attack.name + "!";
-    else
+    else {
       document.querySelector("#DialogueBox").innerHTML =
         "The Opposing " + this.name + " used " + attack.name + "!";
+
+      // document.querySelector("#attacksBox").style.opacity = "1";
+      // document.querySelector("#attacksBox").style.visibility = "visible";
+      // document.querySelector("#attackTypeBox").style.opacity = "1";
+      // document.querySelector("#attackTypeBox").style.visibility = "visible";
+    }
+      
 
     document.querySelector("#DialogueBox").appendChild(progress_gif);
 
@@ -439,15 +452,15 @@ export class Monster extends Sprite {
 
     //health updates with each instance of attack being called
     recipient.health -= attack.damage;
-    console.log(recipient.name + " health: " + recipient.health);
+    // console.log(recipient.name + " health: " + recipient.health);
 
     //keeps track of player monster's current health for upcoming battles
     if (this.isEnemy) {
-      health_tracker = recipient.health;
+      health_tracker.value = recipient.health;
       //console.log(health_tracker);
 
-      health_width_tracker =
-        (health_tracker / recipient.maxHealth) * 98.5 + "%";
+      health_width_tracker.value =
+        (health_tracker.value / recipient.maxHealth) * 98.5 + "%";
     }
 
     //rotation for certain attacks
@@ -595,6 +608,9 @@ export class Monster extends Sprite {
         }
 
         if (flag) {
+          // document.querySelector("#DialogueBox").innerHTML =
+          //   recipient.name + " has been burned! ";
+
           audio.initFireball.play();
           const BurnUpImg = new Image();
           BurnUpImg.src = "./img/fireball.png";
@@ -718,10 +734,10 @@ export class Monster extends Sprite {
 
     //partner faints
     if (this.isPartner) {
-      health_tracker = this.maxHealth;
-      health_width_tracker = 98.5 + "%";
+      health_tracker.value = this.maxHealth;
+      health_width_tracker.value = 98.5 + "%";
       this.current_status = "NRML";
-      //console.log(health_width_tracker);
+      //console.log(health_width_tracker.value);
     } else {
       //enemy faints
       let exp_yield = Math.floor((this.base_exp_yield * this.level) / 7);

@@ -2,6 +2,7 @@
 export const gameState = {
     background: { position: { x: 0, y: 0 } },
     foreground: { position: { x: 0, y: 0 } },
+    offset: { position: { x: 0, y: 0 } },
     playerMonsters: {},
     playerItems: {},
     health_tracker: 150,
