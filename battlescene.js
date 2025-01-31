@@ -10,6 +10,7 @@ const BattleBackground = new Sprite({
     y: 0,
   },
   image: BattleBackgroundImg,
+  scale: 1.5,
 });
 
 

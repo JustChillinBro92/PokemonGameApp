@@ -1,5 +1,6 @@
 import { canvas } from "./canvas.js";
 import { Boundary, Sprite } from "./classes.js";
+import { npc1 } from "./npc.js";
 import { collisions } from "./data/collisions.js";
 import { battleZonesData } from "./data/battlezones.js";
 import { audio } from "./data/audio.js";
@@ -32,7 +33,7 @@ for (let i = 0; i <= battleZonesData.length; i += 180) {
 
 export const boundaries = [];
 export const offset = {
-  x: -1361,
+  x: -1150,
   y: -712,
 };
 
@@ -88,8 +89,8 @@ playerRightImage.src = "./img/playerRight.png";
 
 const player = new Sprite({
   position: {
-    x: canvas.width / 2 - (playerDownImage.width / 4 / 2) * 0.8,
-    y: canvas.height / 2 - (playerDownImage.height / 2) * 0.8,
+    x: 704.8,
+    y: 280.8
   },
   image: playerDownImage,
   frames: {
@@ -142,7 +143,7 @@ const keys = {
 
 load_backpack();
 
-const movables = [background, foreground, ...boundaries, ...battleZones];
+const movables = [npc1, background, foreground, ...boundaries, ...battleZones];
 
 function RectangularCollision({ rectangle1, rectangle2 }) {
   return (
@@ -175,6 +176,7 @@ export function animate() {
     battleZone.draw();
   });
   player.draw();
+  npc1.draw();
   //console.log(player.position);
   foreground.draw();
 
@@ -275,7 +277,7 @@ export function animate() {
             ...boundary,
             position: {
               x: boundary.position.x,
-              y: boundary.position.y + 1.5,
+              y: boundary.position.y + 1,
             },
           },
         })
@@ -287,7 +289,7 @@ export function animate() {
     }
     if (moving === true) {
       movables.forEach((movable) => {
-        movable.position.y += 1.5;
+        movable.position.y += 1;
       });
     }
   } else if (keys.a.pressed && lastkey === "a") {
@@ -301,7 +303,7 @@ export function animate() {
           rectangle2: {
             ...boundary,
             position: {
-              x: boundary.position.x + 1.5,
+              x: boundary.position.x + 1,
               y: boundary.position.y,
             },
           },
@@ -314,7 +316,7 @@ export function animate() {
     }
     if (moving === true) {
       movables.forEach((movable) => {
-        movable.position.x += 1.5;
+        movable.position.x += 1;
       });
     }
   } else if (keys.s.pressed && lastkey === "s") {
@@ -329,7 +331,7 @@ export function animate() {
             ...boundary,
             position: {
               x: boundary.position.x,
-              y: boundary.position.y - 1.5,
+              y: boundary.position.y - 1,
             },
           },
         })
@@ -341,7 +343,7 @@ export function animate() {
     }
     if (moving === true) {
       movables.forEach((movable) => {
-        movable.position.y -= 1.5;
+        movable.position.y -= 1;
       });
     }
   } else if (keys.d.pressed && lastkey === "d") {
@@ -355,7 +357,7 @@ export function animate() {
           rectangle2: {
             ...boundary,
             position: {
-              x: boundary.position.x - 1.5,
+              x: boundary.position.x - 1,
               y: boundary.position.y,
             },
           },
@@ -368,7 +370,7 @@ export function animate() {
     }
     if (moving === true) {
       movables.forEach((movable) => {
-        movable.position.x -= 1.5;
+        movable.position.x -= 1;
       });
     }
   }

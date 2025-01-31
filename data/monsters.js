@@ -16,7 +16,7 @@ export let playerMonsters = {
       max: 4,
       hold: 60,
     },
-    scale: 1,
+    scale: 1.2,
     animate: true,
     isPartner: true,
     health: 150,
@@ -50,7 +50,7 @@ export const monsters = {
       max: 4,
       hold: 60,
     },
-    scale: 0.88,
+    scale: 1,
     animate: true,
     isEnemy: true,
     health: 170,
@@ -80,7 +80,7 @@ export const monsters = {
       max: 4,
       hold: 70,
     },
-    scale: 0.88,
+    scale: 1,
     animate: true,
     isEnemy: true,
     health: 160,
@@ -110,7 +110,7 @@ export const monsters = {
       max: 4,
       hold: 70,
     },
-    scale: 0.88,
+    scale: 1,
     animate: true,
     isEnemy: true,
     health: 180,
@@ -159,7 +159,7 @@ export const monsters = {
 export function setPlayerMonsterPositions() {
   for (const key in playerMonsters) {
     const playermonster = playerMonsters[key];
-    playermonster.position = { x: 300, y: 320 };
+    playermonster.position = { x: 480, y: 470 };
   }
 }
 setPlayerMonsterPositions();
@@ -167,7 +167,7 @@ setPlayerMonsterPositions();
 export function setEnemyMonsterPositions() {
   for (const key in monsters) {
     const monster = monsters[key];
-    monster.position = { x: 800, y: 110 };
+    monster.position = { x: 1225, y: 190 };
   }
 }
 setEnemyMonsterPositions();
