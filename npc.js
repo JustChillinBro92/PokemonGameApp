@@ -51,7 +51,7 @@ setInterval(() => {
     npc1.npc_movement(initialPosNpc1, cameraOffset);
     // console.log("Offset: " + offset.x + " " + offset.y)
     // console.log("Background: " + background.position.x + " " + background.position.y)
-    console.log("Delta: " + cameraOffset.x + " " + cameraOffset.y)
+    // console.log("Delta: " + cameraOffset.x + " " + cameraOffset.y)
 }, 2000); // Moves every 2 second
 
 // console.log("Npc pos: " + npc1.position.x + " " + npc1.position.y)

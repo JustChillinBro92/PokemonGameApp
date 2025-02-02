@@ -105,40 +105,38 @@ export class Sprite {
   }
 
   npc_movement(pos, cameraOffset) {
-    let left, right, up, down
-    const direction = ["left", "right", "up", "down"]
+    let left, right, up, down;
+    const direction = ["left", "right", "up", "down"];
 
-    const randomDirection = direction[Math.floor(Math.random() * direction.length)]
+    const randomDirection =
+      direction[Math.floor(Math.random() * direction.length)];
 
     let initial_pos = pos;
     let current_pos = this.position;
     let target_posX = initial_pos.x + 100;
     let target_posY = initial_pos.y + 70;
 
-    if(randomDirection === "left" && current_pos.x > initial_pos.x) {
+    if (randomDirection === "left" && current_pos.x > initial_pos.x) {
       this.image = this.sprites.left;
       this.position.x -= 15;
-    }
-  
-    if(randomDirection === "right" && current_pos.x < target_posX) {
+
+    } else if (randomDirection === "right" && current_pos.x < target_posX) {
       this.image = this.sprites.right;
       this.position.x += 15;
-    }
-  
-    if(randomDirection === "up" && current_pos.y > initial_pos.y) {
+
+    } else if (randomDirection === "up" && current_pos.y > initial_pos.y) {
       this.image = this.sprites.up;
       this.position.y -= 15;
-    }
 
-    if(randomDirection === "down" && current_pos.y < target_posY) {
+    }else if (randomDirection === "down" && current_pos.y < target_posY) {
       this.image = this.sprites.down;
       this.position.y += 15;
     }
 
-    console.log(randomDirection);
-    console.log("CameraOffset: " + cameraOffset.x + " " + cameraOffset.y)
-    console.log("Initial Position: " + initial_pos.x + " " + initial_pos.y);
-    console.log("Target: " + target_posX + " " + target_posY);
+    // console.log(randomDirection);
+    // console.log("CameraOffset: " + cameraOffset.x + " " + cameraOffset.y);
+    // console.log("Initial Position: " + initial_pos.x + " " + initial_pos.y);
+    // console.log("Target: " + target_posX + " " + target_posY);
     // console.log("current pos: " + this.position.x + " " + this.position.y);
     // console.log("initial pos: " + pos.x + " " + pos.y);
   }
@@ -261,10 +259,9 @@ export class Sprite {
 //   }
 // }
 
+export let health_tracker = { value: playerMonsters.emby.health };
 
-export let health_tracker = { value:playerMonsters.emby.health }
-
-export let health_width_tracker = { value: 98.5 + "%" }
+export let health_width_tracker = { value: 98.5 + "%" };
 
 export let level_tracker = playerMonsters.emby.level;
 
@@ -370,7 +367,8 @@ export class Monster extends Sprite {
       this.health -= 25;
       if (this.isPartner) {
         health_tracker.value -= 25;
-        health_width_tracker.value = (health_tracker.value / this.maxHealth) * 98.5 + "%";
+        health_width_tracker.value =
+          (health_tracker.value / this.maxHealth) * 98.5 + "%";
       }
       // console.log("status hurt => current hp: " + this.health);
       // console.log("status hurt => current hp: " + health_tracker.value);
@@ -491,7 +489,10 @@ export class Monster extends Sprite {
 
     switch (ItemUsed.name) {
       case "Potion":
-        if (this.health < this.maxHealth || health_tracker.value < this.maxHealth) {
+        if (
+          this.health < this.maxHealth ||
+          health_tracker.value < this.maxHealth
+        ) {
           if (diff < potion_heal) potion_heal = diff;
 
           this.health += potion_heal;
@@ -523,7 +524,10 @@ export class Monster extends Sprite {
         break;
 
       case "Super Potion":
-        if (this.health < this.maxHealth || health_tracker.value < this.maxHealth) {
+        if (
+          this.health < this.maxHealth ||
+          health_tracker.value < this.maxHealth
+        ) {
           if (diff < potion_heal) potion_heal = diff;
 
           this.health += potion_heal;
@@ -596,7 +600,6 @@ export class Monster extends Sprite {
       // document.querySelector("#attackTypeBox").style.opacity = "1";
       // document.querySelector("#attackTypeBox").style.visibility = "visible";
     }
-      
 
     document.querySelector("#DialogueBox").appendChild(progress_gif);
 

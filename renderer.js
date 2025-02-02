@@ -9,16 +9,6 @@ import { animateBattle } from "./battlescene.js";
 import { load_backpack } from "./backpack.js";
 import { savegame, loadgame } from "./save_load.js";
 
-// import { gameState } from "./save_load.js";
-
-//import { playerItems } from "./data/playerBag";
-
-//console.log(gsap)
-//console.log(battleZonesData);
-
-// console.log('Canvas Width:', canvas.width);
-// console.log('Canvas Height:', canvas.height);
-
 const collisionsMap = [];
 for (let i = 0; i <= collisions.length; i += 180) {
   collisionsMap.push(collisions.slice(i, 180 + i)); //slicing the array of collisons(acc to width of map 120 tiles) into sub-arrays and storing/pushing them in another Array
@@ -90,7 +80,7 @@ playerRightImage.src = "./img/playerRight.png";
 const player = new Sprite({
   position: {
     x: 704.8,
-    y: 280.8
+    y: 280.8,
   },
   image: playerDownImage,
   frames: {
@@ -177,7 +167,7 @@ export function animate() {
   });
   player.draw();
   npc1.draw();
-  //console.log(player.position);
+
   foreground.draw();
 
   let moving = true; // for collison blocks
@@ -376,36 +366,33 @@ export function animate() {
   }
 }
 
-const timeElement = document.querySelector("#clock");
+// let virtualSeconds = 8 * 3600; // Start at 8:00 AM
+// let lastUpdate = performance.now(); // High-precision timestamp
 
-let virtualSeconds = 8 * 3600; // Start at 8:00 AM
-let lastUpdate = performance.now(); // High-precision timestamp
+// function updateClock() {
+//   let now = performance.now(); // Get current high-precision time
+//   let elapsedRealSeconds = (now - lastUpdate) / 1000; // Calculate elapsed real seconds
+//   lastUpdate = now; // Update lastUpdate timestamp
 
-function updateClock() {
-  let now = performance.now(); // Get current high-precision time
-  let elapsedRealSeconds = (now - lastUpdate) / 1000; // Calculate elapsed real seconds
-  lastUpdate = now; // Update lastUpdate timestamp
+//   virtualSeconds += elapsedRealSeconds * 48; // Scale real seconds to virtual time
 
-  virtualSeconds += elapsedRealSeconds * 48; // Scale real seconds to virtual time
+//   // Convert virtual time into hours and minutes
+//   let hours = Math.floor((virtualSeconds / 3600) % 24);
+//   let minutes = Math.floor((virtualSeconds % 3600) / 60);
 
-  // Convert virtual time into hours and minutes
-  let hours = Math.floor((virtualSeconds / 3600) % 24);
-  let minutes = Math.floor((virtualSeconds % 3600) / 60);
+//   let interval = hours >= 12 ? "PM" : "AM";
+//   hours = (hours % 12) || 12; // Convert to 12-hour format (12 instead of 0)
 
-  let interval = hours >= 12 ? "PM" : "AM";
-  hours = (hours % 12) || 12; // Convert to 12-hour format (12 instead of 0)
+//   let formattedHours = hours.toString().padStart(2, "0");
+//   let formattedMinutes = minutes.toString().padStart(2, "0");
 
-  let formattedHours = hours.toString().padStart(2, "0");
-  let formattedMinutes = minutes.toString().padStart(2, "0");
+//   timeElement.innerHTML = formattedHours + ":" + formattedMinutes + " " + interval;
 
-  timeElement.innerHTML = formattedHours + ":" + formattedMinutes + " " + interval;
+//   requestAnimationFrame(updateClock); // More precise than `setTimeout()`
+// }
 
-  requestAnimationFrame(updateClock); // More precise than `setTimeout()`
-}
-
-// Start the clock
-updateClock();
-
+// // Start the clock
+// updateClock();
 
 let lastkey = "";
 let keys_active = true;
@@ -413,17 +400,17 @@ let bag_open = false;
 
 // Handle opening the menu
 function openMenu() {
-  if(bag_open) return; // Prevent opening the menu if the bag is open
+  if (bag_open) return; // Prevent opening the menu if the bag is open
 
   menu = true;
   keys_active = false;
 
-    gsap.from("#MenuBox", {
-      opacity: 0,
-      duration: 0.3,
-    });
-    document.querySelector("#MenuBox").style.display = "block";
-    document.querySelector("#clockContainer").style.display = "block";
+  gsap.from("#MenuBox", {
+    opacity: 0,
+    duration: 0.3,
+  });
+  document.querySelector("#MenuBox").style.display = "block";
+  document.querySelector("#clockContainer").style.display = "block";
 }
 
 // Handle closing the menu
@@ -441,18 +428,18 @@ function closeMenu() {
 //saving the game
 document.querySelector("#save").addEventListener("click", () => {
   savegame();
-})
+});
 
 //loading the game
 document.querySelector("#load").addEventListener("click", () => {
   loadgame();
   closeMenu();
-})
+});
 
 // Handle opening the bag
 document.querySelector("#menu-bag").addEventListener("click", () => {
-  if(!menu) return;
-  if(bag_open) return;
+  if (!menu) return;
+  if (bag_open) return;
 
   bag_open = true;
 
@@ -472,8 +459,8 @@ document.querySelector("#menu-bag").addEventListener("click", () => {
     bag_open = false;
 
     document.querySelector("#backpack").style.display = "none";
-    
-    if(battle.initiated) return;
+
+    if (battle.initiated) return;
     document.querySelector("#Interface").style.display = "none";
   });
 });
@@ -485,10 +472,10 @@ document.querySelector("#menu-exit").addEventListener("click", () => {
 
 // Handle keydown events
 window.addEventListener("keydown", (e) => {
-  if(menu) {
-    if(bag_open) return; // Prevent actions while the bag is open
+  if (menu) {
+    if (bag_open) return; // Prevent actions while the bag is open
 
-    if(e.key === "Enter") closeMenu(); // Close the menu if Enter is pressed
+    if (e.key === "Enter") closeMenu(); // Close the menu if Enter is pressed
     return;
   }
 
