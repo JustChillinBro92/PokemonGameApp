@@ -77,7 +77,7 @@ playerLeftImage.src = "./img/playerLeft.png";
 const playerRightImage = new Image();
 playerRightImage.src = "./img/playerRight.png";
 
-const player = new Sprite({
+export const player = new Sprite({
   position: {
     x: 704.8,
     y: 280.8,
@@ -260,6 +260,8 @@ export function animate() {
     player.image = player.sprites.up;
     for (let i = 0; i < boundaries.length; i++) {
       const boundary = boundaries[i];
+
+      //regular collision check
       if (
         RectangularCollision({
           rectangle1: player,
@@ -276,6 +278,24 @@ export function animate() {
         console.log("colliding");
         break;
       }
+
+      //npc collision check
+      if (
+        RectangularCollision({
+          rectangle1: player,
+          rectangle2: {
+            ...npc1,
+            position: {
+              x: npc1.position.x,
+              y: npc1.position.y + 2,
+            },
+          },
+        })
+      ) {
+        moving = false;
+        console.log("Npc colliding");
+        break;
+      }
     }
     if (moving === true) {
       movables.forEach((movable) => {
@@ -287,6 +307,8 @@ export function animate() {
     player.image = player.sprites.left;
     for (let i = 0; i < boundaries.length; i++) {
       const boundary = boundaries[i];
+
+      //regular collision check
       if (
         RectangularCollision({
           rectangle1: player,
@@ -303,6 +325,24 @@ export function animate() {
         console.log("colliding");
         break;
       }
+
+      //npc collision check
+      if (
+        RectangularCollision({
+          rectangle1: player,
+          rectangle2: {
+            ...npc1,
+            position: {
+              x: npc1.position.x + 2,
+              y: npc1.position.y,
+            },
+          },
+        })
+      ) {
+        moving = false;
+        console.log("Npc colliding");
+        break;
+      }
     }
     if (moving === true) {
       movables.forEach((movable) => {
@@ -314,6 +354,8 @@ export function animate() {
     player.image = player.sprites.down;
     for (let i = 0; i < boundaries.length; i++) {
       const boundary = boundaries[i];
+
+      //regular collision check
       if (
         RectangularCollision({
           rectangle1: player,
@@ -330,6 +372,24 @@ export function animate() {
         console.log("colliding");
         break;
       }
+
+      //npc collision check
+      if (
+        RectangularCollision({
+          rectangle1: player,
+          rectangle2: {
+            ...npc1,
+            position: {
+              x: npc1.position.x,
+              y: npc1.position.y - 2,
+            },
+          },
+        })
+      ) {
+        moving = false;
+        console.log("Npc colliding");
+        break;
+      }
     }
     if (moving === true) {
       movables.forEach((movable) => {
@@ -341,6 +401,8 @@ export function animate() {
     player.image = player.sprites.right;
     for (let i = 0; i < boundaries.length; i++) {
       const boundary = boundaries[i];
+
+      //regular collision check
       if (
         RectangularCollision({
           rectangle1: player,
@@ -355,6 +417,24 @@ export function animate() {
       ) {
         moving = false;
         console.log("colliding");
+        break;
+      }
+
+      //npc collision check
+      if (
+        RectangularCollision({
+          rectangle1: player,
+          rectangle2: {
+            ...npc1,
+            position: {
+              x: npc1.position.x - 2,
+              y: npc1.position.y,
+            },
+          },
+        })
+      ) {
+        moving = false;
+        console.log("Npc colliding");
         break;
       }
     }

@@ -104,41 +104,155 @@ export class Sprite {
     }
   }
 
-  npc_movement(pos, cameraOffset) {
-    let left, right, up, down;
-    const direction = ["left", "right", "up", "down"];
+  // npc_movement(NpcPos, Npc, Player) {
+  //   function RectangularCollision({ rectangle1, rectangle2 }) {
+  //     return (
+  //       rectangle1.position.x + rectangle1.width >= rectangle2.position.x &&
+  //       rectangle1.position.x <= rectangle2.position.x + rectangle2.width &&
+  //       rectangle1.position.y + rectangle1.height >= rectangle2.position.y &&
+  //       rectangle1.position.y <= rectangle2.position.y + rectangle2.height
+  //     );
+  //   }
 
+  //   let left, right, up, down;
+  //   const direction = ["left", "right", "up", "down"];
+
+  //   const randomDirection =
+  //     direction[Math.floor(Math.random() * direction.length)];
+
+  //   let initial_pos = NpcPos;
+  //   let current_pos = this.position;
+  //   let target_posX = initial_pos.x + 100;
+  //   let target_posY = initial_pos.y + 70;
+
+  //   if (randomDirection === "left" && current_pos.x > initial_pos.x) {
+  //     this.image = this.sprites.left;
+  //     if (
+  //       !RectangularCollision({
+  //         rectangle1: Npc,
+  //         rectangle2: {
+  //           ...Player,
+  //           position: {
+  //             x: Player.position.x + 3,
+  //             y: Player.position.y,
+  //           },
+  //         },
+  //       })
+  //     )
+  //       this.position.x -= 15;
+  //   } else if (randomDirection === "right" && current_pos.x < target_posX) {
+  //     this.image = this.sprites.right;
+
+  //     if (
+  //       !RectangularCollision({
+  //         rectangle1: Npc,
+  //         rectangle2: {
+  //           ...Player,
+  //           position: {
+  //             x: Player.position.x - 3,
+  //             y: Player.position.y,
+  //           },
+  //         },
+  //       })
+  //     )
+  //       this.position.x += 15;
+  //   } else if (randomDirection === "up" && current_pos.y > initial_pos.y) {
+  //     this.image = this.sprites.up;
+
+  //     if (
+  //       !RectangularCollision({
+  //         rectangle1: Npc,
+  //         rectangle2: {
+  //           ...Player,
+  //           position: {
+  //             x: Player.position.x,
+  //             y: Player.position.y + 3,
+  //           },
+  //         },
+  //       })
+  //     )
+  //       this.position.y -= 15;
+  //   } else if (randomDirection === "down" && current_pos.y < target_posY) {
+  //     this.image = this.sprites.down;
+
+  //     if (
+  //       !RectangularCollision({
+  //         rectangle1: Npc,
+  //         rectangle2: {
+  //           ...Player,
+  //           position: {
+  //             x: Player.position.x,
+  //             y: Player.position.y - 3,
+  //           },
+  //         },
+  //       })
+  //     )
+  //       this.position.y += 15;
+  //   }
+
+  //   // console.log(randomDirection);
+  //   // console.log("CameraOffset: " + cameraOffset.x + " " + cameraOffset.y);
+  //   // console.log("Initial Position: " + initial_pos.x + " " + initial_pos.y);
+  //   // console.log("Target: " + target_posX + " " + target_posY);
+  //   // console.log("current pos: " + this.position.x + " " + this.position.y);
+  //   // console.log("initial pos: " + pos.x + " " + pos.y);
+  // }
+
+  npc_movement(NpcPos, Npc, Player) {
+    function RectangularCollision({ rectangle1, rectangle2 }) {
+      return (
+        rectangle1.position.x + rectangle1.width >= rectangle2.position.x &&
+        rectangle1.position.x <= rectangle2.position.x + rectangle2.width &&
+        rectangle1.position.y + rectangle1.height >= rectangle2.position.y &&
+        rectangle1.position.y <= rectangle2.position.y + rectangle2.height
+      );
+    }
+
+    const direction = ["left", "right", "up", "down"];
     const randomDirection =
       direction[Math.floor(Math.random() * direction.length)];
 
-    let initial_pos = pos;
+    let initial_pos = NpcPos;
     let current_pos = this.position;
     let target_posX = initial_pos.x + 100;
     let target_posY = initial_pos.y + 70;
+    let velocity = 12; // Movement speed
 
+    let nextPosition = { x: current_pos.x, y: current_pos.y };
+    let buffer = 5; // Extra space to avoid overlap
+
+    // Determine next position based on random direction
     if (randomDirection === "left" && current_pos.x > initial_pos.x) {
+      nextPosition.x -= velocity;
       this.image = this.sprites.left;
-      this.position.x -= 15;
-
     } else if (randomDirection === "right" && current_pos.x < target_posX) {
+      nextPosition.x += velocity;
       this.image = this.sprites.right;
-      this.position.x += 15;
-
     } else if (randomDirection === "up" && current_pos.y > initial_pos.y) {
+      nextPosition.y -= velocity;
       this.image = this.sprites.up;
-      this.position.y -= 15;
-
-    }else if (randomDirection === "down" && current_pos.y < target_posY) {
+    } else if (randomDirection === "down" && current_pos.y < target_posY) {
+      nextPosition.y += velocity;
       this.image = this.sprites.down;
-      this.position.y += 15;
     }
 
-    // console.log(randomDirection);
-    // console.log("CameraOffset: " + cameraOffset.x + " " + cameraOffset.y);
-    // console.log("Initial Position: " + initial_pos.x + " " + initial_pos.y);
-    // console.log("Target: " + target_posX + " " + target_posY);
-    // console.log("current pos: " + this.position.x + " " + this.position.y);
-    // console.log("initial pos: " + pos.x + " " + pos.y);
+    // Check if the next position would collide with the player
+    if (
+      !RectangularCollision({
+        rectangle1: { ...Npc, position: nextPosition },
+        rectangle2: {
+          ...Player,
+          position: {
+            x: Player.position.x - buffer,
+            y: Player.position.y - buffer,
+          },
+        },
+      })
+    ) {
+      // Move only if there's no collision
+      this.position.x = nextPosition.x;
+      this.position.y = nextPosition.y;
+    }
   }
 }
 

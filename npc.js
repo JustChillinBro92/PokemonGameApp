@@ -1,5 +1,5 @@
 import { Sprite } from "./classes.js";
-import { background, offset } from "./renderer.js";
+import { player, background, offset } from "./renderer.js";
 
 const npc1DownImage = new Image();
 npc1DownImage.src = "./img/playerDown.png";
@@ -35,7 +35,7 @@ export const npc1 = new Sprite({
 setInterval(() => {
     let initialPosNpc1 = {
       x: 305,
-      y: 120
+      y: 120,
     }
 
     let cameraOffset = {
@@ -48,7 +48,7 @@ setInterval(() => {
       initialPosNpc1.y -= cameraOffset.y;
     }
 
-    npc1.npc_movement(initialPosNpc1, cameraOffset);
+    npc1.npc_movement(initialPosNpc1, npc1, player);
     // console.log("Offset: " + offset.x + " " + offset.y)
     // console.log("Background: " + background.position.x + " " + background.position.y)
     // console.log("Delta: " + cameraOffset.x + " " + cameraOffset.y)
