@@ -37,12 +37,14 @@ export class Sprite {
     scale = 1,
     sprites,
     animate = false,
+    dialogue,
     rotation = 0,
   }) {
     this.position = position;
     this.image = new Image();
     this.frames = { ...frames, val: 0, elapsed: 0 };
     this.scale = scale;
+    this.dialogue = dialogue;
     this.rotation = rotation;
 
     this.image.onload = () => {
@@ -216,26 +218,30 @@ export class Sprite {
     let current_pos = this.position;
     let target_posX = initial_pos.x + 100;
     let target_posY = initial_pos.y + 70;
-    let velocity = 12; // Movement speed
+    let velocity = 11; // Movement speed
 
     let nextPosition = { x: current_pos.x, y: current_pos.y };
     let buffer = 5; // Extra space to avoid overlap
 
-    // Determine next position based on random direction
+    // Ensure movement is only left/right or up/down
     if (randomDirection === "left" && current_pos.x > initial_pos.x) {
       nextPosition.x -= velocity;
       this.image = this.sprites.left;
+
     } else if (randomDirection === "right" && current_pos.x < target_posX) {
       nextPosition.x += velocity;
       this.image = this.sprites.right;
+
     } else if (randomDirection === "up" && current_pos.y > initial_pos.y) {
       nextPosition.y -= velocity;
       this.image = this.sprites.up;
+
     } else if (randomDirection === "down" && current_pos.y < target_posY) {
       nextPosition.y += velocity;
       this.image = this.sprites.down;
     }
 
+    let collision = false;
     // Check if the next position would collide with the player
     if (
       !RectangularCollision({
@@ -252,126 +258,13 @@ export class Sprite {
       // Move only if there's no collision
       this.position.x = nextPosition.x;
       this.position.y = nextPosition.y;
+    } else {
+      collision = true;
     }
+    return collision;
   }
 }
 
-// export class Sprite {
-//   constructor({
-//     position,
-//     image,
-//     frames = { max: 1, hold: 25 },
-//     scale = 1,
-//     sprites,
-//     animate = false,
-//     rotation = 0,
-//   }) {
-//     this.position = position;
-//     this.targetPosition = { x: position.x, y: position.y }; // Smooth movement target
-//     this.image = new Image();
-//     this.frames = { ...frames, val: 0, elapsed: 0 };
-//     this.scale = scale;
-//     this.rotation = rotation;
-
-//     this.image.onload = () => {
-//       this.width = (this.image.width / this.frames.max) * this.scale;
-//       this.height = this.image.height * this.scale;
-//     };
-
-//     this.image.src = image.src;
-//     this.animate = animate;
-//     this.sprites = sprites;
-//     this.opacity = 1;
-//     this.speed = 1.5; // Lower speed for smoother movement
-//   }
-
-//   draw() {
-//     c.save();
-//     c.translate(
-//       this.position.x + this.width / 2,
-//       this.position.y + this.height / 2
-//     );
-//     c.rotate(this.rotation);
-//     c.translate(
-//       -this.position.x - this.width / 2,
-//       -this.position.y - this.height / 2
-//     );
-
-//     c.globalAlpha = this.opacity;
-
-//     const frameWidth = this.image.width / this.frames.max;
-//     const frameHeight = this.image.height;
-//     const scaledWidth = frameWidth * this.scale;
-//     const scaledHeight = frameHeight * this.scale;
-
-//     c.drawImage(
-//       this.image,
-//       this.frames.val * frameWidth,
-//       0,
-//       frameWidth,
-//       frameHeight,
-//       this.position.x,
-//       this.position.y,
-//       scaledWidth,
-//       scaledHeight
-//     );
-//     c.restore();
-
-//     if (!this.animate) return;
-
-//     if (this.frames.max > 1) {
-//       this.frames.elapsed++;
-//     }
-//     if (this.frames.elapsed % this.frames.hold === 0) {
-//       if (this.frames.val < this.frames.max - 1) this.frames.val++;
-//       else this.frames.val = 0;
-//     }
-
-//     this.smoothMove(); // Call smooth movement logic
-//   }
-
-//   smoothMove() {
-//     const dx = this.targetPosition.x - this.position.x;
-//     const dy = this.targetPosition.y - this.position.y;
-//     const distance = Math.sqrt(dx * dx + dy * dy);
-
-//     if (distance > 0.5) {
-//       this.position.x += (dx / distance) * this.speed;
-//       this.position.y += (dy / distance) * this.speed;
-//     } else {
-//       this.animate = false; // Stop animating when reaching the target
-//     }
-//   }
-
-//   npc_movement(pos) {
-//     const directions = ["left", "right", "up", "down"];
-//     const randomDirection = directions[Math.floor(Math.random() * directions.length)];
-
-//     if (randomDirection === "left" && this.position.x > pos.x) {
-//       this.image = this.sprites.left;
-//       this.targetPosition.x = this.position.x - 15;
-//       this.animate = true;
-//     }
-
-//     if (randomDirection === "right" && this.position.x < pos.x + 100) {
-//       this.image = this.sprites.right;
-//       this.targetPosition.x = this.position.x + 15;
-//       this.animate = true;
-//     }
-
-//     if (randomDirection === "up" && this.position.y > pos.y) {
-//       this.image = this.sprites.up;
-//       this.targetPosition.y = this.position.y - 15;
-//       this.animate = true;
-//     }
-
-//     if (randomDirection === "down" && this.position.y < pos.y + 70) {
-//       this.image = this.sprites.down;
-//       this.targetPosition.y = this.position.y + 15;
-//       this.animate = true;
-//     }
-//   }
-// }
 
 export let health_tracker = { value: playerMonsters.emby.health };
 

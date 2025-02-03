@@ -1,6 +1,5 @@
 import { canvas } from "./canvas.js";
 import { Boundary, Sprite } from "./classes.js";
-import { npc1 } from "./npc.js";
 import { collisions } from "./data/collisions.js";
 import { battleZonesData } from "./data/battlezones.js";
 import { audio } from "./data/audio.js";
@@ -8,6 +7,7 @@ import { initBattle } from "./initiateBattle.js";
 import { animateBattle } from "./battlescene.js";
 import { load_backpack } from "./backpack.js";
 import { savegame, loadgame } from "./save_load.js";
+import { npc1, Npc1_Dialogue_Available } from "./npc.js";
 
 const collisionsMap = [];
 for (let i = 0; i <= collisions.length; i += 180) {
@@ -129,6 +129,9 @@ const keys = {
   Enter: {
     pressed: false,
   },
+  e: {
+    pressed: false,
+  }
 };
 
 load_backpack();
@@ -275,7 +278,7 @@ export function animate() {
         })
       ) {
         moving = false;
-        console.log("colliding");
+        // console.log("colliding");
         break;
       }
 
@@ -293,7 +296,7 @@ export function animate() {
         })
       ) {
         moving = false;
-        console.log("Npc colliding");
+        // console.log("Npc colliding");
         break;
       }
     }
@@ -322,7 +325,7 @@ export function animate() {
         })
       ) {
         moving = false;
-        console.log("colliding");
+        // console.log("colliding");
         break;
       }
 
@@ -340,7 +343,7 @@ export function animate() {
         })
       ) {
         moving = false;
-        console.log("Npc colliding");
+        // console.log("Npc colliding");
         break;
       }
     }
@@ -369,7 +372,7 @@ export function animate() {
         })
       ) {
         moving = false;
-        console.log("colliding");
+        // console.log("colliding");
         break;
       }
 
@@ -387,7 +390,7 @@ export function animate() {
         })
       ) {
         moving = false;
-        console.log("Npc colliding");
+        // console.log("Npc colliding");
         break;
       }
     }
@@ -416,7 +419,7 @@ export function animate() {
         })
       ) {
         moving = false;
-        console.log("colliding");
+        // console.log("colliding");
         break;
       }
 
@@ -445,34 +448,6 @@ export function animate() {
     }
   }
 }
-
-// let virtualSeconds = 8 * 3600; // Start at 8:00 AM
-// let lastUpdate = performance.now(); // High-precision timestamp
-
-// function updateClock() {
-//   let now = performance.now(); // Get current high-precision time
-//   let elapsedRealSeconds = (now - lastUpdate) / 1000; // Calculate elapsed real seconds
-//   lastUpdate = now; // Update lastUpdate timestamp
-
-//   virtualSeconds += elapsedRealSeconds * 48; // Scale real seconds to virtual time
-
-//   // Convert virtual time into hours and minutes
-//   let hours = Math.floor((virtualSeconds / 3600) % 24);
-//   let minutes = Math.floor((virtualSeconds % 3600) / 60);
-
-//   let interval = hours >= 12 ? "PM" : "AM";
-//   hours = (hours % 12) || 12; // Convert to 12-hour format (12 instead of 0)
-
-//   let formattedHours = hours.toString().padStart(2, "0");
-//   let formattedMinutes = minutes.toString().padStart(2, "0");
-
-//   timeElement.innerHTML = formattedHours + ":" + formattedMinutes + " " + interval;
-
-//   requestAnimationFrame(updateClock); // More precise than `setTimeout()`
-// }
-
-// // Start the clock
-// updateClock();
 
 let lastkey = "";
 let keys_active = true;
@@ -550,6 +525,61 @@ document.querySelector("#menu-exit").addEventListener("click", () => {
   if (!bag_open) closeMenu(); // Only close the menu if the bag is not open
 });
 
+
+function OpenDialogue(npc) {
+  keys_active = false;
+
+  let NpcDialogue = document.querySelector("#OverworldDialogueBox");
+  let dialogue = npc.dialogue;
+  let dialogue_array = Object.values(dialogue);
+  let dialogue_exhaust = false;
+  let dialogue_index = 0;
+
+  function NextDialogue() {
+
+    //loop through all the dialogue available
+    if (dialogue_index < dialogue_array.length) {
+      let char_array = dialogue_array[dialogue_index];
+      let char_index = 0;
+      NpcDialogue.innerHTML = "";
+
+      const interval = setInterval(() => {
+
+        //loop through each letter of selected dialogue
+        if (char_index < char_array.length) {
+          NpcDialogue.innerHTML += char_array[char_index];
+          char_index++;
+        } else {
+          clearInterval(interval);
+          dialogue_index++;
+
+          if (dialogue_index >= dialogue_array.length) {
+            dialogue_exhaust = true;
+          }
+
+          NpcDialogue.onclick = () => {
+            NextDialogue();
+          };
+
+          if (dialogue_exhaust) {
+            //Wait for next click, then close dialogue box
+            NpcDialogue.onclick = () => {
+              document.querySelector("#OverworldDialogueBoxContainer").style.opacity = "0";
+              keys_active = true;
+              Npc1_Dialogue_Available.value = false;
+              NpcDialogue.onclick = null; //Prevent leftover event listeners
+            };
+          }
+        }
+      }, 20);
+    }
+  }
+
+  NextDialogue();
+  document.querySelector("#OverworldDialogueBoxContainer").style.opacity = "1";
+}
+
+
 // Handle keydown events
 window.addEventListener("keydown", (e) => {
   if (menu) {
@@ -559,7 +589,6 @@ window.addEventListener("keydown", (e) => {
     return;
   }
 
-  // console.log("keysActive");
   if (!keys_active) return;
 
   switch (e.key) {
@@ -586,6 +615,11 @@ window.addEventListener("keydown", (e) => {
     case "Enter":
       openMenu(); // Open the menu if it's not already open
       break;
+
+    case "e":
+      if(Npc1_Dialogue_Available.value)
+        OpenDialogue(npc1);
+      break;
   }
 });
 
@@ -608,16 +642,18 @@ window.addEventListener("keyup", (e) => {
     case "d":
       keys.d.pressed = false;
       break;
+
+    // case "e":
+    //   keys.e.pressed = false;
+    //   break;
   }
 
   if (keys.w.pressed) lastkey = "w";
   else if (keys.a.pressed) lastkey = "a";
   else if (keys.s.pressed) lastkey = "s";
-  else if (keys.d.pressed) lastkey = "d";
+  else if (keys.d.pressed) lastkey = "d"; 
 });
 
-if (keys.Enter.pressed) {
-}
 
 let clicked = false;
 addEventListener("click", () => {

@@ -29,8 +29,15 @@ export const npc1 = new Sprite({
     right: npc1RightImage,
     down: npc1DownImage,
   },
+  dialogue: {
+    text_1: "Joemama so phat she could split the Earth into two if she jumps!",
+    text_2: "Joemama so phat she could eat the entire chain of Mc Donalds!", 
+  },
   scale: 0.75,
 });
+export let Npc1_Dialogue_Available = {
+  value: false
+};
 
 setInterval(() => {
     let initialPosNpc1 = {
@@ -48,10 +55,19 @@ setInterval(() => {
       initialPosNpc1.y -= cameraOffset.y;
     }
 
-    npc1.npc_movement(initialPosNpc1, npc1, player);
+   
+    let Npc1collide = npc1.npc_movement(initialPosNpc1, npc1, player);
+    console.log(Npc1collide)
+
+    if(Npc1collide) {
+      console.log("Talk");
+      Npc1_Dialogue_Available.value = true;
+    }
+
     // console.log("Offset: " + offset.x + " " + offset.y)
     // console.log("Background: " + background.position.x + " " + background.position.y)
     // console.log("Delta: " + cameraOffset.x + " " + cameraOffset.y)
 }, 2000); // Moves every 2 second
 
 // console.log("Npc pos: " + npc1.position.x + " " + npc1.position.y)
+
