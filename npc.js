@@ -21,7 +21,7 @@ export const npc1 = new Sprite({
   image: npc1DownImage,
   frames: {
     max: 4,
-    hold: 25,
+    hold: 10,
   },
   sprites: {
     up: npc1UpImage,
@@ -36,38 +36,72 @@ export const npc1 = new Sprite({
   scale: 0.75,
 });
 export let Npc1_Dialogue_Available = {
-  value: false
+  value: false,
+  interact: false,
 };
 
-setInterval(() => {
+export function npc_sprite_upon_interaction() {
+  if (!Npc1_Dialogue_Available.interact) return;
+
+  const dx = player.position.x - npc1.position.x;
+  const dy = player.position.y - npc1.position.y;
+
+  if (Math.abs(dx) > Math.abs(dy)) {
+    // Player is to the left or right of NPC
+    if (dx > 0) {
+      npc1.image = npc1RightImage; // Player is to the right
+    } else {
+      npc1.image = npc1LeftImage; // Player is to the left
+    }
+  } else {
+    // Player is above or below NPC
+    if (dy > 0) {
+      npc1.image = npc1DownImage; // Player is below
+    } else {
+      npc1.image = npc1UpImage; // Player is above
+    }
+  }
+}
+
+
+
+var thenTime = Date.now();
+var nowTime;
+
+export function checkNpcInteraction() {
+  nowTime = Date.now();
+  var deltaTime = nowTime - thenTime;
+  var fps = 1;
+
+  if(deltaTime > 1000 / fps) {
+    console.log("NO")
+
     let initialPosNpc1 = {
       x: 305,
       y: 120,
-    }
-
+    };
+  
     let cameraOffset = {
       x: (offset.x - background.position.x),
       y: (offset.y - background.position.y)
-    }
-
-    if(cameraOffset.x != 0 || cameraOffset.y != 0) {
+    };
+  
+    if (cameraOffset.x !== 0 || cameraOffset.y !== 0) {
       initialPosNpc1.x -= cameraOffset.x;
       initialPosNpc1.y -= cameraOffset.y;
     }
-
-   
-    let Npc1collide = npc1.npc_movement(initialPosNpc1, npc1, player);
-    console.log(Npc1collide)
-
-    if(Npc1collide) {
+  
+    let Npc1collide = npc1.npc_movement(initialPosNpc1, npc1, player, Npc1_Dialogue_Available.interact);
+    
+    if (Npc1collide && !Npc1_Dialogue_Available.value) {
       console.log("Talk");
       Npc1_Dialogue_Available.value = true;
     }
 
-    // console.log("Offset: " + offset.x + " " + offset.y)
-    // console.log("Background: " + background.position.x + " " + background.position.y)
-    // console.log("Delta: " + cameraOffset.x + " " + cameraOffset.y)
-}, 2000); // Moves every 2 second
+    thenTime = nowTime;
+  }
+  requestAnimationFrame(checkNpcInteraction); // Continue the loop
+}
 
 // console.log("Npc pos: " + npc1.position.x + " " + npc1.position.y)
 

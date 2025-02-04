@@ -11,12 +11,12 @@ export class Boundary {
   static width = 36;
   static height = 36;
 
-  constructor({ position }) {
+  constructor({ position, scale = 1 }) {
     this.position = position;
     this.width = Boundary.width;
     this.height = Boundary.height;
+    this.scale = scale;
   }
-
   // Method to update position based on new offsets
   updateOffset(deltaX, deltaY) {
     this.position.x += deltaX;
@@ -24,8 +24,15 @@ export class Boundary {
   }
 
   draw() {
+    const frameWidth = this.width; // Single frame width
+    const frameHeight = this.height; // Single frame height
+
+    // Determine the scaling factor for rendering the player sprite (scale only the sprite)
+    const scaledWidth = frameWidth * this.scale; // Scaled width of the frame
+    const scaledHeight = frameHeight * this.scale; // Scaled height of the frame
+
     c.fillStyle = "rgba(255, 0, 0, 0)";
-    c.fillRect(this.position.x, this.position.y, this.width, this.height);
+    c.fillRect(this.position.x, this.position.y, scaledWidth, scaledHeight);
   }
 }
 
@@ -94,15 +101,21 @@ export class Sprite {
     );
     c.restore();
 
-    if (!this.animate) return; // if player is not moving we do not call the following code
+    if (!this.animate) {
+      this.frames.val = 0; // Reset to the first frame when animation stops
+      return
+    };
 
     if (this.frames.max > 1) {
       // it means that a sprite-sheet for animation is present
       this.frames.elapsed++;
     }
+
     if (this.frames.elapsed % this.frames.hold === 0) {
-      if (this.frames.val < this.frames.max - 1) this.frames.val++;
-      else this.frames.val = 0;
+      if (this.frames.val < this.frames.max - 1) 
+        this.frames.val++;
+      else 
+        this.frames.val = 0;
     }
   }
 
@@ -200,7 +213,9 @@ export class Sprite {
   //   // console.log("initial pos: " + pos.x + " " + pos.y);
   // }
 
-  npc_movement(NpcPos, Npc, Player) {
+  npc_movement(NpcPos, Npc, Player, interact) {
+    if (interact) return;
+
     function RectangularCollision({ rectangle1, rectangle2 }) {
       return (
         rectangle1.position.x + rectangle1.width >= rectangle2.position.x &&
@@ -215,34 +230,37 @@ export class Sprite {
       direction[Math.floor(Math.random() * direction.length)];
 
     let initial_pos = NpcPos;
-    let current_pos = this.position;
     let target_posX = initial_pos.x + 100;
-    let target_posY = initial_pos.y + 70;
-    let velocity = 11; // Movement speed
+    let target_posY = initial_pos.y + 20;
+    let distance_moved = 12;
+    let buffer = 3; // Extra space to avoid overlap
 
-    let nextPosition = { x: current_pos.x, y: current_pos.y };
-    let buffer = 5; // Extra space to avoid overlap
+    let nextPosition = { x: this.position.x, y: this.position.y };
 
-    // Ensure movement is only left/right or up/down
-    if (randomDirection === "left" && current_pos.x > initial_pos.x) {
-      nextPosition.x -= velocity;
+    if (randomDirection === "left" && this.position.x > initial_pos.x) {
       this.image = this.sprites.left;
-
-    } else if (randomDirection === "right" && current_pos.x < target_posX) {
-      nextPosition.x += velocity;
+      nextPosition.x -= distance_moved;
+    } else if (randomDirection === "right" && this.position.x < target_posX) {
       this.image = this.sprites.right;
-
-    } else if (randomDirection === "up" && current_pos.y > initial_pos.y) {
-      nextPosition.y -= velocity;
+      nextPosition.x += distance_moved;
+    } else if (randomDirection === "up" && this.position.y > initial_pos.y) {
       this.image = this.sprites.up;
-
-    } else if (randomDirection === "down" && current_pos.y < target_posY) {
-      nextPosition.y += velocity;
+      nextPosition.y -= distance_moved;
+    } else if (randomDirection === "down" && this.position.y < target_posY) {
       this.image = this.sprites.down;
+      nextPosition.y += distance_moved;
+    }
+
+    if (
+      nextPosition.x === this.position.x &&
+      nextPosition.y === this.position.y
+    ) {
+      // NPC is already at target position, stop animating
+      this.animate = false;
+      return false;
     }
 
     let collision = false;
-    // Check if the next position would collide with the player
     if (
       !RectangularCollision({
         rectangle1: { ...Npc, position: nextPosition },
@@ -255,16 +273,21 @@ export class Sprite {
         },
       })
     ) {
-      // Move only if there's no collision
+      // No collision, move and animate
       this.position.x = nextPosition.x;
       this.position.y = nextPosition.y;
+      this.animate = true;
+
+      setTimeout(() => {
+        this.animate = false; // Reset animation after a short delay
+      }, 300); // Adjust time for animation duration
     } else {
       collision = true;
     }
+
     return collision;
   }
 }
-
 
 export let health_tracker = { value: playerMonsters.emby.health };
 

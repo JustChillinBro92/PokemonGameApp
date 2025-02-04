@@ -7,7 +7,12 @@ import { initBattle } from "./initiateBattle.js";
 import { animateBattle } from "./battlescene.js";
 import { load_backpack } from "./backpack.js";
 import { savegame, loadgame } from "./save_load.js";
-import { npc1, Npc1_Dialogue_Available } from "./npc.js";
+import {
+  npc1,
+  Npc1_Dialogue_Available,
+  checkNpcInteraction,
+  npc_sprite_upon_interaction,
+} from "./npc.js";
 
 const collisionsMap = [];
 for (let i = 0; i <= collisions.length; i += 180) {
@@ -85,7 +90,7 @@ export const player = new Sprite({
   image: playerDownImage,
   frames: {
     max: 4,
-    hold: 25,
+    hold: 8,
   },
   sprites: {
     up: playerUpImage,
@@ -131,7 +136,7 @@ const keys = {
   },
   e: {
     pressed: false,
-  }
+  },
 };
 
 load_backpack();
@@ -154,298 +159,309 @@ export const battle = {
 let grassAudioPlay = false;
 export let menu = false; // user menu
 
+var then = Date.now();
+var now;
+
 export function animate() {
+  now = Date.now();
+  var deltaTime = now - then;
+  var fps = 60;
+
   // Animation logic...
   const animateId = window.requestAnimationFrame(animate);
   // console.log("aimate");
 
-  if (menu) return;
+  if (deltaTime > 1000 / fps) {
+    if (menu) return;
 
-  background.draw();
-  boundaries.forEach((boundary) => {
-    boundary.draw();
-  });
-  battleZones.forEach((battleZone) => {
-    battleZone.draw();
-  });
-  player.draw();
-  npc1.draw();
+    background.draw();
+    boundaries.forEach((boundary) => {
+      boundary.draw();
+    });
+    battleZones.forEach((battleZone) => {
+      battleZone.draw();
+    });
+    player.draw();
+    npc1.draw();
 
-  foreground.draw();
+    foreground.draw();
 
-  let moving = true; // for collison blocks
-  player.animate = false; // for player movement animation
+    let moving = true; // for collison blocks
+    player.animate = false; // for player movement animation
 
-  if (battle.initiated) return;
+    if (battle.initiated) return;
 
-  //activate a battle
-  if (keys.w.pressed || keys.a.pressed || keys.s.pressed || keys.d.pressed) {
-    for (let i = 0; i < battleZones.length; i++) {
-      const battleZone = battleZones[i];
-      const OverlappingArea =
-        (Math.min(
-          player.position.x + player.width,
-          battleZone.position.x + battleZone.width
-        ) -
-          Math.max(player.position.x, battleZone.position.x)) *
-        (Math.min(
-          player.position.y + player.height,
-          battleZone.position.y + battleZone.height
-        ) -
-          Math.max(player.position.y, battleZone.position.y));
+    //activate a battle
+    if (keys.w.pressed || keys.a.pressed || keys.s.pressed || keys.d.pressed) {
+      for (let i = 0; i < battleZones.length; i++) {
+        const battleZone = battleZones[i];
+        const OverlappingArea =
+          (Math.min(
+            player.position.x + player.width,
+            battleZone.position.x + battleZone.width
+          ) -
+            Math.max(player.position.x, battleZone.position.x)) *
+          (Math.min(
+            player.position.y + player.height,
+            battleZone.position.y + battleZone.height
+          ) -
+            Math.max(player.position.y, battleZone.position.y));
 
-      if (
-        RectangularCollision({
-          rectangle1: player,
-          rectangle2: battleZone,
-        }) &&
-        OverlappingArea > (player.height * player.width) / 2
-      ) {
-        if (!grassAudioPlay) {
-          grassAudioPlay = true;
-          audio.grass.play();
+        if (
+          RectangularCollision({
+            rectangle1: player,
+            rectangle2: battleZone,
+          }) &&
+          OverlappingArea > (player.height * player.width) / 2
+        ) {
+          if (!grassAudioPlay) {
+            grassAudioPlay = true;
+            audio.grass.play();
+          }
+
+          setTimeout(() => {
+            grassAudioPlay = false;
+          }, 100);
         }
 
-        setTimeout(() => {
-          grassAudioPlay = false;
-        }, 100);
+        if (
+          RectangularCollision({
+            rectangle1: player,
+            rectangle2: battleZone,
+          }) &&
+          OverlappingArea > (player.height * player.width) / 2 &&
+          Math.random() < 0.01
+        ) {
+          //console.log("battleZone Activate");
+          window.cancelAnimationFrame(animateId); //deactivates current animation loop
+          audio.Map.stop(); //stops map music
+
+          battle.initiated = true;
+
+          audio.initBattle.play(); //starts battle initialise music
+          audio.battle.play(); //starts battle music
+
+          //flashing animation on battle activation
+          gsap.to("#OverlappingDiv", {
+            opacity: 1,
+            repeat: 3,
+            yoyo: true, //smoothes out animation by bringing counter to 0 i.e., default state
+            duration: 0.4,
+            onComplete() {
+              gsap.to("#OverlappingDiv", {
+                //keeps the canvas covered by the 'overlapping div' as no yoyo property present...done to change the canvas behind it to battle scene
+                opacity: 1,
+                duration: 0.4,
+                onComplete() {
+                  //activate a new animation loop (battle sequence)
+                  initBattle();
+                  animateBattle();
+
+                  gsap.to("#OverlappingDiv", {
+                    opacity: 0,
+                    duration: 0.4,
+                  });
+                },
+              });
+            },
+          });
+
+          break;
+        }
       }
+    }
 
-      if (
-        RectangularCollision({
-          rectangle1: player,
-          rectangle2: battleZone,
-        }) &&
-        OverlappingArea > (player.height * player.width) / 2 &&
-        Math.random() < 0.01
-      ) {
-        //console.log("battleZone Activate");
-        window.cancelAnimationFrame(animateId); //deactivates current animation loop
-        audio.Map.stop(); //stops map music
+    if (keys.w.pressed && lastkey === "w") {
+      player.animate = true;
+      player.image = player.sprites.up;
+      for (let i = 0; i < boundaries.length; i++) {
+        const boundary = boundaries[i];
 
-        battle.initiated = true;
-
-        audio.initBattle.play(); //starts battle initialise music
-        audio.battle.play(); //starts battle music
-
-        //flashing animation on battle activation
-        gsap.to("#OverlappingDiv", {
-          opacity: 1,
-          repeat: 3,
-          yoyo: true, //smoothes out animation by bringing counter to 0 i.e., default state
-          duration: 0.4,
-          onComplete() {
-            gsap.to("#OverlappingDiv", {
-              //keeps the canvas covered by the 'overlapping div' as no yoyo property present...done to change the canvas behind it to battle scene
-              opacity: 1,
-              duration: 0.4,
-              onComplete() {
-                //activate a new animation loop (battle sequence)
-                initBattle();
-                animateBattle();
-
-                gsap.to("#OverlappingDiv", {
-                  opacity: 0,
-                  duration: 0.4,
-                });
+        //regular collision check
+        if (
+          RectangularCollision({
+            rectangle1: player,
+            rectangle2: {
+              ...boundary,
+              position: {
+                x: boundary.position.x,
+                y: boundary.position.y + 3,
               },
-            });
-          },
+            },
+          })
+        ) {
+          moving = false;
+          // console.log("colliding");
+          break;
+        }
+
+        //npc collision check
+        if (
+          RectangularCollision({
+            rectangle1: player,
+            rectangle2: {
+              ...npc1,
+              position: {
+                x: npc1.position.x,
+                y: npc1.position.y + 3,
+              },
+            },
+          })
+        ) {
+          moving = false;
+          // console.log("Npc colliding");
+          break;
+        }
+      }
+      if (moving === true) {
+        movables.forEach((movable) => {
+          movable.position.y += 3;
         });
-
-        break;
       }
-    }
-  }
+    } else if (keys.a.pressed && lastkey === "a") {
+      player.animate = true;
+      player.image = player.sprites.left;
+      for (let i = 0; i < boundaries.length; i++) {
+        const boundary = boundaries[i];
 
-  if (keys.w.pressed && lastkey === "w") {
-    player.animate = true;
-    player.image = player.sprites.up;
-    for (let i = 0; i < boundaries.length; i++) {
-      const boundary = boundaries[i];
-
-      //regular collision check
-      if (
-        RectangularCollision({
-          rectangle1: player,
-          rectangle2: {
-            ...boundary,
-            position: {
-              x: boundary.position.x,
-              y: boundary.position.y + 1,
+        //regular collision check
+        if (
+          RectangularCollision({
+            rectangle1: player,
+            rectangle2: {
+              ...boundary,
+              position: {
+                x: boundary.position.x + 3,
+                y: boundary.position.y,
+              },
             },
-          },
-        })
-      ) {
-        moving = false;
-        // console.log("colliding");
-        break;
-      }
+          })
+        ) {
+          moving = false;
+          // console.log("colliding");
+          break;
+        }
 
-      //npc collision check
-      if (
-        RectangularCollision({
-          rectangle1: player,
-          rectangle2: {
-            ...npc1,
-            position: {
-              x: npc1.position.x,
-              y: npc1.position.y + 2,
+        //npc collision check
+        if (
+          RectangularCollision({
+            rectangle1: player,
+            rectangle2: {
+              ...npc1,
+              position: {
+                x: npc1.position.x + 3,
+                y: npc1.position.y,
+              },
             },
-          },
-        })
-      ) {
-        moving = false;
-        // console.log("Npc colliding");
-        break;
+          })
+        ) {
+          moving = false;
+          // console.log("Npc colliding");
+          break;
+        }
       }
-    }
-    if (moving === true) {
-      movables.forEach((movable) => {
-        movable.position.y += 1;
-      });
-    }
-  } else if (keys.a.pressed && lastkey === "a") {
-    player.animate = true;
-    player.image = player.sprites.left;
-    for (let i = 0; i < boundaries.length; i++) {
-      const boundary = boundaries[i];
+      if (moving === true) {
+        movables.forEach((movable) => {
+          movable.position.x += 3;
+        });
+      }
+    } else if (keys.s.pressed && lastkey === "s") {
+      player.animate = true;
+      player.image = player.sprites.down;
+      for (let i = 0; i < boundaries.length; i++) {
+        const boundary = boundaries[i];
 
-      //regular collision check
-      if (
-        RectangularCollision({
-          rectangle1: player,
-          rectangle2: {
-            ...boundary,
-            position: {
-              x: boundary.position.x + 1,
-              y: boundary.position.y,
+        //regular collision check
+        if (
+          RectangularCollision({
+            rectangle1: player,
+            rectangle2: {
+              ...boundary,
+              position: {
+                x: boundary.position.x,
+                y: boundary.position.y - 3,
+              },
             },
-          },
-        })
-      ) {
-        moving = false;
-        // console.log("colliding");
-        break;
-      }
+          })
+        ) {
+          moving = false;
+          // console.log("colliding");
+          break;
+        }
 
-      //npc collision check
-      if (
-        RectangularCollision({
-          rectangle1: player,
-          rectangle2: {
-            ...npc1,
-            position: {
-              x: npc1.position.x + 2,
-              y: npc1.position.y,
+        //npc collision check
+        if (
+          RectangularCollision({
+            rectangle1: player,
+            rectangle2: {
+              ...npc1,
+              position: {
+                x: npc1.position.x,
+                y: npc1.position.y - 3,
+              },
             },
-          },
-        })
-      ) {
-        moving = false;
-        // console.log("Npc colliding");
-        break;
+          })
+        ) {
+          moving = false;
+          // console.log("Npc colliding");
+          break;
+        }
       }
-    }
-    if (moving === true) {
-      movables.forEach((movable) => {
-        movable.position.x += 1;
-      });
-    }
-  } else if (keys.s.pressed && lastkey === "s") {
-    player.animate = true;
-    player.image = player.sprites.down;
-    for (let i = 0; i < boundaries.length; i++) {
-      const boundary = boundaries[i];
+      if (moving === true) {
+        movables.forEach((movable) => {
+          movable.position.y -= 3;
+        });
+      }
+    } else if (keys.d.pressed && lastkey === "d") {
+      player.animate = true;
+      player.image = player.sprites.right;
+      for (let i = 0; i < boundaries.length; i++) {
+        const boundary = boundaries[i];
 
-      //regular collision check
-      if (
-        RectangularCollision({
-          rectangle1: player,
-          rectangle2: {
-            ...boundary,
-            position: {
-              x: boundary.position.x,
-              y: boundary.position.y - 1,
+        //regular collision check
+        if (
+          RectangularCollision({
+            rectangle1: player,
+            rectangle2: {
+              ...boundary,
+              position: {
+                x: boundary.position.x - 3,
+                y: boundary.position.y,
+              },
             },
-          },
-        })
-      ) {
-        moving = false;
-        // console.log("colliding");
-        break;
-      }
+          })
+        ) {
+          moving = false;
+          // console.log("colliding");
+          break;
+        }
 
-      //npc collision check
-      if (
-        RectangularCollision({
-          rectangle1: player,
-          rectangle2: {
-            ...npc1,
-            position: {
-              x: npc1.position.x,
-              y: npc1.position.y - 2,
+        //npc collision check
+        if (
+          RectangularCollision({
+            rectangle1: player,
+            rectangle2: {
+              ...npc1,
+              position: {
+                x: npc1.position.x - 3,
+                y: npc1.position.y,
+              },
             },
-          },
-        })
-      ) {
-        moving = false;
-        // console.log("Npc colliding");
-        break;
+          })
+        ) {
+          moving = false;
+          console.log("Npc colliding");
+          break;
+        }
+      }
+      if (moving === true) {
+        movables.forEach((movable) => {
+          movable.position.x -= 3;
+        });
       }
     }
-    if (moving === true) {
-      movables.forEach((movable) => {
-        movable.position.y -= 1;
-      });
-    }
-  } else if (keys.d.pressed && lastkey === "d") {
-    player.animate = true;
-    player.image = player.sprites.right;
-    for (let i = 0; i < boundaries.length; i++) {
-      const boundary = boundaries[i];
 
-      //regular collision check
-      if (
-        RectangularCollision({
-          rectangle1: player,
-          rectangle2: {
-            ...boundary,
-            position: {
-              x: boundary.position.x - 1,
-              y: boundary.position.y,
-            },
-          },
-        })
-      ) {
-        moving = false;
-        // console.log("colliding");
-        break;
-      }
-
-      //npc collision check
-      if (
-        RectangularCollision({
-          rectangle1: player,
-          rectangle2: {
-            ...npc1,
-            position: {
-              x: npc1.position.x - 2,
-              y: npc1.position.y,
-            },
-          },
-        })
-      ) {
-        moving = false;
-        console.log("Npc colliding");
-        break;
-      }
-    }
-    if (moving === true) {
-      movables.forEach((movable) => {
-        movable.position.x -= 1;
-      });
-    }
+    then = now;
   }
 }
 
@@ -456,6 +472,7 @@ let bag_open = false;
 // Handle opening the menu
 function openMenu() {
   if (bag_open) return; // Prevent opening the menu if the bag is open
+  audio.button_press.play();
 
   menu = true;
   keys_active = false;
@@ -471,6 +488,7 @@ function openMenu() {
 // Handle closing the menu
 function closeMenu() {
   if (bag_open) return; // Prevent closing the menu if the bag is open
+  audio.button_press.play();
 
   menu = false;
   keys_active = true;
@@ -525,60 +543,57 @@ document.querySelector("#menu-exit").addEventListener("click", () => {
   if (!bag_open) closeMenu(); // Only close the menu if the bag is not open
 });
 
-
 function OpenDialogue(npc) {
   keys_active = false;
 
   let NpcDialogue = document.querySelector("#OverworldDialogueBox");
   let dialogue = npc.dialogue;
   let dialogue_array = Object.values(dialogue);
-  let dialogue_exhaust = false;
   let dialogue_index = 0;
+  let typing = false;
+
+  function CloseDialogue() {
+    NpcDialogue.onclick = null; // Prevent additional clicks
+    document.querySelector("#OverworldDialogueBoxContainer").style.opacity =
+      "0";
+    keys_active = true;
+    Npc1_Dialogue_Available.value = false;
+    Npc1_Dialogue_Available.interact = false;
+  }
 
   function NextDialogue() {
-
-    //loop through all the dialogue available
-    if (dialogue_index < dialogue_array.length) {
-      let char_array = dialogue_array[dialogue_index];
-      let char_index = 0;
-      NpcDialogue.innerHTML = "";
-
-      const interval = setInterval(() => {
-
-        //loop through each letter of selected dialogue
-        if (char_index < char_array.length) {
-          NpcDialogue.innerHTML += char_array[char_index];
-          char_index++;
-        } else {
-          clearInterval(interval);
-          dialogue_index++;
-
-          if (dialogue_index >= dialogue_array.length) {
-            dialogue_exhaust = true;
-          }
-
-          NpcDialogue.onclick = () => {
-            NextDialogue();
-          };
-
-          if (dialogue_exhaust) {
-            //Wait for next click, then close dialogue box
-            NpcDialogue.onclick = () => {
-              document.querySelector("#OverworldDialogueBoxContainer").style.opacity = "0";
-              keys_active = true;
-              Npc1_Dialogue_Available.value = false;
-              NpcDialogue.onclick = null; //Prevent leftover event listeners
-            };
-          }
-        }
-      }, 20);
+    if (dialogue_index >= dialogue_array.length) {
+      CloseDialogue();
+      return;
     }
+
+    let char_array = dialogue_array[dialogue_index];
+    let char_index = 0;
+    NpcDialogue.innerHTML = "";
+    typing = true;
+
+    const interval = setInterval(() => {
+      if (char_index < char_array.length) {
+        NpcDialogue.innerHTML += char_array[char_index];
+        char_index++;
+      } else {
+        clearInterval(interval);
+        typing = false;
+        dialogue_index++;
+      }
+    }, 20);
   }
+
+  NpcDialogue.onclick = () => {
+    if (!typing) {
+      audio.button_press.play();
+      NextDialogue();
+    }
+  };
 
   NextDialogue();
   document.querySelector("#OverworldDialogueBoxContainer").style.opacity = "1";
 }
-
 
 // Handle keydown events
 window.addEventListener("keydown", (e) => {
@@ -617,8 +632,13 @@ window.addEventListener("keydown", (e) => {
       break;
 
     case "e":
-      if(Npc1_Dialogue_Available.value)
+      if (Npc1_Dialogue_Available.value) {
+        audio.button_press.play();
+
+        Npc1_Dialogue_Available.interact = true;
+        npc_sprite_upon_interaction();
         OpenDialogue(npc1);
+      }
       break;
   }
 });
@@ -651,9 +671,8 @@ window.addEventListener("keyup", (e) => {
   if (keys.w.pressed) lastkey = "w";
   else if (keys.a.pressed) lastkey = "a";
   else if (keys.s.pressed) lastkey = "s";
-  else if (keys.d.pressed) lastkey = "d"; 
+  else if (keys.d.pressed) lastkey = "d";
 });
-
 
 let clicked = false;
 addEventListener("click", () => {
@@ -664,5 +683,7 @@ addEventListener("click", () => {
 });
 
 animate();
+checkNpcInteraction();
+
 // initBattle();     //maintaining this order of calling the two function is must
 // animateBattle();
