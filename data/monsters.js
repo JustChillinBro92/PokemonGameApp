@@ -44,7 +44,7 @@ export const monsters = {
       attacks.Tackle,
       attacks.FireBall,
       attacks.DragonBreath,
-      // attacks.BurnUp,
+      attacks.BurnUp,
     ],
     frames: {
       max: 4,
@@ -74,7 +74,7 @@ export const monsters = {
       attacks.Tackle,
       attacks.FireBall,
       attacks.DragonBreath,
-      // attacks.BurnUp,
+      attacks.BurnUp,
     ],
     frames: {
       max: 4,
@@ -104,7 +104,7 @@ export const monsters = {
       attacks.Tackle,
       attacks.FireBall,
       attacks.DragonBreath,
-      // attacks.BurnUp,
+      attacks.BurnUp,
     ],
     frames: {
       max: 4,

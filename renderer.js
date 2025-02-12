@@ -1,18 +1,22 @@
-import { canvas } from "./canvas.js";
-import { Boundary, Sprite } from "./classes.js";
+import { Boundary, Sprite, health_tracker, health_width_tracker } from "./classes.js";
 import { collisions } from "./data/collisions.js";
 import { battleZonesData } from "./data/battlezones.js";
 import { audio } from "./data/audio.js";
 import { initBattle } from "./initiateBattle.js";
 import { animateBattle } from "./battlescene.js";
 import { load_backpack } from "./backpack.js";
+import { gameState, gameLoaded } from "./gameState.js";
 import { savegame, loadgame } from "./save_load.js";
+import { virtualSeconds } from "./day_night.js";
 import {
   npc1,
   Npc1_Dialogue_Available,
+  all_npcs,
   checkNpcInteraction,
   npc_sprite_upon_interaction,
 } from "./npc.js";
+
+let global_time = Math.floor((virtualSeconds / 3600) % 24);
 
 const collisionsMap = [];
 for (let i = 0; i <= collisions.length; i += 180) {
@@ -48,10 +52,14 @@ collisionsMap.forEach((row, i) => {
 //console.log(boundaries);
 
 export const battleZones = [];
+export const grass_tiles = [];
+
+const grass = new Image();
+grass.src = "./img/animated_grass.png";
 
 battleZonesMap.forEach((row, i) => {
   row.forEach((symbol, j) => {
-    if (symbol === 1025)
+    if (symbol === 1025) {
       battleZones.push(
         new Boundary({
           position: {
@@ -60,12 +68,35 @@ battleZonesMap.forEach((row, i) => {
           },
         })
       );
+
+      grass_tiles.push(
+        new Sprite({
+          position: {
+            x: j * Boundary.width + offset.x,
+            y: i * Boundary.height + offset.y,
+          },
+          image: grass,
+          frames: {
+            max: 8,
+            hold: 8,
+          },
+          animate: true,
+          scale: 1.2,
+        })
+      );
+    }
   });
 });
 //console.log(battleZones);
 
 const image = new Image();
 image.src = "./img/PetalwoodTown.png"; //html element i.e. the image(map)
+
+// const grass_bottom = new Image();
+// grass_bottom.src = "./img/grass_bottom.png";
+
+const campfire = new Image();
+campfire.src = "./img/campfire.png";
 
 const foregroundimage = new Image();
 foregroundimage.src = "./img/ForegroundObjects.png";
@@ -79,8 +110,11 @@ playerUpImage.src = "./img/playerUp.png";
 const playerLeftImage = new Image();
 playerLeftImage.src = "./img/playerLeft.png";
 
-const playerRightImage = new Image();
+let playerRightImage = new Image();
 playerRightImage.src = "./img/playerRight.png";
+
+const playerRight_HalfImage = new Image();
+playerRight_HalfImage.src = "./img/playerRight_Half.png";
 
 export const player = new Sprite({
   position: {
@@ -118,6 +152,51 @@ export const foreground = new Sprite({
 });
 // loadgame()
 
+// export const campfire_animated_1 = new Sprite({
+//   position: {
+//     x: offset.x + 1908,
+//     y: offset.y + 1719,
+//   },
+//   image: campfire,
+//   scale: 0.93,
+//   frames: {
+//     max: 4,
+//     hold: 8,
+//   },
+//   animate: true,
+// });
+
+// export const campfire_animated_2 = new Sprite({
+//   position: {
+//     x: offset.x + 1947,
+//     y: offset.y + 1719,
+//   },
+//   image: campfire,
+//   scale: 0.93,
+//   frames: {
+//     max: 4,
+//     hold: 8,
+//   },
+//   animate: true,
+// });
+
+export const campfires = [
+  { x: offset.x + 1908, y: offset.y + 1719 },
+  { x: offset.x + 1947, y: offset.y + 1719 },
+].map(
+  (position) =>
+    new Sprite({
+      position: position,
+      image: campfire,
+      scale: 0.93,
+      frames: {
+        max: 4,
+        hold: 8,
+      },
+      animate: true,
+    })
+);
+
 const keys = {
   w: {
     pressed: false,
@@ -141,7 +220,15 @@ const keys = {
 
 load_backpack();
 
-const movables = [npc1, background, foreground, ...boundaries, ...battleZones];
+const movables = [
+  npc1,
+  background,
+  ...campfires,
+  foreground,
+  ...boundaries,
+  ...battleZones,
+  ...grass_tiles,
+];
 
 function RectangularCollision({ rectangle1, rectangle2 }) {
   return (
@@ -155,6 +242,9 @@ function RectangularCollision({ rectangle1, rectangle2 }) {
 export const battle = {
   initiated: false,
 };
+
+let pause = false;
+let load_transition = false;
 
 let grassAudioPlay = false;
 export let menu = false; // user menu
@@ -171,30 +261,69 @@ export function animate() {
   const animateId = window.requestAnimationFrame(animate);
   // console.log("aimate");
 
-  if (deltaTime > 1000 / fps) {
-    if (menu) return;
+  if(pause) {
+    window.cancelAnimationFrame(animateId);
 
+    if(load_transition) {
+      gsap.to("#OverlappingDiv", {
+        opacity: 1,
+        duration: 1,
+        onComplete() {
+          gsap.to("#OverlappingDiv", {
+            //keeps the canvas covered by the 'overlapping div' as no yoyo property present...done to change the canvas behind it to battle scene
+            opacity: 0,
+          });
+        },
+      })
+      load_transition = false;
+    }
+   
+    setTimeout(() => {
+      animate();
+      pause = false;
+    },800)
+  }
+
+  if (deltaTime > 1000 / fps) {
     background.draw();
+
     boundaries.forEach((boundary) => {
       boundary.draw();
     });
+
     battleZones.forEach((battleZone) => {
       battleZone.draw();
     });
+
+    grass_tiles.forEach((grass) => {
+      grass.draw();
+    });
+
     player.draw();
+
     npc1.draw();
 
     foreground.draw();
+
+    if (global_time >= 19) {
+      campfires.forEach((campfire) => {
+        campfire.draw();
+      });
+    }
 
     let moving = true; // for collison blocks
     player.animate = false; // for player movement animation
 
     if (battle.initiated) return;
 
+    let inGrass = false;
+    if (!inGrass) player.sprites.right = playerRightImage;
+
     //activate a battle
     if (keys.w.pressed || keys.a.pressed || keys.s.pressed || keys.d.pressed) {
       for (let i = 0; i < battleZones.length; i++) {
         const battleZone = battleZones[i];
+
         const OverlappingArea =
           (Math.min(
             player.position.x + player.width,
@@ -214,6 +343,9 @@ export function animate() {
           }) &&
           OverlappingArea > (player.height * player.width) / 2
         ) {
+          inGrass = true;
+          player.sprites.right = playerRight_HalfImage;
+
           if (!grassAudioPlay) {
             grassAudioPlay = true;
             audio.grass.play();
@@ -222,51 +354,43 @@ export function animate() {
           setTimeout(() => {
             grassAudioPlay = false;
           }, 100);
-        }
 
-        if (
-          RectangularCollision({
-            rectangle1: player,
-            rectangle2: battleZone,
-          }) &&
-          OverlappingArea > (player.height * player.width) / 2 &&
-          Math.random() < 0.01
-        ) {
-          //console.log("battleZone Activate");
-          window.cancelAnimationFrame(animateId); //deactivates current animation loop
-          audio.Map.stop(); //stops map music
+          if (Math.random() < 0.01) {
+            //console.log("battleZone Activate");
+            window.cancelAnimationFrame(animateId); //deactivates current animation loop
+            audio.Map.stop(); //stops map music
 
-          battle.initiated = true;
+            battle.initiated = true;
 
-          audio.initBattle.play(); //starts battle initialise music
-          audio.battle.play(); //starts battle music
+            audio.initBattle.play(); //starts battle initialise music
+            audio.battle.play(); //starts battle music
 
-          //flashing animation on battle activation
-          gsap.to("#OverlappingDiv", {
-            opacity: 1,
-            repeat: 3,
-            yoyo: true, //smoothes out animation by bringing counter to 0 i.e., default state
-            duration: 0.4,
-            onComplete() {
-              gsap.to("#OverlappingDiv", {
-                //keeps the canvas covered by the 'overlapping div' as no yoyo property present...done to change the canvas behind it to battle scene
-                opacity: 1,
-                duration: 0.4,
-                onComplete() {
-                  //activate a new animation loop (battle sequence)
-                  initBattle();
-                  animateBattle();
+            //flashing animation on battle activation
+            gsap.to("#OverlappingDiv", {
+              opacity: 1,
+              repeat: 3,
+              yoyo: true, //smoothes out animation by bringing counter to 0 i.e., default state
+              duration: 0.4,
+              onComplete() {
+                gsap.to("#OverlappingDiv", {
+                  //keeps the canvas covered by the 'overlapping div' as no yoyo property present...done to change the canvas behind it to battle scene
+                  opacity: 1,
+                  duration: 0.4,
+                  onComplete() {
+                    //activate a new animation loop (battle sequence)
+                    initBattle();
+                    animateBattle();
 
-                  gsap.to("#OverlappingDiv", {
-                    opacity: 0,
-                    duration: 0.4,
-                  });
-                },
-              });
-            },
-          });
-
-          break;
+                    gsap.to("#OverlappingDiv", {
+                      opacity: 0,
+                      duration: 0.4,
+                    });
+                  },
+                });
+              },
+            });
+            break;
+          }
         }
       }
     }
@@ -469,6 +593,7 @@ let lastkey = "";
 let keys_active = true;
 let bag_open = false;
 
+
 // Handle opening the menu
 function openMenu() {
   if (bag_open) return; // Prevent opening the menu if the bag is open
@@ -485,6 +610,7 @@ function openMenu() {
   document.querySelector("#clockContainer").style.display = "block";
 }
 
+
 // Handle closing the menu
 function closeMenu() {
   if (bag_open) return; // Prevent closing the menu if the bag is open
@@ -498,16 +624,55 @@ function closeMenu() {
   document.querySelector("#clockContainer").style.display = "none";
 }
 
+
 //saving the game
 document.querySelector("#save").addEventListener("click", () => {
   savegame();
 });
 
+export let npc_direction = [];
+
 //loading the game
 document.querySelector("#load").addEventListener("click", () => {
   loadgame();
   closeMenu();
+  if(gameLoaded.onload) {
+    pause = true;
+    load_transition = true;
+  }
+  // console.log(pause);
+
+  if (gameLoaded.onload) {
+
+    // npc sprite on load
+    for (let i = 0; i < all_npcs.length; i++) {
+      
+      let image, direction;
+      if (npc_direction[i] === "left") {
+        image = all_npcs[i].sprites.left;
+        direction = "left";
+
+      } else if (npc_direction[i] === "right") {
+        image = all_npcs[i].sprites.right;
+        direction = "right";
+
+      } else if (npc_direction[i] === "up") {
+        image = all_npcs[i].sprites.up;
+        direction = "up";
+
+      } else {
+        image = all_npcs[i].sprites.down;
+        direction = "down";
+      }
+
+      all_npcs[i].image = image;
+      all_npcs[i].npc_image_key = direction;
+    }
+  }
+
+  
 });
+
 
 // Handle opening the bag
 document.querySelector("#menu-bag").addEventListener("click", () => {
@@ -543,6 +708,7 @@ document.querySelector("#menu-exit").addEventListener("click", () => {
   if (!bag_open) closeMenu(); // Only close the menu if the bag is not open
 });
 
+// Handle opening and closing of dialogue
 function OpenDialogue(npc) {
   keys_active = false;
 
@@ -629,6 +795,12 @@ window.addEventListener("keydown", (e) => {
 
     case "Enter":
       openMenu(); // Open the menu if it's not already open
+
+      keys.w.pressed = false;
+      keys.a.pressed = false;
+      keys.s.pressed = false;
+      keys.d.pressed = false;
+
       break;
 
     case "e":

@@ -19,8 +19,10 @@ export class Boundary {
   }
   // Method to update position based on new offsets
   updateOffset(deltaX, deltaY) {
-    this.position.x += deltaX;
-    this.position.y += deltaY;
+    if (deltaX != 0 || deltaY != 0) {
+      this.position.x -= deltaX;
+      this.position.y -= deltaY;
+    }
   }
 
   draw() {
@@ -40,6 +42,7 @@ export class Sprite {
   constructor({
     position,
     image,
+    npc_image_key,
     frames = { max: 1, hold: 25 },
     scale = 1,
     sprites,
@@ -48,6 +51,7 @@ export class Sprite {
     rotation = 0,
   }) {
     this.position = position;
+    this.npc_image_key = npc_image_key;
     this.image = new Image();
     this.frames = { ...frames, val: 0, elapsed: 0 };
     this.scale = scale;
@@ -103,8 +107,8 @@ export class Sprite {
 
     if (!this.animate) {
       this.frames.val = 0; // Reset to the first frame when animation stops
-      return
-    };
+      return;
+    }
 
     if (this.frames.max > 1) {
       // it means that a sprite-sheet for animation is present
@@ -112,107 +116,20 @@ export class Sprite {
     }
 
     if (this.frames.elapsed % this.frames.hold === 0) {
-      if (this.frames.val < this.frames.max - 1) 
-        this.frames.val++;
-      else 
-        this.frames.val = 0;
+      if (this.frames.val < this.frames.max - 1) this.frames.val++;
+      else this.frames.val = 0;
     }
   }
 
-  // npc_movement(NpcPos, Npc, Player) {
-  //   function RectangularCollision({ rectangle1, rectangle2 }) {
-  //     return (
-  //       rectangle1.position.x + rectangle1.width >= rectangle2.position.x &&
-  //       rectangle1.position.x <= rectangle2.position.x + rectangle2.width &&
-  //       rectangle1.position.y + rectangle1.height >= rectangle2.position.y &&
-  //       rectangle1.position.y <= rectangle2.position.y + rectangle2.height
-  //     );
-  //   }
+  // Method to update position based on new offsets
+  updateOffset(deltaX, deltaY) {
+    if (deltaX != 0 || deltaY != 0) {
+      this.position.x -= deltaX;
+      this.position.y -= deltaY;
+    }
+  }
 
-  //   let left, right, up, down;
-  //   const direction = ["left", "right", "up", "down"];
-
-  //   const randomDirection =
-  //     direction[Math.floor(Math.random() * direction.length)];
-
-  //   let initial_pos = NpcPos;
-  //   let current_pos = this.position;
-  //   let target_posX = initial_pos.x + 100;
-  //   let target_posY = initial_pos.y + 70;
-
-  //   if (randomDirection === "left" && current_pos.x > initial_pos.x) {
-  //     this.image = this.sprites.left;
-  //     if (
-  //       !RectangularCollision({
-  //         rectangle1: Npc,
-  //         rectangle2: {
-  //           ...Player,
-  //           position: {
-  //             x: Player.position.x + 3,
-  //             y: Player.position.y,
-  //           },
-  //         },
-  //       })
-  //     )
-  //       this.position.x -= 15;
-  //   } else if (randomDirection === "right" && current_pos.x < target_posX) {
-  //     this.image = this.sprites.right;
-
-  //     if (
-  //       !RectangularCollision({
-  //         rectangle1: Npc,
-  //         rectangle2: {
-  //           ...Player,
-  //           position: {
-  //             x: Player.position.x - 3,
-  //             y: Player.position.y,
-  //           },
-  //         },
-  //       })
-  //     )
-  //       this.position.x += 15;
-  //   } else if (randomDirection === "up" && current_pos.y > initial_pos.y) {
-  //     this.image = this.sprites.up;
-
-  //     if (
-  //       !RectangularCollision({
-  //         rectangle1: Npc,
-  //         rectangle2: {
-  //           ...Player,
-  //           position: {
-  //             x: Player.position.x,
-  //             y: Player.position.y + 3,
-  //           },
-  //         },
-  //       })
-  //     )
-  //       this.position.y -= 15;
-  //   } else if (randomDirection === "down" && current_pos.y < target_posY) {
-  //     this.image = this.sprites.down;
-
-  //     if (
-  //       !RectangularCollision({
-  //         rectangle1: Npc,
-  //         rectangle2: {
-  //           ...Player,
-  //           position: {
-  //             x: Player.position.x,
-  //             y: Player.position.y - 3,
-  //           },
-  //         },
-  //       })
-  //     )
-  //       this.position.y += 15;
-  //   }
-
-  //   // console.log(randomDirection);
-  //   // console.log("CameraOffset: " + cameraOffset.x + " " + cameraOffset.y);
-  //   // console.log("Initial Position: " + initial_pos.x + " " + initial_pos.y);
-  //   // console.log("Target: " + target_posX + " " + target_posY);
-  //   // console.log("current pos: " + this.position.x + " " + this.position.y);
-  //   // console.log("initial pos: " + pos.x + " " + pos.y);
-  // }
-
+  // Method to simulate npc movement
   npc_movement(NpcPos, Npc, Player, interact) {
     if (interact) return;
 
@@ -239,15 +156,22 @@ export class Sprite {
 
     if (randomDirection === "left" && this.position.x > initial_pos.x) {
       this.image = this.sprites.left;
+      this.npc_image_key = "left";
       nextPosition.x -= distance_moved;
+
     } else if (randomDirection === "right" && this.position.x < target_posX) {
       this.image = this.sprites.right;
+      this.npc_image_key = "right";
       nextPosition.x += distance_moved;
+
     } else if (randomDirection === "up" && this.position.y > initial_pos.y) {
       this.image = this.sprites.up;
+      this.npc_image_key = "up";
       nextPosition.y -= distance_moved;
+
     } else if (randomDirection === "down" && this.position.y < target_posY) {
       this.image = this.sprites.down;
+      this.npc_image_key = "down";
       nextPosition.y += distance_moved;
     }
 
@@ -284,24 +208,19 @@ export class Sprite {
     } else {
       collision = true;
     }
-
     return collision;
   }
 }
 
 export let health_tracker = { value: playerMonsters.emby.health };
-
 export let health_width_tracker = { value: 98.5 + "%" };
 
-export let level_tracker = playerMonsters.emby.level;
+export let level_tracker = { value: playerMonsters.emby.level };
 
-export let exp_tracker = playerMonsters.emby.exp;
-export let max_exp_tracker = playerMonsters.emby.max_exp;
-
+export let exp_tracker = { value: playerMonsters.emby.exp };
+export let max_exp_tracker = { value: playerMonsters.emby.max_exp };
+export let exp_width_tracker = { value: 0 + "%" };
 export let excess_exp;
-
-export let exp_width_tracker = document.querySelector("#ExpBar");
-
 export let lvl_up = false;
 
 export let status_tracker = "NRML";
@@ -309,11 +228,6 @@ export let status_color_tracker = "rgb(211, 210, 210)";
 
 export let stats_tracker = playerMonsters.emby.stats;
 
-// if(gameLoaded.onload === true) {
-//   health_tracker = gameState.health_tracker;
-//   health_width_tracker = gameState.health_width_tracker + "%";
-//   gameLoaded.onload = false;
-// }
 
 // export let enemy_status_tracker = "NRML";
 // export let enemy_status_color_tracker = "#2a2a2a";
@@ -440,49 +354,45 @@ export class Monster extends Sprite {
 
     switch (recipient.status) {
       case "NRML":
-        document.querySelector(target).style.color = "rgb(211, 210, 210)";
-
+  
         //specifically for player monster stat color
-        if (target === "#playerStat" && status_tracker === "NRML") {
-          status_color_tracker = "rgb(211, 210, 210)";
+        if(target === "#playerstat") {
+          if(status_tracker === "NRML")
+            status_color_tracker = "rgb(211, 210, 210)";
+          else if(stats_tracker === "BRND")
+            stats_tracker = "Orangered";
+          else if(stats_tracker === "PRLZ")
+            stats_tracker = "yellow";
           document.querySelector(target).style.color = status_color_tracker;
-        } else if (target === "#playerStat" && status_tracker === "BRND") {
-          status_color_tracker = "Orangered";
-          document.querySelector(target).style.color = status_color_tracker;
-        } else if (target === "#playerStat" && status_tracker === "PRLZ") {
-          status_color_tracker = "yellow";
-          document.querySelector(target).style.color = status_color_tracker;
-        }
+        } else document.querySelector(target).style.color = "rgb(211, 210, 210)";
         break;
+
       case "BRND":
-        document.querySelector(target).style.color = "Orangered";
-
+        
         //specifically for player monster stat color
-        if (target === "#playerStat" && status_tracker === "BRND") {
-          status_color_tracker = "Orangered";
+        if(target === "#playerstat") {
+          if(status_tracker === "NRML")
+            status_color_tracker = "rgb(211, 210, 210)";
+          else if(stats_tracker === "BRND")
+            stats_tracker = "Orangered";
+          else if(stats_tracker === "PRLZ")
+            stats_tracker = "yellow";
           document.querySelector(target).style.color = status_color_tracker;
-        } else if (target === "#playerStat" && status_tracker === "NRML") {
-          status_color_tracker = "rgb(211, 210, 210)";
-          document.querySelector(target).style.color = status_color_tracker;
-        } else if (target === "#playerStat" && status_tracker === "PRLZ") {
-          status_color_tracker = "yellow";
-          document.querySelector(target).style.color = status_color_tracker;
-        }
+        } else document.querySelector(target).style.color = "Orangered";
         break;
+
       case "PRLZ":
-        document.querySelector(target).style.color = "yellow";
 
         //specifically for player monster stat color
-        if (target === "#playerStat" && status_tracker === "PRLZ") {
-          status_color_tracker = "yellow";
+        if(target === "#playerstat") {
+          if(status_tracker === "NRML")
+            status_color_tracker = "rgb(211, 210, 210)";
+          else if(stats_tracker === "BRND")
+            stats_tracker = "Orangered";
+          else if(stats_tracker === "PRLZ")
+            stats_tracker = "yellow";
           document.querySelector(target).style.color = status_color_tracker;
-        } else if (target === "#playerStat" && status_tracker === "NRML") {
-          status_color_tracker = "rgb(211, 210, 210)";
-          document.querySelector(target).style.color = status_color_tracker;
-        } else if (target === "#playerStat" && status_tracker === "BRND") {
-          status_color_tracker = "Orangered";
-          document.querySelector(target).style.color = status_color_tracker;
-        }
+        } else document.querySelector(target).style.color = "yellow";
         break;
     }
   }
@@ -590,7 +500,7 @@ export class Monster extends Sprite {
         if (this.status === "BRND" || status_tracker === "BRND") {
           this.status = "NRML";
           status_tracker = "NRML";
-          document.querySelector("#playerStat").style.color = "#2a2a2a";
+          document.querySelector("#playerStat").style.color = "rgb(211, 210, 210)";
         }
         document.querySelector("#playerStat").innerHTML = this.status;
         break;
@@ -601,8 +511,9 @@ export class Monster extends Sprite {
         if (this.status === "PRLZ" || status_tracker === "PRLZ") {
           this.status = "NRML";
           status_tracker = "NRML";
-          document.querySelector("#playerStat").innerHTML = this.status;
+          document.querySelector("#playerStat").style.color = "rgb(211, 210, 210)";
         }
+        document.querySelector("#playerStat").innerHTML = this.status;
         break;
     }
   }
@@ -921,6 +832,8 @@ export class Monster extends Sprite {
   faint() {
     document.querySelector("#DialogueBox").innerHTML = this.name + " Fainted! ";
 
+    let Exp_Bar = document.querySelector("#ExpBar")
+
     //partner faints
     if (this.isPartner) {
       health_tracker.value = this.maxHealth;
@@ -929,29 +842,29 @@ export class Monster extends Sprite {
       //console.log(health_width_tracker.value);
     } else {
       //enemy faints
-      let exp_yield = Math.floor((this.base_exp_yield * this.level) / 7);
-      exp_tracker += exp_yield;
+      let exp_yield = Math.floor((this.base_exp_yield * this.level) / 4);
+      console.log(exp_yield);
+      exp_tracker.value += exp_yield;
 
-      gsap.to(exp_width_tracker, {
-        width: (exp_tracker / max_exp_tracker) * 100 + "%",
-        duration: 1,
+      gsap.to(Exp_Bar, {
+        width: (exp_tracker.value / max_exp_tracker.value) * 100 + "%",
+        duration: 1.5,
         onUpdate: () => {
-          let EXP_WIDTH = parseFloat(exp_width_tracker.style.width);
+          let EXP_WIDTH = parseFloat(Exp_Bar.style.width);
           if (EXP_WIDTH >= 100) {
             if (!lvl_up) {
-              level_tracker += 1;
-              max_exp_tracker = max_exp(level_tracker);
+              level_tracker.value += 1;
+              max_exp_tracker.value = max_exp(level_tracker.value);
 
-              let marginal_exp_diff = max_exp_tracker - exp_tracker;
+              let marginal_exp_diff = max_exp_tracker.value - exp_tracker.value;
               excess_exp = exp_yield - marginal_exp_diff;
 
-              exp_tracker = excess_exp;
+              exp_tracker.value = excess_exp;
 
               lvl_up = true;
-              //document.querySelector("#DialogueBox").innerHTML = playerMonsters.emby.name + " grew to Level " + level_tracker + " ! ";
             }
             document.querySelector("#ExpBar").style.width = "0%";
-            document.querySelector("#player_lvl").innerHTML = level_tracker;
+            document.querySelector("#player_lvl").innerHTML = level_tracker.value;
           }
         },
         onComplete: () => {
@@ -959,15 +872,16 @@ export class Monster extends Sprite {
             document.querySelector("#DialogueBox").innerHTML =
               playerMonsters.emby.name +
               " grew to Level " +
-              level_tracker +
+              level_tracker.value +
               " ! ";
             document.querySelector("#DialogueBox").appendChild(progress_gif);
           }
 
-          gsap.to(exp_width_tracker, {
-            width: (exp_tracker / max_exp_tracker) * 100 + "%",
-            duration: 1,
+          gsap.to(Exp_Bar, {
+            width: (exp_tracker.value / max_exp_tracker.value) * 100 + "%",
+            duration: 1.5,
           });
+          exp_width_tracker.value = (exp_tracker.value / max_exp_tracker.value) * 100 + "%"
           lvl_up = false;
 
           // if(exp_tracker >= max_exp_tracker) {

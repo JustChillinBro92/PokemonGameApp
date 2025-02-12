@@ -1,4 +1,14 @@
-import { Monster, progress_gif, health_tracker, health_width_tracker, status_tracker, status_color_tracker,exp_tracker, max_exp_tracker, level_tracker, lvl_up} from "./classes.js";
+import { Monster, 
+  progress_gif, 
+  health_tracker, 
+  health_width_tracker, 
+  status_tracker, 
+  status_color_tracker,
+  exp_tracker, 
+  max_exp_tracker,
+  exp_width_tracker, 
+  level_tracker, 
+  lvl_up} from "./classes.js";
 import { battle, animate, menu } from "./renderer.js";
 import { animateBattleId } from "./battlescene.js";
 import { audio } from "./data/audio.js";
@@ -42,32 +52,31 @@ export function initBattle() {
 
   document.querySelector("#DialogueBox").style.display = "none";
 
-  document.querySelector("#player_health").style.opacity = "1";
-  document.querySelector("#enemy_health").style.opacity = "1";
-
-  document.querySelector("#enemyHealthBar").style.display = "block";
-  document.querySelector("#playerHealthBar").style.display = "block";
-  
-  document.querySelector("#enemyHealthBar").style.backgroundColor =
-    "rgb(58, 227, 58)";
-  document.querySelector("#enemyHealthBar").style.visibility = "visible";
-  
+  // player monster stuff handler
   if(health_tracker.value <= 60) {
     document.querySelector("#playerHealthBar").style.backgroundColor = "yellow";
      if(health_tracker.value <= 25) document.querySelector("#playerHealthBar").style.backgroundColor = "red";
   } else document.querySelector("#playerHealthBar").style.backgroundColor =
   "rgb(58, 227, 58)";
-  
+
+  document.querySelector("#playerHealthBar").style.display = "block";
+  document.querySelector("#player_health").style.opacity = "1";
   document.querySelector("#playerHealthBar").style.visibility = "visible";
-
-  document.querySelector("#enemyHealthBar").style.width = "98.5%";
   document.querySelector("#playerHealthBar").style.width = health_width_tracker.value;
+  document.querySelector("#playerStat").innerHTML = status_tracker;
+  document.querySelector("#playerStat").style.color = status_color_tracker;
+  document.querySelector("#ExpBar").style.width = exp_width_tracker.value;
 
+  //enemy monster stuff handler
+  document.querySelector("#enemyHealthBar").style.backgroundColor =
+  "rgb(58, 227, 58)";
+  document.querySelector("#enemyHealthBar").style.display = "block";
+  document.querySelector("#enemy_health").style.opacity = "1";
+  document.querySelector("#enemyHealthBar").style.visibility = "visible";
+  document.querySelector("#enemyHealthBar").style.width = "98.5%";
   document.querySelector("#enemyStat").innerHTML = getRandomMonster().status;
   document.querySelector("#enemyStat").style.color = "rgb(211, 210, 210)";
 
-  document.querySelector("#playerStat").innerHTML = status_tracker;
-  document.querySelector("#playerStat").style.color = status_color_tracker;
 
   document.querySelector("#restorativeBox").replaceChildren();
   document.querySelector("#statusHealBox").replaceChildren();
@@ -78,15 +87,14 @@ export function initBattle() {
   partner = new Monster(playerMonsters.emby);
 
   document.querySelector("#enemy_lvl").innerHTML = enemy.level;
-  document.querySelector("#player_lvl").innerHTML = level_tracker;
+  document.querySelector("#player_lvl").innerHTML = level_tracker.value;
 
-  // console.log(partner);
-  // console.log(enemy);
+  console.log(health_tracker.value);
+  console.log(health_width_tracker.value);
 
-  // console.log(health_tracker.value);
-  // console.log(health_width_tracker.value);
+  console.log(exp_tracker);
+  console.log(max_exp_tracker);
 
-  // console.log(exp_tracker);
 
   enemy.health = enemy.maxHealth;
   partner.health = health_tracker.value;
@@ -226,7 +234,7 @@ export function initBattle() {
     });
   });
 
-  // //loads the category objects from the player's bag
+  //loads the category objects from the player's bag
   let ItemCategories = playerItems.bag;
   let categoryId;
 
@@ -236,11 +244,10 @@ export function initBattle() {
 
     //loops through the items in each category in player's bag and creates button for them
     category.forEach((ITEM) => {
+
       // Check for the current category for example "restoratives"
       if (categoryKey === "restoratives") categoryId = "#restorativeBox";
       else if (categoryKey === "status_heal") categoryId = "#statusHealBox";
-
-      //let initial_item_quantity = ITEM.quantity;
 
       const item_button = document.createElement("button");
       item_button.innerHTML = ITEM.item.name + " x " + ITEM.quantity;
@@ -261,6 +268,7 @@ export function initBattle() {
       // Checks which item is used and takes action accordingly
       item_button.addEventListener("click", (e) => {
         if(menu) return;
+
         if (
           categoryKey === "restoratives" &&
           partner.health < partner.maxHealth || categoryKey === "restoratives" &&

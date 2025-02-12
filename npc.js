@@ -1,4 +1,5 @@
 import { Sprite } from "./classes.js";
+import { gameLoaded } from "./gameState.js";
 import { player, background, offset } from "./renderer.js";
 
 const npc1DownImage = new Image();
@@ -13,12 +14,15 @@ npc1LeftImage.src = "./img/playerLeft.png";
 const npc1RightImage = new Image();
 npc1RightImage.src = "./img/playerRight.png";
 
-export const npc1 = new Sprite({
+export const direction_img = [npc1DownImage, npc1UpImage, npc1LeftImage, npc1RightImage];
+
+export let npc1 = new Sprite({
   position: {
     x: 305,
     y: 120,
   },
   image: npc1DownImage,
+  npc_image_key: "down",
   frames: {
     max: 4,
     hold: 10,
@@ -40,6 +44,10 @@ export let Npc1_Dialogue_Available = {
   interact: false,
 };
 
+export const all_npcs = [npc1]
+
+// console.log(gameLoaded)
+
 export function npc_sprite_upon_interaction() {
   if (!Npc1_Dialogue_Available.interact) return;
 
@@ -50,15 +58,19 @@ export function npc_sprite_upon_interaction() {
     // Player is to the left or right of NPC
     if (dx > 0) {
       npc1.image = npc1RightImage; // Player is to the right
+      npc1.npc_image_key = "right";
     } else {
       npc1.image = npc1LeftImage; // Player is to the left
+      npc1.npc_image_key = "left";
     }
   } else {
     // Player is above or below NPC
     if (dy > 0) {
       npc1.image = npc1DownImage; // Player is below
+      npc1.npc_image_key = "down";
     } else {
       npc1.image = npc1UpImage; // Player is above
+      npc1.npc_image_key = "up";
     }
   }
 }
@@ -74,8 +86,6 @@ export function checkNpcInteraction() {
   var fps = 1;
 
   if(deltaTime > 1000 / fps) {
-    console.log("NO")
-
     let initialPosNpc1 = {
       x: 305,
       y: 120,
@@ -92,6 +102,7 @@ export function checkNpcInteraction() {
     }
   
     let Npc1collide = npc1.npc_movement(initialPosNpc1, npc1, player, Npc1_Dialogue_Available.interact);
+    // console.log(gameLoaded)
     
     if (Npc1collide && !Npc1_Dialogue_Available.value) {
       console.log("Talk");
@@ -102,6 +113,7 @@ export function checkNpcInteraction() {
   }
   requestAnimationFrame(checkNpcInteraction); // Continue the loop
 }
+
 
 // console.log("Npc pos: " + npc1.position.x + " " + npc1.position.y)
 

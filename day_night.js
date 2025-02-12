@@ -54,8 +54,9 @@ fullCycle.forEach(step => {
 
 const timeElement = document.querySelector("#clock");
 
-let virtualSeconds = 7 * 3600; // Virtual time in seconds (7:00 AM)
+export let virtualSeconds = 7 * 3600; // Virtual time in seconds (7:00 AM)
 let lastUpdate = performance.now(); // High-precision timestamp
+
 
 function updateClock() {
     let now = performance.now();
