@@ -20,6 +20,7 @@ export let playerMonsters = {
     animate: true,
     isPartner: true,
     health: 150,
+    type : 'Fire',
     level: 5,
     exp: 0,
     max_exp: max_exp(5),
@@ -54,6 +55,7 @@ export const monsters = {
     animate: true,
     isEnemy: true,
     health: 170,
+    type : 'Fire',
     level: getRandomLevel(5,11),
     base_exp_yield: 90,
     status: "NRML",
@@ -71,9 +73,9 @@ export const monsters = {
       src: "./img/draggleSprite.png",
     },
     attack: [
-      attacks.Tackle,
-      attacks.FireBall,
-      attacks.DragonBreath,
+      // attacks.Tackle,
+      // attacks.FireBall,
+      // attacks.DragonBreath,
       attacks.BurnUp,
     ],
     frames: {
@@ -84,6 +86,7 @@ export const monsters = {
     animate: true,
     isEnemy: true,
     health: 160,
+    type : 'Dragon',
     level: getRandomLevel(5,11),
     base_exp_yield: 90,
     status: "NRML",
@@ -114,6 +117,7 @@ export const monsters = {
     animate: true,
     isEnemy: true,
     health: 180,
+    type : 'Dragon',
     level: getRandomLevel(5,11),
     base_exp_yield: 90,
     status: "NRML",
@@ -133,7 +137,8 @@ export const monsters = {
     attack: [
       attacks.Tackle,
       attacks.FireBall,
-      attacks.DragonBreath
+      attacks.DragonBreath,
+      attacks.BurnUp,
       ],
     frames: {
       max: 4,
@@ -143,6 +148,7 @@ export const monsters = {
     animate: true,
     isEnemy: true,
     health: 180,
+    type : 'Ground',
     level: getRandomLevel(5,11),
     base_exp_yield: 90,
     status: "NRML",

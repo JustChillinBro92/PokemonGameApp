@@ -1,6 +1,6 @@
 import { Sprite } from "./classes.js";
 import { gameLoaded } from "./gameState.js";
-import { player, background, offset } from "./renderer.js";
+import { player, background, offset, dialogue_prompt} from "./renderer.js";
 
 const npc1DownImage = new Image();
 npc1DownImage.src = "./img/playerDown.png";
@@ -80,10 +80,12 @@ export function npc_sprite_upon_interaction() {
 var thenTime = Date.now();
 var nowTime;
 
+
 export function checkNpcInteraction() {
   nowTime = Date.now();
   var deltaTime = nowTime - thenTime;
   var fps = 1;
+
 
   if(deltaTime > 1000 / fps) {
     let initialPosNpc1 = {
@@ -104,13 +106,17 @@ export function checkNpcInteraction() {
     let Npc1collide = npc1.npc_movement(initialPosNpc1, npc1, player, Npc1_Dialogue_Available.interact);
     // console.log(gameLoaded)
     
-    if (Npc1collide && !Npc1_Dialogue_Available.value) {
-      console.log("Talk");
-      Npc1_Dialogue_Available.value = true;
-    }
+    if (Npc1collide) {
+      dialogue_prompt.position.x = npc1.position.x + 2;
+      dialogue_prompt.position.y = npc1.position.y - 35;
 
+      Npc1_Dialogue_Available.value = true;
+
+    } else Npc1_Dialogue_Available.value = false;
+ 
     thenTime = nowTime;
   }
+
   requestAnimationFrame(checkNpcInteraction); // Continue the loop
 }
 

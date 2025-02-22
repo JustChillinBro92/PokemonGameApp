@@ -7,7 +7,7 @@ export const attacks = {
     },
     FireBall : {
         name: 'FireBall',
-        damage: 60,
+        damage: 30,
         type: 'Fire',
         color: 'Orangered',
     },

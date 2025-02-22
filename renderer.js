@@ -15,8 +15,8 @@ import {
   checkNpcInteraction,
   npc_sprite_upon_interaction,
 } from "./npc.js";
+import { playerMonsters } from "./data/monsters.js";
 
-let global_time = Math.floor((virtualSeconds / 3600) % 24);
 
 const collisionsMap = [];
 for (let i = 0; i <= collisions.length; i += 180) {
@@ -116,6 +116,16 @@ playerRightImage.src = "./img/playerRight.png";
 const playerRight_HalfImage = new Image();
 playerRight_HalfImage.src = "./img/playerRight_Half.png";
 
+const playerLeft_HalfImage = new Image();
+playerLeft_HalfImage.src = "./img/playerLeft_Half.png";
+
+const playerDown_HalfImage = new Image();
+playerDown_HalfImage.src = "./img/playerDown_Half.png";
+
+const playerUp_HalfImage = new Image();
+playerUp_HalfImage.src = "./img/playerUp_Half.png";
+
+
 export const player = new Sprite({
   position: {
     x: 704.8,
@@ -197,6 +207,22 @@ export const campfires = [
     })
 );
 
+const dialogue_prompt_img = new Image();
+dialogue_prompt_img.src = "./img/dialogue_prompt.png"
+
+export const dialogue_prompt = new Sprite({
+  position: {
+    x: 0,
+    y: 0,
+  },
+  image: dialogue_prompt_img,
+  frames: {
+    max: 4,
+    hold: 12,
+  },
+  animate: true,
+})
+
 const keys = {
   w: {
     pressed: false,
@@ -221,7 +247,8 @@ const keys = {
 load_backpack();
 
 const movables = [
-  npc1,
+  // npc1,
+  dialogue_prompt,
   background,
   ...campfires,
   foreground,
@@ -256,6 +283,8 @@ export function animate() {
   now = Date.now();
   var deltaTime = now - then;
   var fps = 60;
+
+  const global_time = Math.floor((virtualSeconds.value / 3600) % 24);
 
   // Animation logic...
   const animateId = window.requestAnimationFrame(animate);
@@ -302,10 +331,11 @@ export function animate() {
     player.draw();
 
     npc1.draw();
+    if(Npc1_Dialogue_Available.value) dialogue_prompt.draw();
 
     foreground.draw();
 
-    if (global_time >= 19) {
+    if (global_time >= 19 || global_time <= 3) {
       campfires.forEach((campfire) => {
         campfire.draw();
       });
@@ -317,7 +347,12 @@ export function animate() {
     if (battle.initiated) return;
 
     let inGrass = false;
-    if (!inGrass) player.sprites.right = playerRightImage;
+    if (!inGrass) {
+      player.sprites.right = playerRightImage;
+      player.sprites.left = playerLeftImage;
+      player.sprites.down = playerDownImage;
+      player.sprites.up = playerUpImage;
+    }
 
     //activate a battle
     if (keys.w.pressed || keys.a.pressed || keys.s.pressed || keys.d.pressed) {
@@ -344,7 +379,12 @@ export function animate() {
           OverlappingArea > (player.height * player.width) / 2
         ) {
           inGrass = true;
+          console.log(inGrass)
           player.sprites.right = playerRight_HalfImage;
+          player.sprites.left = playerLeft_HalfImage;
+          player.sprites.down = playerDown_HalfImage;
+          player.sprites.up = playerUp_HalfImage;
+
 
           if (!grassAudioPlay) {
             grassAudioPlay = true;
@@ -355,7 +395,10 @@ export function animate() {
             grassAudioPlay = false;
           }, 100);
 
-          if (Math.random() < 0.01) {
+          let encounter_rate = Math.random()
+          // console.log(encounter_rate);
+
+          if (encounter_rate < 0.02) {
             //console.log("battleZone Activate");
             window.cancelAnimationFrame(animateId); //deactivates current animation loop
             audio.Map.stop(); //stops map music
@@ -636,13 +679,13 @@ export let npc_direction = [];
 document.querySelector("#load").addEventListener("click", () => {
   loadgame();
   closeMenu();
-  if(gameLoaded.onload) {
-    pause = true;
-    load_transition = true;
-  }
-  // console.log(pause);
 
   if (gameLoaded.onload) {
+    pause = true;
+    load_transition = true;
+
+    // reload bag
+    load_backpack();
 
     // npc sprite on load
     for (let i = 0; i < all_npcs.length; i++) {
@@ -669,8 +712,6 @@ document.querySelector("#load").addEventListener("click", () => {
       all_npcs[i].npc_image_key = direction;
     }
   }
-
-  
 });
 
 
@@ -854,8 +895,8 @@ addEventListener("click", () => {
   }
 });
 
-animate();
-checkNpcInteraction();
+// animate();
+// checkNpcInteraction();
 
-// initBattle();     //maintaining this order of calling the two function is must
-// animateBattle();
+initBattle();     //maintaining this order of calling the two function is must
+animateBattle();

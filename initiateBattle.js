@@ -9,12 +9,11 @@ import { Monster,
   exp_width_tracker, 
   level_tracker, 
   lvl_up} from "./classes.js";
-import { battle, animate, menu } from "./renderer.js";
+// import { battle, animate, menu } from "./renderer.js";
 import { animateBattleId } from "./battlescene.js";
 import { audio } from "./data/audio.js";
 import { playerMonsters, getRandomMonster } from "./data/monsters.js";
 import { attacks } from "./data/attacks.js";
-// import { load_backpack } from "./backpack.js";
 import { playerItems, UseItemFromButton } from "./data/playerBag.js";
 // import { gameState } from "./gameState.js";
 // import { gameLoaded } from "./save_load.js";
@@ -40,11 +39,12 @@ let item_used = false;
 
 export function initBattle() {
   // console.log(menu);
-  // console.log(status_tracker);
-  // console.log(status_color_tracker);
+  console.log(status_tracker);
+  console.log(status_color_tracker);
   // console.log("lvl: " + level_tracker);
   // console.log("current_exp: " + exp_tracker);
   // console.log("max exp: " + max_exp_tracker);
+
 
   document.querySelector("#Interface").style.display = "block";
   document.querySelector("#encounterBox").style.display = "block";
@@ -63,8 +63,8 @@ export function initBattle() {
   document.querySelector("#player_health").style.opacity = "1";
   document.querySelector("#playerHealthBar").style.visibility = "visible";
   document.querySelector("#playerHealthBar").style.width = health_width_tracker.value;
-  document.querySelector("#playerStat").innerHTML = status_tracker;
-  document.querySelector("#playerStat").style.color = status_color_tracker;
+  document.querySelector("#playerStat").innerHTML = status_tracker.value;
+  document.querySelector("#playerStat").style.color = status_color_tracker.value;
   document.querySelector("#ExpBar").style.width = exp_width_tracker.value;
 
   //enemy monster stuff handler
@@ -89,11 +89,11 @@ export function initBattle() {
   document.querySelector("#enemy_lvl").innerHTML = enemy.level;
   document.querySelector("#player_lvl").innerHTML = level_tracker.value;
 
-  console.log(health_tracker.value);
-  console.log(health_width_tracker.value);
+  // console.log(health_tracker.value);
+  // console.log(health_width_tracker.value);
 
-  console.log(exp_tracker);
-  console.log(max_exp_tracker);
+  // console.log(exp_tracker);
+  // console.log(max_exp_tracker);
 
 
   enemy.health = enemy.maxHealth;
@@ -210,8 +210,6 @@ export function initBattle() {
     //event listeners for our attack buttons
     button.addEventListener("click", (e) => 
       {
-      //console.log(e.currentTarget.innerHTML);
-      //console.log(attacks[e.currentTarget.innerHTML]);
       const selectedAttack = attacks[e.currentTarget.innerHTML];
 
       let attack_happen_player = partner.status_effect_nonDamage();
@@ -222,7 +220,7 @@ export function initBattle() {
           recipient: enemy,
           renderedSprites,
         });
-        console.log(queue.length);
+        // console.log(queue.length);
         battle_end_check(enemy);
 
         //enemy attacks
@@ -234,6 +232,7 @@ export function initBattle() {
     });
   });
 
+  //console.log(playerItems)
   //loads the category objects from the player's bag
   let ItemCategories = playerItems.bag;
   let categoryId;
@@ -257,8 +256,8 @@ export function initBattle() {
       item_button.setAttribute("data-item", ITEM.item.name);
       item_button.setAttribute("data-item-object", JSON.stringify(ITEM.item)); // Store the entire item object
 
-      // Append the button only to the #restorativeBox
-      document.querySelector(categoryId).append(item_button);
+      if(ITEM.quantity != 0)
+        document.querySelector(categoryId).append(item_button); // Append the button
 
       item_button.addEventListener("mouseenter", () => {
         document.querySelector("#description").innerHTML =
@@ -269,6 +268,8 @@ export function initBattle() {
       item_button.addEventListener("click", (e) => {
         if(menu) return;
 
+        console.log(partner.maxHealth)
+
         if (
           categoryKey === "restoratives" &&
           partner.health < partner.maxHealth || categoryKey === "restoratives" &&
@@ -278,21 +279,23 @@ export function initBattle() {
         else if (
           item_button.getAttribute("data-item") === "Burn Heal" &&
           partner.status === "BRND" || item_button.getAttribute("data-item") === "Burn Heal" &&
-          status_tracker === "BRND"
+          status_tracker.value === "BRND"
         )
           item_used = true;
         else if (
           item_button.getAttribute("data-item") === "Paralyze Heal" &&
           partner.status === "PRLZ" || item_button.getAttribute("data-item") === "Burn Heal" &&
-          status_tracker === "PRLZ"
+          status_tracker.value === "PRLZ"
         )
           item_used = true;
 
-        //console.log(item_button.getAttribute("data-item"))
-        //console.log(item_used);
-
+         //console.log(item_used);
         if (item_used) {
           UseItemFromButton(e, item_button); //reduces quantity of item used
+          if(ITEM.quantity === 0)
+            item_button.remove();
+
+          // console.log(playerItems)
 
           document.querySelector("#backpack").style.display = "none";
           document.querySelector("#encounterBox").style.display = "none";
@@ -399,7 +402,7 @@ export function enemy_attacks(e) {
       // console.log(queue.length);
 
       //check for status effect(damage type) at the end of both side attack
-      if (partner.status === "BRND" || status_tracker === "BRND") {
+      if (partner.status === "BRND" || status_tracker.value === "BRND") {
         queue.push(() => {
           partner.status_effect_damage();
           battle_end_check(partner);

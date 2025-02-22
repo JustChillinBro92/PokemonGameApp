@@ -9,7 +9,8 @@ import {
   grass_tiles,
   campfires,
   offset,
-  npc_direction
+  npc_direction,
+  player,
 } from "./renderer.js";
 import {
   health_tracker,
@@ -21,6 +22,7 @@ import {
   status_color_tracker,
 } from "./classes.js";
 import { npc1, all_npcs } from "./npc.js";
+import { virtualSeconds, formattedHours, formattedMinutes, interval } from "./day_night.js";
 
 // Helper function to remove circular references
 function getCircularReplacer() {
@@ -46,6 +48,8 @@ export function savegame() {
     background_position: background.position,
     foreground_position: foreground.position,
     offset_position: offset,
+    global_time: virtualSeconds.value,
+    time: { formattedHours, formattedMinutes, interval },
     npc_details: [npc1],
     party: cleanParty,
     items: cleanItems,
@@ -54,8 +58,8 @@ export function savegame() {
     lvl: level_tracker.value,
     exp: parseFloat(exp_tracker.value),
     expBarWidth: parseFloat(exp_width_tracker.value),
-    status: status_tracker,
-    statusColor: status_color_tracker,
+    status: status_tracker.value,
+    statusColor: status_color_tracker.value,
   };
 
   try {
@@ -81,39 +85,27 @@ export function loadgame() {
   const data = JSON.parse(saveData);
   console.log(data);
 
+  // update the game-state
+  gameState.time = data.time;
+  gameState.playerMonsters = data.party;
+
+
+  // time update on load
+  virtualSeconds.value = data.global_time;
+
+  // background related stuff on load
+  const offset_changeX = background.position.x - data.background_position.x
+  const offset_changeY = background.position.y - data.background_position.y;
+
+  background.position = data.background_position;
+  foreground.position = data.foreground_position;
+  
   for (let i = 0; i < all_npcs.length; i++) {
     npc_direction[i] = data.npc_details[i].npc_image_key;
   }
   // console.log(npc_direction);
 
-  //restore data
-  gameState.background.position = data.background_position;
-  gameState.foreground.position = data.foreground_position;
-
-  for (let i = 0; i < gameState.npc.length; i++) {
-    gameState.npc[i] = data.npc_details[i];
-  }
-
-  gameState.offset.position = data.offset_position;
-
-  gameState.playerMonsters = data.party;
-  gameState.playerItems = data.items;
-  gameState.health_tracker = data.health;
-  gameState.health_width_tracker = data.healthBarWidth;
-  gameState.level_tracker = data.lvl;
-  gameState.exp_tracker = data.exp;
-  gameState.exp_width_tracker = data.expBarWidth;
-  gameState.status_tracker = data.status;
-  gameState.status_color_tracker = data.statusColor;
-
-  // console.log(gameState.background.position);
-  const offset_changeX = background.position.x - gameState.background.position.x;
-  const offset_changeY = background.position.y - gameState.background.position.y;
-
-  background.position = gameState.background.position;
-  foreground.position = gameState.foreground.position;
-  
-  npc1.position = gameState.npc[0].position;
+  npc1.position = data.npc_details[0].position;
   // console.log(direction_img);
 
   boundaries.forEach((boundary) => {
@@ -137,25 +129,36 @@ export function loadgame() {
   // console.log("Loaded Background Position:", gameState.background.position);
   // console.log("Offset Change:", offset_changeX, offset_changeY);
 
-  // Update `playerMonsters`
+
+  // Update the players items
+  for (const key in data.items) {
+    if(playerItems[key]) {
+      Object.assign(playerItems, data.items);
+    } else playerItems = data.items;
+  }
+
+
+  // Update playerMonsters
   for (const key in data.party) {
     if (playerMonsters[key]) {
-      Object.assign(playerMonsters[key], data.party[key]); // Merge properties
-      playerMonsters[key].health = data.health;
-    } else {
-      playerMonsters[key] = data.party[key]; // Add new monsters
-    }
+      Object.assign(playerMonsters, data.party); // Merge properties
+    } else playerMonsters = data.party;
   }
 
   // battle related stuff on load
-  health_tracker.value = gameState.health_tracker;
-  health_width_tracker.value = gameState.health_width_tracker + "%";
+  health_tracker.value = data.health;
+  health_width_tracker.value = data.healthBarWidth + "%";
 
-  level_tracker.value = gameState.level_tracker;
-  exp_tracker.value = gameState.exp_tracker;
-  exp_width_tracker.value = gameState.exp_width_tracker + "%";
+  level_tracker.value = data.lvl;
+  exp_tracker.value = data.exp;
+  exp_width_tracker.value = data.expBarWidth + "%";
 
-  console.log(exp_tracker.value, exp_width_tracker.value);
+  status_tracker.value = data.status;
+  status_color_tracker.value = data.statusColor;
+
+  // console.log(status_tracker.value , status_color_tracker.value)
+
+  // console.log(exp_tracker.value, exp_width_tracker.value);
 
   // status_tracker = data.status;
   // status_color_tracker = data.statusColor;

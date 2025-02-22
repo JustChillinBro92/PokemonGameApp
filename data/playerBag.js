@@ -20,15 +20,12 @@ export let playerItems = {
     const itemCategory = playerItems.bag[category];
     const itemUsed = itemCategory.find(i => i.item.name === itemName);
 
-    if(itemUsed && itemUsed.quantity > 1) {
+    if(itemUsed && itemUsed.quantity >= 1) {
         itemUsed.quantity--;
         button.innerHTML = itemName + " x " + itemUsed.quantity;
 
         console.log(itemName + " from category: " + category + " used & Remaining: " + itemUsed.quantity);
-    } else {
-        button.remove();
     }
-
 }
 
   

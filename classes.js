@@ -158,17 +158,14 @@ export class Sprite {
       this.image = this.sprites.left;
       this.npc_image_key = "left";
       nextPosition.x -= distance_moved;
-
     } else if (randomDirection === "right" && this.position.x < target_posX) {
       this.image = this.sprites.right;
       this.npc_image_key = "right";
       nextPosition.x += distance_moved;
-
     } else if (randomDirection === "up" && this.position.y > initial_pos.y) {
       this.image = this.sprites.up;
       this.npc_image_key = "up";
       nextPosition.y -= distance_moved;
-
     } else if (randomDirection === "down" && this.position.y < target_posY) {
       this.image = this.sprites.down;
       this.npc_image_key = "down";
@@ -223,11 +220,10 @@ export let exp_width_tracker = { value: 0 + "%" };
 export let excess_exp;
 export let lvl_up = false;
 
-export let status_tracker = "NRML";
-export let status_color_tracker = "rgb(211, 210, 210)";
+export let status_tracker = { value: "NRML" };
+export let status_color_tracker = { value: "rgb(211, 210, 210)" };
 
 export let stats_tracker = playerMonsters.emby.stats;
-
 
 // export let enemy_status_tracker = "NRML";
 // export let enemy_status_color_tracker = "#2a2a2a";
@@ -238,6 +234,7 @@ export class Monster extends Sprite {
     isEnemy = false,
     isPartner = false,
     name,
+    type,
     health,
     level,
     exp,
@@ -250,6 +247,10 @@ export class Monster extends Sprite {
     sprites,
     animate = false,
     rotation = 0,
+    Atk_Mod = { boosted: {set : false, stage: 0, val: 1}, lowered: {set : false, stage: 0, val: 0} },
+    Def_Mod = { boosted: {set : false, stage: 0, val: 0}, lowered: {set : false, stage: 0, val: 0} },
+
+    Type_Effect = { normal: false, super: false, not_effective: false },
     attack,
     status,
     stats,
@@ -266,6 +267,7 @@ export class Monster extends Sprite {
     });
     this.initialPosition = { x: position.x, y: position.y }; // Store the initial position
     this.health = health;
+    this.type = type;
     this.level = level;
     this.exp = exp;
     this.max_exp = max_exp;
@@ -275,8 +277,14 @@ export class Monster extends Sprite {
     this.isEnemy = isEnemy;
     this.isPartner = isPartner;
     this.attack = attack;
+
+    this.Atk_Mod = { ...Atk_Mod, val: 1};   // neutral by default
+    this.Def_Mod = { ...Def_Mod, val: 1 }; // neutral by default
+
+    this.Type_Effect = { ...Type_Effect, val: 1 }; // normal by default
+
     this.status = status;
-    this.current_status = status_tracker;
+    this.current_status = status_tracker.value;
     this.stats = stats;
   }
 
@@ -285,7 +293,7 @@ export class Monster extends Sprite {
 
     if (
       this.status === "PRLZ" ||
-      (this.status != "PRLZ" && status_tracker === "PRLZ")
+      (this.status != "PRLZ" && status_tracker.value === "PRLZ")
     ) {
       let paralyzed = Math.random();
 
@@ -306,7 +314,7 @@ export class Monster extends Sprite {
   status_effect_damage() {
     if (
       this.status === "BRND" ||
-      (this.status != "BRND" && status_tracker === "BRND")
+      (this.status != "BRND" && status_tracker.value === "BRND")
     ) {
       this.health -= 25;
       if (this.isPartner) {
@@ -352,49 +360,85 @@ export class Monster extends Sprite {
     let target = "#enemyStat";
     if (this.isEnemy) target = "#playerStat";
 
+    // console.log(target)
+
     switch (recipient.status) {
       case "NRML":
-  
+        document.querySelector(target).style.color = "rgb(211, 210, 210)";
+
         //specifically for player monster stat color
-        if(target === "#playerstat") {
-          if(status_tracker === "NRML")
-            status_color_tracker = "rgb(211, 210, 210)";
-          else if(stats_tracker === "BRND")
-            stats_tracker = "Orangered";
-          else if(stats_tracker === "PRLZ")
-            stats_tracker = "yellow";
-          document.querySelector(target).style.color = status_color_tracker;
-        } else document.querySelector(target).style.color = "rgb(211, 210, 210)";
+        if (target === "#playerStat" && status_tracker.value === "NRML") {
+          status_color_tracker.value = "rgb(211, 210, 210)";
+          document.querySelector(target).style.color =
+            status_color_tracker.value;
+        } else if (
+          target === "#playerStat" &&
+          status_tracker.value === "BRND"
+        ) {
+          status_color_tracker.value = "Orangered";
+          document.querySelector(target).style.color =
+            status_color_tracker.value;
+        } else if (
+          target === "#playerStat" &&
+          status_tracker.value === "PRLZ"
+        ) {
+          status_color_tracker.value = "yellow";
+          document.querySelector(target).style.color =
+            status_color_tracker.value;
+        }
         break;
 
       case "BRND":
-        
+        document.querySelector(target).style.color = "Orangered";
+
         //specifically for player monster stat color
-        if(target === "#playerstat") {
-          if(status_tracker === "NRML")
-            status_color_tracker = "rgb(211, 210, 210)";
-          else if(stats_tracker === "BRND")
-            stats_tracker = "Orangered";
-          else if(stats_tracker === "PRLZ")
-            stats_tracker = "yellow";
-          document.querySelector(target).style.color = status_color_tracker;
-        } else document.querySelector(target).style.color = "Orangered";
+        if (target === "#playerStat" && status_tracker.value === "BRND") {
+          status_color_tracker.value = "Orangered";
+          document.querySelector(target).style.color =
+            status_color_tracker.value;
+        } else if (
+          target === "#playerStat" &&
+          status_tracker.value === "NRML"
+        ) {
+          status_color_tracker.value = "rgb(211, 210, 210)";
+          document.querySelector(target).style.color =
+            status_color_tracker.value;
+        } else if (
+          target === "#playerStat" &&
+          status_tracker.value === "PRLZ"
+        ) {
+          status_color_tracker.value = "yellow";
+          document.querySelector(target).style.color =
+            status_color_tracker.value;
+        }
         break;
 
       case "PRLZ":
+        document.querySelector(target).style.color = "yellow";
 
         //specifically for player monster stat color
-        if(target === "#playerstat") {
-          if(status_tracker === "NRML")
-            status_color_tracker = "rgb(211, 210, 210)";
-          else if(stats_tracker === "BRND")
-            stats_tracker = "Orangered";
-          else if(stats_tracker === "PRLZ")
-            stats_tracker = "yellow";
-          document.querySelector(target).style.color = status_color_tracker;
-        } else document.querySelector(target).style.color = "yellow";
+        if (target === "#playerStat" && status_tracker.value === "PRLZ") {
+          status_color_tracker.value = "yellow";
+          document.querySelector(target).style.color =
+            status_color_tracker.value;
+        } else if (
+          target === "#playerStat" &&
+          status_tracker.value === "NRML"
+        ) {
+          status_color_tracker.value = "rgb(211, 210, 210)";
+          document.querySelector(target).style.color =
+            status_color_tracker.value;
+        } else if (
+          target === "#playerStat" &&
+          status_tracker.value === "BRND"
+        ) {
+          status_color_tracker.value = "Orangered";
+          document.querySelector(target).style.color =
+            status_color_tracker.value;
+        }
         break;
     }
+    // console.log(status_color_tracker);
   }
 
   healthbarColor(recipient) {
@@ -497,10 +541,11 @@ export class Monster extends Sprite {
       case "Burn Heal":
         audio.status_heal.play();
 
-        if (this.status === "BRND" || status_tracker === "BRND") {
+        if (this.status === "BRND" || status_tracker.value === "BRND") {
           this.status = "NRML";
-          status_tracker = "NRML";
-          document.querySelector("#playerStat").style.color = "rgb(211, 210, 210)";
+          status_tracker.value = "NRML";
+          document.querySelector("#playerStat").style.color =
+            "rgb(211, 210, 210)";
         }
         document.querySelector("#playerStat").innerHTML = this.status;
         break;
@@ -508,20 +553,138 @@ export class Monster extends Sprite {
       case "Paralyze Heal":
         audio.status_heal.play();
 
-        if (this.status === "PRLZ" || status_tracker === "PRLZ") {
+        if (this.status === "PRLZ" || status_tracker.value === "PRLZ") {
           this.status = "NRML";
-          status_tracker = "NRML";
-          document.querySelector("#playerStat").style.color = "rgb(211, 210, 210)";
+          status_tracker.value = "NRML";
+          document.querySelector("#playerStat").style.color =
+            "rgb(211, 210, 210)";
         }
         document.querySelector("#playerStat").innerHTML = this.status;
         break;
     }
   }
 
+  Update_Modifiers(recipient) {
+    console.log(this.name, this.Atk_Mod);
+    console.log(recipient.name, recipient.Atk_Mod);
+    // Attack Modifiers
+    
+    if (this.Atk_Mod.boosted.set) {
+      if (this.Atk_Mod.boosted.stage === 1) this.Atk_Mod.boosted.val = 1.5;
+      else if (this.Atk_Mod.boosted.stage === 2) this.Atk_Mod.boosted.val = 2;
+      else if (this.Atk_Mod.boosted.stage === 3) this.Atk_Mod.boosted.val = 2.5;
+
+      this.Atk_Mod.val = Math.abs(this.Atk_Mod.boosted.val - this.Atk_Mod.lowered.val);
+    }
+
+    if (recipient.Atk_Mod.lowered.set) {
+      if (recipient.Atk_Mod.lowered.stage === 1) recipient.Atk_Mod.lowered.val = 0.66;
+      else if (recipient.Atk_Mod.lowered.stage === 2) recipient.Atk_Mod.lowered.val = 0.5;
+      else if (recipient.Atk_Mod.lowered.stage === 3) recipient.Atk_Mod.lowered.val = 0.4;
+
+      recipient.Atk_Mod.val = Math.abs(recipient.Atk_Mod.boosted.val - recipient.Atk_Mod.lowered.val);
+    }
+
+
+    // Defence Modifiers
+    if (this.Def_Mod.boosted.stage === this.Def_Mod.lowered.stage) this.Def_Mod.val = 1;
+    if (this.Def_Mod.boosted.set) {
+      if (this.Def_Mod.boosted.stage === 1) this.Def_Mod.boosted.val = 1.5;
+      else if (this.Def_Mod.boosted.stage === 2) this.Def_Mod.boosted.val = 2;
+      else if (this.Def_Mod.boosted.stage === 3) this.Def_Mod.boosted.val = 2.5;
+    }
+    if (recipient.Def_Mod.lowered.set) {
+      if (recipient.Def_Mod.lowered.stage === 2) recipient.Def_Mod.lowered.val = 0.5;
+      else if (recipient.Def_Mod.lowered.stage === 3) recipient.Def_Mod.lowered.val = 0.4;
+    }
+    this.Def_Mod.val = Math.abs(this.Def_Mod.boosted.val - this.Def_Mod.lowered.val);
+  }
+
+  Check_Type(atk_type, opp_type) {
+    switch (atk_type) {
+      case "Normal":
+        if (opp_type === "Normal") this.Type_Effect.normal = true;
+        if (opp_type === "Fire") this.Type_Effect.normal = true;
+        if (opp_type === "Water") this.Type_Effect.normal = true;
+        if (opp_type === "Grass") this.Type_Effect.normal = true;
+        if (opp_type === "Dragon") this.Type_Effect.normal = true;
+        if (opp_type === "Ground") this.Type_Effect.normal = true;
+        if (opp_type === "Ice") this.Type_Effect.normal = true;
+        break;
+      case "Fire":
+        if (opp_type === "Normal") this.Type_Effect.normal = true;
+        if (opp_type === "Fire") this.Type_Effect.not_effective = true;
+        if (opp_type === "Water") this.Type_Effect.not_effective = true;
+        if (opp_type === "Grass") this.Type_Effect.super = true;
+        if (opp_type === "Dragon") this.Type_Effect.not_effective = true;
+        if (opp_type === "Ground") this.Type_Effect.normal = true;
+        if (opp_type === "Ice") this.Type_Effect.super = true;
+        break;
+      case "Water":
+        if (opp_type === "Normal") this.Type_Effect.normal = true;
+        if (opp_type === "Fire") this.Type_Effect.super = true;
+        if (opp_type === "Water") this.Type_Effect.not_effective = true;
+        if (opp_type === "Grass") this.Type_Effect.not_effective = true;
+        if (opp_type === "Dragon") this.Type_Effect.not_effective = true;
+        if (opp_type === "Ground") this.Type_Effect.super = true;
+        if (opp_type === "Ice") this.Type_Effect.not_effective = true;
+        break;
+      case "Dragon":
+        if (opp_type === "Normal") this.Type_Effect.normal = true;
+        if (opp_type === "Fire") this.Type_Effect.normal = true;
+        if (opp_type === "Water") this.Type_Effect.normal = true;
+        if (opp_type === "Grass") this.Type_Effect.normal = true;
+        if (opp_type === "Dragon") this.Type_Effect.super = true;
+        if (opp_type === "Ground") this.Type_Effect.normal = true;
+        if (opp_type === "Ice") this.Type_Effect.normal = true;
+        break;
+      case "Ground":
+        if (opp_type === "Normal") this.Type_Effect.normal = true;
+        if (opp_type === "Fire") this.Type_Effect.super = true;
+        if (opp_type === "Water") this.Type_Effect.normal = true;
+        if (opp_type === "Grass") this.Type_Effect.normal = true;
+        if (opp_type === "Dragon") this.Type_Effect.super = true;
+        if (opp_type === "Ground") this.Type_Effect.normal = true;
+        if (opp_type === "Ice") this.Type_Effect.normal = true;
+        break;
+      case "Ice":
+        if (opp_type === "Normal") this.Type_Effect.normal = true;
+        if (opp_type === "Fire") this.Type_Effect.normal = true;
+        if (opp_type === "Water") this.Type_Effect.not_effective = true;
+        if (opp_type === "Grass") this.Type_Effect.super = true;
+        if (opp_type === "Dragon") this.Type_Effect.super = true;
+        if (opp_type === "Ground") this.Type_Effect.super = true;
+        if (opp_type === "Ice") this.Type_Effect.not_effective = true;
+        break;
+    }
+  }
+
+  Type_Value_Set(recipient, attack) {
+    // check for type advantage/disadvantage
+    this.Check_Type(attack.type, recipient.type);
+
+    // Set type modifier values
+    if (this.Type_Effect.normal) this.Type_Effect.val = 1;
+    else if (this.Type_Effect.super) this.Type_Effect.val = 2.5;
+    else if (this.Type_Effect.not_effective) this.Type_Effect.val = 0.5;
+  }
+
   Attack({ attack, recipient, renderedSprites }) {
     // console.log(status_tracker);
     // console.log(status_color_tracker);
     //console.log(" current: " + this.current_status);
+    // console.log("Reciever Type: " + recipient.type);
+
+    // check for type advantages/disadvantages & also set type-modifier value
+    this.Type_Value_Set(recipient, attack);
+
+    let AtkMod = this.Atk_Mod.val;
+    let DefMod = this.Def_Mod.val;
+    let Type = this.Type_Effect.val;
+
+    console.log(this.name + ": " + AtkMod);
+    // console.log(this.Type_Effect);
+    // console.log("Type Value : " + Type);
 
     document.querySelector("#attacksBox").style.opacity = "0";
     document.querySelector("#attacksBox").style.visibility = "hidden";
@@ -535,11 +698,6 @@ export class Monster extends Sprite {
     else {
       document.querySelector("#DialogueBox").innerHTML =
         "The Opposing " + this.name + " used " + attack.name + "!";
-
-      // document.querySelector("#attacksBox").style.opacity = "1";
-      // document.querySelector("#attacksBox").style.visibility = "visible";
-      // document.querySelector("#attackTypeBox").style.opacity = "1";
-      // document.querySelector("#attackTypeBox").style.visibility = "visible";
     }
 
     document.querySelector("#DialogueBox").appendChild(progress_gif);
@@ -550,7 +708,6 @@ export class Monster extends Sprite {
     if (this.isEnemy) healthBar = "#playerHealthBar";
     const healthBarVisibility = document.querySelector(healthBar);
 
-    //health updates with each instance of attack being called
     recipient.health -= attack.damage;
     // console.log(recipient.name + " health: " + recipient.health);
 
@@ -607,7 +764,7 @@ export class Monster extends Sprite {
               },
             });
 
-            this.current_status = status_tracker;
+            this.current_status = status_tracker.value;
             this.status_color(recipient);
             // console.log(" current: " + this.current_status);
             // console.log(" track: " + status_tracker);
@@ -670,11 +827,19 @@ export class Monster extends Sprite {
               },
             });
 
-            this.current_status = status_tracker;
+            this.current_status = status_tracker.value;
             this.status_color(recipient);
             // console.log(" current: " + this.current_status);
             // console.log(" track: " + status_tracker);
             // console.log(" color: " + status_color_tracker);
+
+
+            this.Atk_Mod.boosted.set = true;
+            if (this.Atk_Mod.boosted.stage < 3) this.Atk_Mod.boosted.stage += 1;
+
+            this.Update_Modifiers(recipient);
+
+            // console.log(this.name, this.Atk_Mod);
 
             gsap.to(recipient.position, {
               x: recipient.position.x + 10,
@@ -699,7 +864,7 @@ export class Monster extends Sprite {
 
         if (
           recipient.status != "NRML" ||
-          (recipient.isPartner && status_tracker != "NRML") ||
+          (recipient.isPartner && status_tracker.value != "NRML") ||
           (recipient.isEnemy && recipient.status != "NRML")
         ) {
           document.querySelector("#DialogueBox").innerHTML =
@@ -745,9 +910,18 @@ export class Monster extends Sprite {
                 document.querySelector("#enemyStat").innerHTML = "BRND";
               } else {
                 document.querySelector("#playerStat").innerHTML = "BRND";
-                status_tracker = "BRND";
+                status_tracker.value = "BRND";
               }
               this.status_color(recipient);
+
+              recipient.Atk_Mod.lowered.set = true;
+              recipient.Atk_Mod.lowered.stage = 2;
+
+              this.Update_Modifiers(recipient);
+
+              // console.log(recipient.name, recipient.Atk_Mod);
+
+              // console.log(recipient);
               // console.log(" current: " + this.current_status);
               // console.log(" track: " + status_tracker);
               // console.log(" color: " + status_color_tracker);
@@ -800,7 +974,7 @@ export class Monster extends Sprite {
                 },
               });
 
-              this.current_status = status_tracker;
+              this.current_status = status_tracker.value;
               this.status_color(recipient);
               // console.log(" current: " + this.current_status);
               // console.log(" track: " + status_tracker);
@@ -832,7 +1006,7 @@ export class Monster extends Sprite {
   faint() {
     document.querySelector("#DialogueBox").innerHTML = this.name + " Fainted! ";
 
-    let Exp_Bar = document.querySelector("#ExpBar")
+    let Exp_Bar = document.querySelector("#ExpBar");
 
     //partner faints
     if (this.isPartner) {
@@ -848,7 +1022,7 @@ export class Monster extends Sprite {
 
       gsap.to(Exp_Bar, {
         width: (exp_tracker.value / max_exp_tracker.value) * 100 + "%",
-        duration: 1.5,
+        duration: 1.8,
         onUpdate: () => {
           let EXP_WIDTH = parseFloat(Exp_Bar.style.width);
           if (EXP_WIDTH >= 100) {
@@ -864,7 +1038,8 @@ export class Monster extends Sprite {
               lvl_up = true;
             }
             document.querySelector("#ExpBar").style.width = "0%";
-            document.querySelector("#player_lvl").innerHTML = level_tracker.value;
+            document.querySelector("#player_lvl").innerHTML =
+              level_tracker.value;
           }
         },
         onComplete: () => {
@@ -879,9 +1054,10 @@ export class Monster extends Sprite {
 
           gsap.to(Exp_Bar, {
             width: (exp_tracker.value / max_exp_tracker.value) * 100 + "%",
-            duration: 1.5,
+            duration: 1.8,
           });
-          exp_width_tracker.value = (exp_tracker.value / max_exp_tracker.value) * 100 + "%"
+          exp_width_tracker.value =
+            (exp_tracker.value / max_exp_tracker.value) * 100 + "%";
           lvl_up = false;
 
           // if(exp_tracker >= max_exp_tracker) {

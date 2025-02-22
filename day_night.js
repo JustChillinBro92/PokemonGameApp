@@ -54,7 +54,12 @@ fullCycle.forEach(step => {
 
 const timeElement = document.querySelector("#clock");
 
-export let virtualSeconds = 7 * 3600; // Virtual time in seconds (7:00 AM)
+// Virtual time in seconds (8:00 AM)
+export let virtualSeconds = { value: 8 * 3600 }
+export let formattedHours;
+export let formattedMinutes;
+export let interval;
+
 let lastUpdate = performance.now(); // High-precision timestamp
 
 
@@ -63,17 +68,17 @@ function updateClock() {
     let elapsedRealSeconds = (now - lastUpdate) / 1000;
     lastUpdate = now;
 
-    virtualSeconds += elapsedRealSeconds * 48; // Real seconds to virtual time (30 minutes / 20 transitions)
+    virtualSeconds.value += elapsedRealSeconds * 48; // Real seconds to virtual time (30 minutes / 20 transitions)
 
     // Convert virtual time into hours and minutes (24-hour format)
-    let hours24 = Math.floor((virtualSeconds / 3600) % 24);
-    let minutes = Math.floor((virtualSeconds % 3600) / 60);
+    let hours24 = Math.floor((virtualSeconds.value / 3600) % 24);
+    let minutes = Math.floor((virtualSeconds.value % 3600) / 60);
 
-    let interval = hours24 >= 12 ? "PM" : "AM";
-    let hours = (hours24 % 12) || 12; // Convert to 12-hour format
+    interval = hours24 >= 12 ? "PM" : "AM";
+    let hours12 = (hours24 % 12) || 12; // Convert to 12-hour format
 
-    let formattedHours = hours.toString().padStart(2, "0");
-    let formattedMinutes = minutes.toString().padStart(2, "0");
+    formattedHours = hours12.toString().padStart(2, "0");
+    formattedMinutes = minutes.toString().padStart(2, "0");
 
     timeElement.innerHTML = formattedHours + ":" + formattedMinutes + " " + interval;
 
