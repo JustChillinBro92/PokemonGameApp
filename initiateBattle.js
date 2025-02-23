@@ -9,7 +9,7 @@ import { Monster,
   exp_width_tracker, 
   level_tracker, 
   lvl_up} from "./classes.js";
-// import { battle, animate, menu } from "./renderer.js";
+import { battle, animate, menu, keys_active } from "./renderer.js";
 import { animateBattleId } from "./battlescene.js";
 import { audio } from "./data/audio.js";
 import { playerMonsters, getRandomMonster } from "./data/monsters.js";
@@ -39,8 +39,8 @@ let item_used = false;
 
 export function initBattle() {
   // console.log(menu);
-  console.log(status_tracker);
-  console.log(status_color_tracker);
+  // console.log(status_tracker);
+  // console.log(status_color_tracker);
   // console.log("lvl: " + level_tracker);
   // console.log("current_exp: " + exp_tracker);
   // console.log("max exp: " + max_exp_tracker);
@@ -53,9 +53,9 @@ export function initBattle() {
   document.querySelector("#DialogueBox").style.display = "none";
 
   // player monster stuff handler
-  if(health_tracker.value <= 60) {
+  if(parseFloat(health_width_tracker) <= 60) {
     document.querySelector("#playerHealthBar").style.backgroundColor = "yellow";
-     if(health_tracker.value <= 25) document.querySelector("#playerHealthBar").style.backgroundColor = "red";
+     if(parseFloat(health_width_tracker) <= 20) document.querySelector("#playerHealthBar").style.backgroundColor = "red";
   } else document.querySelector("#playerHealthBar").style.backgroundColor =
   "rgb(58, 227, 58)";
 
@@ -183,6 +183,7 @@ export function initBattle() {
             opacity: 0,
           });
 
+          keys_active.val = true;
           battle.initiated = false;
           audio.battle.stop();
           audio.Map.play();
@@ -436,6 +437,7 @@ export function battle_end_check(e) {
           gsap.to("#OverlappingDiv", {
             opacity: 0,
           });
+          keys_active.val = true;
           battle.initiated = false;
           audio.victory.stop();
           audio.Map.play();

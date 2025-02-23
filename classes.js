@@ -247,8 +247,8 @@ export class Monster extends Sprite {
     sprites,
     animate = false,
     rotation = 0,
-    Atk_Mod = { boosted: {set : false, stage: 0, val: 1}, lowered: {set : false, stage: 0, val: 0} },
-    Def_Mod = { boosted: {set : false, stage: 0, val: 0}, lowered: {set : false, stage: 0, val: 0} },
+    Atk_Mod = { stage: 0 },
+    Def_Mod = { stage: 0 },
 
     Type_Effect = { normal: false, super: false, not_effective: false },
     attack,
@@ -278,7 +278,7 @@ export class Monster extends Sprite {
     this.isPartner = isPartner;
     this.attack = attack;
 
-    this.Atk_Mod = { ...Atk_Mod, val: 1};   // neutral by default
+    this.Atk_Mod = { ...Atk_Mod, val: 1 }; // neutral by default
     this.Def_Mod = { ...Def_Mod, val: 1 }; // neutral by default
 
     this.Type_Effect = { ...Type_Effect, val: 1 }; // normal by default
@@ -316,7 +316,9 @@ export class Monster extends Sprite {
       this.status === "BRND" ||
       (this.status != "BRND" && status_tracker.value === "BRND")
     ) {
-      this.health -= 25;
+      let dmg = Math.floor(1/8 * this.maxHealth);
+      // console.log(dmg)
+      this.health -= dmg;
       if (this.isPartner) {
         health_tracker.value -= 25;
         health_width_tracker.value =
@@ -341,14 +343,13 @@ export class Monster extends Sprite {
         width: (this.health / this.maxHealth) * 98.5 + "%",
         duration: 0.8,
         onComplete: () => {
-          //console.log("check");
-          if (this.health <= 60) {
-            healthBarVisibility.style.backgroundColor = "yellow";
-            //console.log("color change");
+          const health_percent = parseFloat(healthBarVisibility.style.width);
 
-            if (this.health <= 25) {
+          if (health_percent <= 60) {
+            healthBarVisibility.style.backgroundColor = "yellow";
+
+            if (health_percent <= 20) {
               healthBarVisibility.style.backgroundColor = "red";
-              //console.log("color change");
             }
           } else healthBarVisibility.style.backgroundColor = "rgb(58, 227, 58)";
         },
@@ -441,18 +442,18 @@ export class Monster extends Sprite {
     // console.log(status_color_tracker);
   }
 
-  healthbarColor(recipient) {
+  healthbarColor() {
     let healthBar = "#enemyHealthBar"; //player attacks
     if (this.isEnemy) healthBar = "#playerHealthBar"; //enemy attacks or healing used by player
 
     const healthBarVisibility = document.querySelector(healthBar);
-
-    //const healthBarPercentage = (recipient.health/recipient.maxHealth) * 98.5
-    if (recipient.health <= 60) {
+    const health_percent = parseFloat(healthBarVisibility.style.width);
+  
+    if (health_percent <= 60) {
       healthBarVisibility.style.backgroundColor = "yellow";
       //console.log("color change");
 
-      if (recipient.health <= 25) {
+      if (health_percent <= 20) {
         healthBarVisibility.style.backgroundColor = "red";
         //console.log("color change");
       }
@@ -463,6 +464,7 @@ export class Monster extends Sprite {
     // document.querySelector("#DialogueBox").style.display = "block";
     let healthBar = "#playerHealthBar";
     const healthBarVisibility = document.querySelector(healthBar);
+
 
     //console.log(ItemUsedBy);
     //console.log("Current Health: " + this.health);
@@ -489,12 +491,12 @@ export class Monster extends Sprite {
             width: (this.health / this.maxHealth) * 98.5 + "%",
             duration: 0.8,
             onUpdate: () => {
-              //console.log("check");
-              if (this.health <= 60) {
-                healthBarVisibility.style.backgroundColor = "yellow";
-                //console.log("color change");
+              const health_percent = parseFloat(healthBarVisibility.style.width);
 
-                if (this.health <= 25) {
+              if (health_percent <= 60) {
+                healthBarVisibility.style.backgroundColor = "yellow";
+
+                if (health_percent <= 20) {
                   healthBarVisibility.style.backgroundColor = "red";
                   //console.log("color change");
                 }
@@ -523,13 +525,13 @@ export class Monster extends Sprite {
             width: (this.health / this.maxHealth) * 98.5 + "%",
             duration: 0.8,
             onUpdate: () => {
-              if (this.health <= 60) {
-                healthBarVisibility.style.backgroundColor = "yellow";
-                // console.log("color change");
+              const health_percent = parseFloat(healthBarVisibility.style.width);
 
-                if (this.health <= 25) {
+              if (health_percent <= 60) {
+                healthBarVisibility.style.backgroundColor = "yellow";
+
+               if (health_percent <= 20) {
                   healthBarVisibility.style.backgroundColor = "red";
-                  // console.log("color change");
                 }
               } else
                 healthBarVisibility.style.backgroundColor = "rgb(58, 227, 58)";
@@ -542,6 +544,7 @@ export class Monster extends Sprite {
         audio.status_heal.play();
 
         if (this.status === "BRND" || status_tracker.value === "BRND") {
+          this.Atk_Mod.stage = 0;
           this.status = "NRML";
           status_tracker.value = "NRML";
           document.querySelector("#playerStat").style.color =
@@ -565,39 +568,60 @@ export class Monster extends Sprite {
   }
 
   Update_Modifiers(recipient) {
-    console.log(this.name, this.Atk_Mod);
-    console.log(recipient.name, recipient.Atk_Mod);
+    // console.log(this.name, "Atk: ", this.Atk_Mod, "Def: ", this.Def_Mod);
+    // console.log(
+    //   recipient.name,
+    //   "Atk: ",
+    //   recipient.Atk_Mod,
+    //   "Def: ",
+    //   recipient.Def_Mod
+    // );
+    // console.log("\n");
+
     // Attack Modifiers
-    
-    if (this.Atk_Mod.boosted.set) {
-      if (this.Atk_Mod.boosted.stage === 1) this.Atk_Mod.boosted.val = 1.5;
-      else if (this.Atk_Mod.boosted.stage === 2) this.Atk_Mod.boosted.val = 2;
-      else if (this.Atk_Mod.boosted.stage === 3) this.Atk_Mod.boosted.val = 2.5;
+    if (this.Atk_Mod.stage === -3) this.Atk_Mod.val = 0.4;
+    else if (this.Atk_Mod.stage === -2) this.Atk_Mod.val = 0.5;
+    else if (this.Atk_Mod.stage === -1) this.Atk_Mod.val = 0.66;
+    else if (this.Atk_Mod.stage === 0) this.Atk_Mod.val = 1;
+    else if (this.Atk_Mod.stage === 1) this.Atk_Mod.val = 1.5;
+    else if (this.Atk_Mod.stage === 2) this.Atk_Mod.val = 2;
+    else if (this.Atk_Mod.stage === 3) this.Atk_Mod.val = 2.5;
 
-      this.Atk_Mod.val = Math.abs(this.Atk_Mod.boosted.val - this.Atk_Mod.lowered.val);
-    }
-
-    if (recipient.Atk_Mod.lowered.set) {
-      if (recipient.Atk_Mod.lowered.stage === 1) recipient.Atk_Mod.lowered.val = 0.66;
-      else if (recipient.Atk_Mod.lowered.stage === 2) recipient.Atk_Mod.lowered.val = 0.5;
-      else if (recipient.Atk_Mod.lowered.stage === 3) recipient.Atk_Mod.lowered.val = 0.4;
-
-      recipient.Atk_Mod.val = Math.abs(recipient.Atk_Mod.boosted.val - recipient.Atk_Mod.lowered.val);
-    }
-
+    if (recipient.Atk_Mod.stage === -3) recipient.Atk_Mod.val = 0.4;
+    else if (recipient.Atk_Mod.stage === -2) recipient.Atk_Mod.val = 0.5;
+    else if (recipient.Atk_Mod.stage === -1) recipient.Atk_Mod.val = 0.66;
+    else if (recipient.Atk_Mod.stage === 0) recipient.Atk_Mod.val = 1;
+    else if (recipient.Atk_Mod.stage === 1) recipient.Atk_Mod.val = 1.5;
+    else if (recipient.Atk_Mod.stage === 2) recipient.Atk_Mod.val = 2;
+    else if (recipient.Atk_Mod.stage === 3) recipient.Atk_Mod.val = 2.5;
 
     // Defence Modifiers
-    if (this.Def_Mod.boosted.stage === this.Def_Mod.lowered.stage) this.Def_Mod.val = 1;
-    if (this.Def_Mod.boosted.set) {
-      if (this.Def_Mod.boosted.stage === 1) this.Def_Mod.boosted.val = 1.5;
-      else if (this.Def_Mod.boosted.stage === 2) this.Def_Mod.boosted.val = 2;
-      else if (this.Def_Mod.boosted.stage === 3) this.Def_Mod.boosted.val = 2.5;
+
+    // if (this.Def_Mod.stage === -3) this.Def_Mod.val = 0.4;
+    // else if (this.Def_Mod.stage === -2) this.Def_Mod.val = 0.5;
+    // else if (this.Def_Mod.stage === -1) this.Def_Mod.val = 0.66;
+    // else if(this.Def_Mod.stage === 0) this.Def_Mod.val = 1;
+    // else if (this.Def_Mod.stage === 1) this.Def_Mod.val = 1.5;
+    // else if (this.Def_Mod.stage === 2) this.Def_Mod.val = 2;
+    // else if (this.Def_Mod.stage === 3) this.Def_Mod.val = 2.5;
+
+    if (recipient.Def_Mod.stage === -3) this.Def_Mod.val = 2.5;
+    else if (recipient.Def_Mod.stage === -2) this.Def_Mod.val = 2;
+    else if (recipient.Def_Mod.stage === -1) this.Def_Mod.val = 1.5;
+    else if (recipient.Def_Mod.stage === 0) this.Def_Mod.val = 1;
+    else if (recipient.Def_Mod.stage === 1) this.Def_Mod.val = 0.66;
+    else if (recipient.Def_Mod.stage === 2) this.Def_Mod.val = 0.5;
+    else if (recipient.Def_Mod.stage === 3) this.Def_Mod.val = 0.4;
+
+    // neutral modifier condition
+    if (
+      this.Atk_Mod.stage != 0 &&
+      recipient.Def_Mod.stage != 0 &&
+      this.Atk_Mod.stage === recipient.Def_Mod.stage
+    ) {
+      this.Atk_Mod.val = 1;
+      this.Def_Mod.val = 1;
     }
-    if (recipient.Def_Mod.lowered.set) {
-      if (recipient.Def_Mod.lowered.stage === 2) recipient.Def_Mod.lowered.val = 0.5;
-      else if (recipient.Def_Mod.lowered.stage === 3) recipient.Def_Mod.lowered.val = 0.4;
-    }
-    this.Def_Mod.val = Math.abs(this.Def_Mod.boosted.val - this.Def_Mod.lowered.val);
   }
 
   Check_Type(atk_type, opp_type) {
@@ -669,22 +693,31 @@ export class Monster extends Sprite {
     else if (this.Type_Effect.not_effective) this.Type_Effect.val = 0.5;
   }
 
+  Crit_Modifier(attack) {
+    let crit_prob = Math.random();
+    switch (attack.crit_stage) {
+      case 0:
+        return crit_prob === 1 / 24 ? true : false;
+        break;
+      case 1:
+        return crit_prob === 1 / 8 ? true : false;
+        break;
+      case 2:
+        return crit_prob === 1 / 2 ? true : false;
+        break;
+      case 3:
+        return true;
+        break;
+      default:
+        return true;
+    }
+  }
+
   Attack({ attack, recipient, renderedSprites }) {
     // console.log(status_tracker);
     // console.log(status_color_tracker);
     //console.log(" current: " + this.current_status);
     // console.log("Reciever Type: " + recipient.type);
-
-    // check for type advantages/disadvantages & also set type-modifier value
-    this.Type_Value_Set(recipient, attack);
-
-    let AtkMod = this.Atk_Mod.val;
-    let DefMod = this.Def_Mod.val;
-    let Type = this.Type_Effect.val;
-
-    console.log(this.name + ": " + AtkMod);
-    // console.log(this.Type_Effect);
-    // console.log("Type Value : " + Type);
 
     document.querySelector("#attacksBox").style.opacity = "0";
     document.querySelector("#attacksBox").style.visibility = "hidden";
@@ -701,14 +734,47 @@ export class Monster extends Sprite {
     }
 
     document.querySelector("#DialogueBox").appendChild(progress_gif);
-
     document.querySelector("#DialogueBox").style.display = "block";
 
     let healthBar = "#enemyHealthBar";
     if (this.isEnemy) healthBar = "#playerHealthBar";
     const healthBarVisibility = document.querySelector(healthBar);
 
-    recipient.health -= attack.damage;
+    this.Type_Value_Set(recipient, attack);
+    this.Update_Modifiers(recipient);
+
+    let A = attack.category === "Physical" ? this.stats.ATK : this.stats.SATK;
+    let D = attack.category === "Physical" ? this.stats.DEF : this.stats.SDEF;
+    let Level = this.isEnemy ? this.level : level_tracker.value;
+    let Power = attack.damage;
+
+    let AtkMod = this.Atk_Mod.val;
+    let DefMod = this.Def_Mod.val;
+
+    let random = Math.floor(Math.random() * 16 + 85) / 100;
+    let Type = this.Type_Effect.val;
+    let Crit = this.Crit_Modifier(attack) ? 1.5 : 1;
+    let Stab = attack.type === this.type? 1.25 : 1;
+    let Burn = this.status === "BRND" ? 0.5 : 1;
+
+    // console.log(this.name + " stage : " + this.Atk_Mod.stage + ", Atk: " + AtkMod);
+    // console.log(this.name + " stage : " + this.Def_Mod.stage + ", Def: " + DefMod);
+
+    // console.log(recipient.name + " stage : " + recipient.Atk_Mod.stage + ", Atk: " + recipient.Atk_Mod.val);
+    // console.log(recipient.name + " stage : " + recipient.Def_Mod.stage + ", Def: " + recipient.Def_Mod.val);
+
+    // console.log(AtkMod * DefMod);
+    // console.log(this.Type_Effect);
+    console.log("Type Value : " , this.Type_Effect);
+
+    let baseDamage = Math.floor((((100 + A + (15 * Level)) * Power) / (D + 50)) / 5);
+    let modMultiplier = AtkMod * DefMod;
+    let finalMultiplier = random * Type * Crit * Stab * Burn;
+    
+    let DAMAGE = Math.floor(Math.floor(baseDamage * modMultiplier) * finalMultiplier); 
+    console.log(DAMAGE);
+    
+    recipient.health -= DAMAGE;
     // console.log(recipient.name + " health: " + recipient.health);
 
     //keeps track of player monster's current health for upcoming battles
@@ -757,7 +823,7 @@ export class Monster extends Sprite {
               width: (recipient.health / recipient.maxHealth) * 98.5 + "%",
               duration: 0.8,
               onComplete: () => {
-                this.healthbarColor(recipient);
+                this.healthbarColor();
                 if (recipient.health <= 0) {
                   healthBarVisibility.style.visibility = "hidden";
                 }
@@ -769,6 +835,9 @@ export class Monster extends Sprite {
             // console.log(" current: " + this.current_status);
             // console.log(" track: " + status_tracker);
             // console.log(" color: " + status_color_tracker);
+
+            if (this.Def_Mod.stage >= -3 && this.Def_Mod.stage < 3)
+              this.Def_Mod.stage += 1;
 
             gsap.to(recipient.position, {
               x: recipient.position.x + 10,
@@ -820,7 +889,7 @@ export class Monster extends Sprite {
               width: (recipient.health / recipient.maxHealth) * 98.5 + "%",
               duration: 0.8,
               onComplete: () => {
-                this.healthbarColor(recipient);
+                this.healthbarColor();
                 if (recipient.health <= 0) {
                   healthBarVisibility.style.visibility = "hidden";
                 }
@@ -833,13 +902,8 @@ export class Monster extends Sprite {
             // console.log(" track: " + status_tracker);
             // console.log(" color: " + status_color_tracker);
 
-
-            this.Atk_Mod.boosted.set = true;
-            if (this.Atk_Mod.boosted.stage < 3) this.Atk_Mod.boosted.stage += 1;
-
-            this.Update_Modifiers(recipient);
-
-            // console.log(this.name, this.Atk_Mod);
+            if (this.Atk_Mod.stage >= -3 && this.Atk_Mod.stage < 3)
+              this.Atk_Mod.stage += 1;
 
             gsap.to(recipient.position, {
               x: recipient.position.x + 10,
@@ -914,13 +978,6 @@ export class Monster extends Sprite {
               }
               this.status_color(recipient);
 
-              recipient.Atk_Mod.lowered.set = true;
-              recipient.Atk_Mod.lowered.stage = 2;
-
-              this.Update_Modifiers(recipient);
-
-              // console.log(recipient.name, recipient.Atk_Mod);
-
               // console.log(recipient);
               // console.log(" current: " + this.current_status);
               // console.log(" track: " + status_tracker);
@@ -967,7 +1024,7 @@ export class Monster extends Sprite {
                 width: (recipient.health / recipient.maxHealth) * 98.5 + "%",
                 duration: 0.8,
                 onComplete: () => {
-                  this.healthbarColor(recipient);
+                  this.healthbarColor();
                   if (recipient.health <= 0) {
                     healthBarVisibility.style.visibility = "hidden";
                   }

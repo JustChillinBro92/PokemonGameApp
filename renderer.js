@@ -247,7 +247,7 @@ const keys = {
 load_backpack();
 
 const movables = [
-  // npc1,
+  npc1,
   dialogue_prompt,
   background,
   ...campfires,
@@ -404,6 +404,7 @@ export function animate() {
             audio.Map.stop(); //stops map music
 
             battle.initiated = true;
+            keys_active.val = false;
 
             audio.initBattle.play(); //starts battle initialise music
             audio.battle.play(); //starts battle music
@@ -633,7 +634,7 @@ export function animate() {
 }
 
 let lastkey = "";
-let keys_active = true;
+export let keys_active ={ val: true };
 let bag_open = false;
 
 
@@ -643,7 +644,7 @@ function openMenu() {
   audio.button_press.play();
 
   menu = true;
-  keys_active = false;
+  keys_active.val =  false ;
 
   gsap.from("#MenuBox", {
     opacity: 0,
@@ -660,7 +661,7 @@ function closeMenu() {
   audio.button_press.play();
 
   menu = false;
-  keys_active = true;
+  keys_active.val = true;
   lastkey = "";
 
   document.querySelector("#MenuBox").style.display = "none";
@@ -751,7 +752,7 @@ document.querySelector("#menu-exit").addEventListener("click", () => {
 
 // Handle opening and closing of dialogue
 function OpenDialogue(npc) {
-  keys_active = false;
+  keys_active.val = false;
 
   let NpcDialogue = document.querySelector("#OverworldDialogueBox");
   let dialogue = npc.dialogue;
@@ -763,7 +764,7 @@ function OpenDialogue(npc) {
     NpcDialogue.onclick = null; // Prevent additional clicks
     document.querySelector("#OverworldDialogueBoxContainer").style.opacity =
       "0";
-    keys_active = true;
+    keys_active.val = true;
     Npc1_Dialogue_Available.value = false;
     Npc1_Dialogue_Available.interact = false;
   }
@@ -811,7 +812,7 @@ window.addEventListener("keydown", (e) => {
     return;
   }
 
-  if (!keys_active) return;
+  if (!keys_active.val) return;
 
   switch (e.key) {
     case "w":
@@ -895,8 +896,8 @@ addEventListener("click", () => {
   }
 });
 
-// animate();
-// checkNpcInteraction();
+animate();
+checkNpcInteraction();
 
-initBattle();     //maintaining this order of calling the two function is must
-animateBattle();
+// initBattle();     //maintaining this order of calling the two function is must
+// animateBattle();

@@ -1,25 +1,32 @@
 export const attacks = {
     Tackle : {
         name: 'Tackle',
-        damage: 30,
+        category: 'Physical',
+        damage: 40,
+        crit_stage: 0,
         type: 'Normal',
         color: 'rgb(222, 219, 219)',
     },
     FireBall : {
         name: 'FireBall',
-        damage: 30,
+        category: 'Special',
+        damage: 50,
+        crit_stage: 1,
         type: 'Fire',
         color: 'Orangered',
     },
     BurnUp : {
         name: 'BurnUp',
+        category: 'Special',
         damage: 0,
         type: 'Fire',
         color: 'Orangered',
     },
     DragonBreath : {
         name: 'DragonBreath',
-        damage: 70,
+        category: 'Special',
+        damage: 60,
+        crit_stage: 1,
         type: 'Dragon',
         color: 'Purple',
     }
