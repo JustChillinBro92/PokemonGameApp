@@ -1,5 +1,5 @@
 export const attacks = {
-    Tackle : {
+    Tackle: {
         name: 'Tackle',
         category: 'Physical',
         damage: 40,
@@ -7,7 +7,15 @@ export const attacks = {
         type: 'Normal',
         color: 'rgb(222, 219, 219)',
     },
-    FireBall : {
+    Scratch: {
+        name: 'Scratch',
+        category: 'Physical',
+        damage: 40,
+        crit_stage: 0,
+        type: 'Normal',
+        color: 'rgb(222, 219, 219)',
+    },
+    FireBall: {
         name: 'FireBall',
         category: 'Special',
         damage: 50,
@@ -15,19 +23,58 @@ export const attacks = {
         type: 'Fire',
         color: 'Orangered',
     },
-    BurnUp : {
+    BurnUp: {
         name: 'BurnUp',
         category: 'Special',
         damage: 0,
         type: 'Fire',
         color: 'Orangered',
     },
-    DragonBreath : {
+    Twister: {
+        name: 'Twister',
+        category: 'Special',
+        damage: 40,
+        crit_stage: 1,
+        type: 'Dragon',
+        color: 'Purple',
+    },
+    DragonBreath: {
         name: 'DragonBreath',
         category: 'Special',
         damage: 60,
         crit_stage: 1,
         type: 'Dragon',
         color: 'Purple',
-    }
+    },
+    ThunderWave: {
+        name: 'ThunderWave',
+        category: 'Special',
+        damage: 0,
+        type: 'Electric',
+        color: 'yellow',
+    },
+    WaterGun: {
+        name: 'WaterGun',
+        category: 'Special',
+        damage: 50,
+        crit_stage: 1,
+        type: 'Water',
+        color: 'Aqua',
+    },
+    Bite: {
+        name: 'Bite',
+        category: 'Physical',
+        damage: 60,
+        crit_stage: 1,
+        type: 'Dark',
+        color: '#775544',
+    },
+    Magnitude: {
+        name: 'Magnitude',
+        category: 'Physical',
+        damage: 10,
+        crit_stage: 1,
+        type: 'Ground',
+        color: '#DDBB55',
+    },
 }

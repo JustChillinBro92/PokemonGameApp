@@ -8,8 +8,8 @@ export let playerMonsters = {
     },
     attack: [
       attacks.Tackle,
-      attacks.FireBall,
-      attacks.DragonBreath,
+      attacks.ThunderWave,
+      attacks.Twister,
       attacks.BurnUp,
     ],
     frames: {
@@ -73,10 +73,10 @@ export const monsters = {
       src: "./img/draggleSprite.png",
     },
     attack: [
-      attacks.Tackle,
-      attacks.FireBall,
-      attacks.DragonBreath,
-      attacks.BurnUp,
+      // attacks.Tackle,
+      attacks.ThunderWave,
+      // attacks.DragonBreath,
+      // attacks.BurnUp,
     ],
     frames: {
       max: 4,

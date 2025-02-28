@@ -1,6 +1,6 @@
 import { Sprite } from "./classes.js";
 import { gameLoaded } from "./gameState.js";
-import { player, background, offset, dialogue_prompt} from "./renderer.js";
+import { player, background, offset, dialogue_prompt, npc_collision} from "./renderer.js";
 
 const npc1DownImage = new Image();
 npc1DownImage.src = "./img/playerDown.png";
@@ -84,10 +84,10 @@ var nowTime;
 export function checkNpcInteraction() {
   nowTime = Date.now();
   var deltaTime = nowTime - thenTime;
-  var fps = 1;
+  // var fps = 0.5;
 
 
-  if(deltaTime > 1000 / fps) {
+  if(deltaTime > 1000) {
     let initialPosNpc1 = {
       x: 305,
       y: 120,
@@ -106,7 +106,7 @@ export function checkNpcInteraction() {
     let Npc1collide = npc1.npc_movement(initialPosNpc1, npc1, player, Npc1_Dialogue_Available.interact);
     // console.log(gameLoaded)
     
-    if (Npc1collide) {
+    if (npc_collision) {
       dialogue_prompt.position.x = npc1.position.x + 2;
       dialogue_prompt.position.y = npc1.position.y - 35;
 

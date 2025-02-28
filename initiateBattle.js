@@ -1,15 +1,18 @@
-import { Monster, 
-  progress_gif, 
-  health_tracker, 
-  health_width_tracker, 
-  status_tracker, 
+import {
+  Monster,
+  progress_gif,
+  health_tracker,
+  health_width_tracker,
+  status_tracker,
   status_color_tracker,
-  exp_tracker, 
+  exp_tracker,
   max_exp_tracker,
-  exp_width_tracker, 
-  level_tracker, 
-  lvl_up} from "./classes.js";
-import { battle, animate, menu, keys_active } from "./renderer.js";
+  exp_width_tracker,
+  level_tracker,
+  lvl_up,
+  Type_Check,
+} from "./classes.js";
+// import { battle, animate, menu, keys_active } from "./renderer.js";
 import { animateBattleId } from "./battlescene.js";
 import { audio } from "./data/audio.js";
 import { playerMonsters, getRandomMonster } from "./data/monsters.js";
@@ -28,7 +31,6 @@ buttons.forEach((button) => {
   });
 });
 
-
 //creating the monster sprites
 export let enemy;
 export let partner;
@@ -45,7 +47,6 @@ export function initBattle() {
   // console.log("current_exp: " + exp_tracker);
   // console.log("max exp: " + max_exp_tracker);
 
-
   document.querySelector("#Interface").style.display = "block";
   document.querySelector("#encounterBox").style.display = "block";
   document.querySelector("#BattleBox").style.display = "flex";
@@ -53,30 +54,33 @@ export function initBattle() {
   document.querySelector("#DialogueBox").style.display = "none";
 
   // player monster stuff handler
-  if(parseFloat(health_width_tracker) <= 60) {
+  if (parseFloat(health_width_tracker) <= 60) {
     document.querySelector("#playerHealthBar").style.backgroundColor = "yellow";
-     if(parseFloat(health_width_tracker) <= 20) document.querySelector("#playerHealthBar").style.backgroundColor = "red";
-  } else document.querySelector("#playerHealthBar").style.backgroundColor =
-  "rgb(58, 227, 58)";
+    if (parseFloat(health_width_tracker) <= 20)
+      document.querySelector("#playerHealthBar").style.backgroundColor = "red";
+  } else
+    document.querySelector("#playerHealthBar").style.backgroundColor =
+      "rgb(58, 227, 58)";
 
   document.querySelector("#playerHealthBar").style.display = "block";
   document.querySelector("#player_health").style.opacity = "1";
   document.querySelector("#playerHealthBar").style.visibility = "visible";
-  document.querySelector("#playerHealthBar").style.width = health_width_tracker.value;
+  document.querySelector("#playerHealthBar").style.width =
+    health_width_tracker.value;
   document.querySelector("#playerStat").innerHTML = status_tracker.value;
-  document.querySelector("#playerStat").style.color = status_color_tracker.value;
+  document.querySelector("#playerStat").style.color =
+    status_color_tracker.value;
   document.querySelector("#ExpBar").style.width = exp_width_tracker.value;
 
   //enemy monster stuff handler
   document.querySelector("#enemyHealthBar").style.backgroundColor =
-  "rgb(58, 227, 58)";
+    "rgb(58, 227, 58)";
   document.querySelector("#enemyHealthBar").style.display = "block";
   document.querySelector("#enemy_health").style.opacity = "1";
   document.querySelector("#enemyHealthBar").style.visibility = "visible";
   document.querySelector("#enemyHealthBar").style.width = "98.5%";
   document.querySelector("#enemyStat").innerHTML = getRandomMonster().status;
   document.querySelector("#enemyStat").style.color = "rgb(211, 210, 210)";
-
 
   document.querySelector("#restorativeBox").replaceChildren();
   document.querySelector("#statusHealBox").replaceChildren();
@@ -94,7 +98,6 @@ export function initBattle() {
 
   // console.log(exp_tracker);
   // console.log(max_exp_tracker);
-
 
   enemy.health = enemy.maxHealth;
   partner.health = health_tracker.value;
@@ -209,24 +212,38 @@ export function initBattle() {
     });
 
     //event listeners for our attack buttons
-    button.addEventListener("click", (e) => 
-      {
+    button.addEventListener("click", (e) => {
       const selectedAttack = attacks[e.currentTarget.innerHTML];
 
-      let attack_happen_player = partner.status_effect_nonDamage();
+      let attack_happen_player = partner.status_effect_nonDamage(renderedSprites);
 
-      if (attack_happen_player) {    
+      if (attack_happen_player) {
         partner.Attack({
           attack: selectedAttack,
           recipient: enemy,
           renderedSprites,
         });
         // console.log(queue.length);
+
+        if (Type_Check != 1) {
+          queue.push(() => {
+            let text;
+            if (Type_Check === 2.5) text = "It was super effective!";
+            else if (Type_Check === 0.5) text = "It was not very effective!";
+
+            document.querySelector("#DialogueBox").innerHTML = text;
+          });
+        }
         battle_end_check(enemy);
 
         //enemy attacks
         enemy_attacks(enemy);
       } else {
+        document.querySelector("#attacksBox").style.opacity = "0";
+        document.querySelector("#attacksBox").style.visibility = "hidden";
+        document.querySelector("#attackTypeBox").style.opacity = "0";
+        document.querySelector("#attackTypeBox").style.visibility = "hidden";
+
         //enemy attacks
         enemy_attacks(enemy);
       }
@@ -244,7 +261,6 @@ export function initBattle() {
 
     //loops through the items in each category in player's bag and creates button for them
     category.forEach((ITEM) => {
-
       // Check for the current category for example "restoratives"
       if (categoryKey === "restoratives") categoryId = "#restorativeBox";
       else if (categoryKey === "status_heal") categoryId = "#statusHealBox";
@@ -257,7 +273,7 @@ export function initBattle() {
       item_button.setAttribute("data-item", ITEM.item.name);
       item_button.setAttribute("data-item-object", JSON.stringify(ITEM.item)); // Store the entire item object
 
-      if(ITEM.quantity != 0)
+      if (ITEM.quantity != 0)
         document.querySelector(categoryId).append(item_button); // Append the button
 
       item_button.addEventListener("mouseenter", () => {
@@ -267,34 +283,36 @@ export function initBattle() {
 
       // Checks which item is used and takes action accordingly
       item_button.addEventListener("click", (e) => {
-        if(menu) return;
+        if (menu) return;
 
-        console.log(partner.maxHealth)
+        // console.log(partner.maxHealth)
 
         if (
-          categoryKey === "restoratives" &&
-          partner.health < partner.maxHealth || categoryKey === "restoratives" &&
-          health_tracker.value < partner.maxHealth
+          (categoryKey === "restoratives" &&
+            partner.health < partner.maxHealth) ||
+          (categoryKey === "restoratives" &&
+            health_tracker.value < partner.maxHealth)
         )
           item_used = true;
         else if (
-          item_button.getAttribute("data-item") === "Burn Heal" &&
-          partner.status === "BRND" || item_button.getAttribute("data-item") === "Burn Heal" &&
-          status_tracker.value === "BRND"
+          (item_button.getAttribute("data-item") === "Burn Heal" &&
+            partner.status === "BRND") ||
+          (item_button.getAttribute("data-item") === "Burn Heal" &&
+            status_tracker.value === "BRND")
         )
           item_used = true;
         else if (
-          item_button.getAttribute("data-item") === "Paralyze Heal" &&
-          partner.status === "PRLZ" || item_button.getAttribute("data-item") === "Burn Heal" &&
-          status_tracker.value === "PRLZ"
+          (item_button.getAttribute("data-item") === "Paralyze Heal" &&
+            partner.status === "PRLZ") ||
+          (item_button.getAttribute("data-item") === "Burn Heal" &&
+            status_tracker.value === "PRLZ")
         )
           item_used = true;
 
-         //console.log(item_used);
+        //console.log(item_used);
         if (item_used) {
           UseItemFromButton(e, item_button); //reduces quantity of item used
-          if(ITEM.quantity === 0)
-            item_button.remove();
+          if (ITEM.quantity === 0) item_button.remove();
 
           // console.log(playerItems)
 
@@ -304,10 +322,10 @@ export function initBattle() {
           document.querySelector("#BattleBox").style.visibility = "hidden";
 
           if (categoryKey === "restoratives") {
-              document.querySelector("#DialogueBox").innerHTML =
+            document.querySelector("#DialogueBox").innerHTML =
               partner.name + "'s" + " HP has been restored! ";
           }
-            
+
           if (categoryKey === "status_heal")
             document.querySelector("#DialogueBox").innerHTML =
               partner.name + "'s" + " status has been restored! ";
@@ -353,6 +371,7 @@ export function initBattle() {
 document.querySelector("#DialogueBox").addEventListener("click", (e) => {
   // console.log(item_used);
   // console.log("clicked");
+
   // console.log(queue.length);
   // console.log(queue);
 
@@ -375,7 +394,7 @@ document.querySelector("#DialogueBox").addEventListener("click", (e) => {
     if (queue.length > 0) {
       queue[0](); //calling the 0th index of queue i.e., the attack that was pushed in enemy queue
       queue.shift(); //popping the attack from enemy attack queue
-    } else { 
+    } else {
       e.currentTarget.style.display = queue.length > 0 ? "block" : "none";
 
       document.querySelector("#attacksBox").style.opacity = "1";
@@ -388,7 +407,7 @@ document.querySelector("#DialogueBox").addEventListener("click", (e) => {
 });
 
 export function enemy_attacks(e) {
-  let attack_happen_enemy = e.status_effect_nonDamage();
+  let attack_happen_enemy = e.status_effect_nonDamage(renderedSprites);
 
   if (attack_happen_enemy) {
     const randomAttack = e.attack[Math.floor(Math.random() * e.attack.length)];
@@ -399,23 +418,43 @@ export function enemy_attacks(e) {
         recipient: partner,
         renderedSprites,
       });
+
+      if (Type_Check != 1) {
+        queue.push(() => {
+          let text;
+          if (Type_Check === 2.5) text = "It was super effective!";
+          else if (Type_Check === 0.5) text = "It was not very effective!";
+
+          document.querySelector("#DialogueBox").innerHTML = text;
+        });
+      }
+
       battle_end_check(partner);
       // console.log(queue.length);
 
       //check for status effect(damage type) at the end of both side attack
       if (partner.status === "BRND" || status_tracker.value === "BRND") {
         queue.push(() => {
-          partner.status_effect_damage();
+          partner.status_effect_damage(renderedSprites);
           battle_end_check(partner);
         });
-      } 
+      }
       if (e.status === "BRND") {
         queue.push(() => {
-          e.status_effect_damage();
+          e.status_effect_damage(renderedSprites);
           battle_end_check(e);
         });
       }
     });
+  } else {
+    if (e.status === "PRLZ") {
+      queue.push(() => {
+        document.querySelector("#DialogueBox").innerHTML =
+          e.name + " was paralyzed and couldn't move! ";
+        document.querySelector("#DialogueBox").appendChild(progress_gif);
+        document.querySelector("#DialogueBox").style.display = "block";
+      });
+    }
   }
   //console.log("current: " + queue.length);
 }

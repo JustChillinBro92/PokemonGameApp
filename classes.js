@@ -1,6 +1,7 @@
 import { c } from "./canvas.js";
 import { audio } from "./data/audio.js";
 import { playerMonsters, max_exp } from "./data/monsters.js";
+import { queue } from "./initiateBattle.js";
 import { gameState, gameLoaded } from "./gameState.js";
 // import { gameLoaded } from "./save_load.js";
 
@@ -47,6 +48,7 @@ export class Sprite {
     scale = 1,
     sprites,
     animate = false,
+    isMoving = false,
     dialogue,
     rotation = 0,
   }) {
@@ -66,6 +68,7 @@ export class Sprite {
 
     this.image.src = image.src;
     this.animate = animate;
+    this.isMoving = isMoving;
     this.sprites = sprites;
     this.opacity = 1;
   }
@@ -149,7 +152,7 @@ export class Sprite {
     let initial_pos = NpcPos;
     let target_posX = initial_pos.x + 100;
     let target_posY = initial_pos.y + 20;
-    let distance_moved = 12;
+    let distance_moved = 16;
     let buffer = 3; // Extra space to avoid overlap
 
     let nextPosition = { x: this.position.x, y: this.position.y };
@@ -181,7 +184,7 @@ export class Sprite {
       return false;
     }
 
-    let collision = false;
+    // let collision = false;
     if (
       !RectangularCollision({
         rectangle1: { ...Npc, position: nextPosition },
@@ -194,18 +197,28 @@ export class Sprite {
         },
       })
     ) {
-      // No collision, move and animate
-      this.position.x = nextPosition.x;
-      this.position.y = nextPosition.y;
-      this.animate = true;
+      if (!Player.animate) {
+        this.animate = true;
+        gsap.to(this.position, {
+          x: nextPosition.x,
+          y: nextPosition.y,
+          duration: 0.3,
 
-      setTimeout(() => {
-        this.animate = false; // Reset animation after a short delay
-      }, 300); // Adjust time for animation duration
-    } else {
-      collision = true;
+          onComplete: () => {
+            this.animate = false;
+          },
+        });
+      }
+
+      // No collision, move and animate
+      // this.position.x = nextPosition.x;
+      // this.position.y = nextPosition.y;
+      // this.animate = true;
+
+      // setTimeout(() => {
+      //   this.animate = false; // Reset animation after a short delay
+      // }, 300); // Adjust time for animation duration
     }
-    return collision;
   }
 }
 
@@ -224,6 +237,8 @@ export let status_tracker = { value: "NRML" };
 export let status_color_tracker = { value: "rgb(211, 210, 210)" };
 
 export let stats_tracker = playerMonsters.emby.stats;
+
+export let Type_Check;
 
 // export let enemy_status_tracker = "NRML";
 // export let enemy_status_color_tracker = "#2a2a2a";
@@ -288,39 +303,70 @@ export class Monster extends Sprite {
     this.stats = stats;
   }
 
-  status_effect_nonDamage() {
+  status_effect_nonDamage(renderedSprites) {
+    // console.log(this.name + ": " + this.status);
     let attack_occur = true;
 
-    if (
-      this.status === "PRLZ" ||
-      (this.status != "PRLZ" && status_tracker.value === "PRLZ")
-    ) {
+    if (this.status === "PRLZ") {
       let paralyzed = Math.random();
 
       if (paralyzed < 0.65) {
         attack_occur = false;
-        audio.paralyzed.play();
-        console.log(this.name + " is paralyzed! ");
 
-        document.querySelector("#DialogueBox").innerHTML =
-          this.name + " was paralyzed and couldn't move! ";
-        document.querySelector("#DialogueBox").appendChild(progress_gif);
-        document.querySelector("#DialogueBox").style.display = "block";
+        if (this.isPartner) {
+          document.querySelector("#DialogueBox").innerHTML =
+            this.name + " was paralyzed and couldn't move! ";
+          document.querySelector("#DialogueBox").appendChild(progress_gif);
+          document.querySelector("#DialogueBox").style.display = "block";
+        }
+
+        const paralyzeImg = new Image();
+        paralyzeImg.src = "./img/Paralysis.png";
+
+        const paralyze = new Monster({
+          position: {
+            x: this.position.x - 50,
+            y: this.position.y - 60,
+          },
+          image: paralyzeImg,
+          frames: {
+            max: 2,
+            hold: 4,
+          },
+          animate: true,
+        });
+        if(this.isPartner) renderedSprites.splice(2, 0, paralyze);
+        else renderedSprites.splice(1, 0, paralyze);
+        
+
+        gsap.to(paralyze.position, {
+          x: this.position.x - 50,
+          y: this.position.y - 60,
+
+          onComplete: () => {
+            //enemy gets hit
+            audio.paralyzed.play();
+
+            if (this.isPartner) renderedSprites.splice(2, 1);
+            else renderedSprites.splice(1, 1);
+          },
+        });
+        // console.log(this.name + " is paralyzed! ");
       }
     }
     return attack_occur;
   }
 
-  status_effect_damage() {
+  status_effect_damage(renderedSprites) {
     if (
       this.status === "BRND" ||
       (this.status != "BRND" && status_tracker.value === "BRND")
     ) {
-      let dmg = Math.floor(1/8 * this.maxHealth);
-      // console.log(dmg)
+      let dmg = Math.floor((1 / 8) * this.maxHealth);
+
       this.health -= dmg;
       if (this.isPartner) {
-        health_tracker.value -= 25;
+        health_tracker.value -= dmg;
         health_width_tracker.value =
           (health_tracker.value / this.maxHealth) * 98.5 + "%";
       }
@@ -337,23 +383,55 @@ export class Monster extends Sprite {
       if (this.isEnemy) healthBar = "#enemyHealthBar";
       const healthBarVisibility = document.querySelector(healthBar);
 
-      audio.burn_damage.play();
+      const burn = new Image();
+      burn.src = "./img/Burn.png";
 
-      gsap.to(healthBar, {
-        width: (this.health / this.maxHealth) * 98.5 + "%",
-        duration: 0.8,
+      const burn_dmg = new Monster({
+        position: {
+          x: this.position.x - 20,
+          y: this.position.y + 25,
+        },
+        image: burn,
+        frames: {
+          max: 5,
+          hold: 25,
+        },
+        animate: true,
+      });
+      if (this.isPartner) renderedSprites.splice(2, 0, burn_dmg);
+      else renderedSprites.splice(1, 0, burn_dmg);
+
+      gsap.to(burn_dmg.position, {
+        x: this.position.x + 10,
+        y: this.position.y + 25,
+
         onComplete: () => {
-          const health_percent = parseFloat(healthBarVisibility.style.width);
+          audio.burn_damage.play();
 
-          if (health_percent <= 60) {
-            healthBarVisibility.style.backgroundColor = "yellow";
+          gsap.to(healthBar, {
+            width: (this.health / this.maxHealth) * 98.5 + "%",
+            duration: 0.8,
+            onComplete: () => {
+              // burn_dmg.animate = false;
+              const health_percent = parseFloat(
+                healthBarVisibility.style.width
+              );
 
-            if (health_percent <= 20) {
-              healthBarVisibility.style.backgroundColor = "red";
-            }
-          } else healthBarVisibility.style.backgroundColor = "rgb(58, 227, 58)";
+              if (health_percent <= 60) {
+                healthBarVisibility.style.backgroundColor = "yellow";
+
+                if (health_percent <= 20) {
+                  healthBarVisibility.style.backgroundColor = "red";
+                }
+              } else
+                healthBarVisibility.style.backgroundColor = "rgb(58, 227, 58)";
+            },
+          });
+          if (this.isPartner) renderedSprites.splice(2, 1);
+          else renderedSprites.splice(1, 1);
         },
       });
+      // burn_dmg.draw();
     }
   }
 
@@ -448,7 +526,7 @@ export class Monster extends Sprite {
 
     const healthBarVisibility = document.querySelector(healthBar);
     const health_percent = parseFloat(healthBarVisibility.style.width);
-  
+
     if (health_percent <= 60) {
       healthBarVisibility.style.backgroundColor = "yellow";
       //console.log("color change");
@@ -464,7 +542,6 @@ export class Monster extends Sprite {
     // document.querySelector("#DialogueBox").style.display = "block";
     let healthBar = "#playerHealthBar";
     const healthBarVisibility = document.querySelector(healthBar);
-
 
     //console.log(ItemUsedBy);
     //console.log("Current Health: " + this.health);
@@ -491,7 +568,9 @@ export class Monster extends Sprite {
             width: (this.health / this.maxHealth) * 98.5 + "%",
             duration: 0.8,
             onUpdate: () => {
-              const health_percent = parseFloat(healthBarVisibility.style.width);
+              const health_percent = parseFloat(
+                healthBarVisibility.style.width
+              );
 
               if (health_percent <= 60) {
                 healthBarVisibility.style.backgroundColor = "yellow";
@@ -525,12 +604,14 @@ export class Monster extends Sprite {
             width: (this.health / this.maxHealth) * 98.5 + "%",
             duration: 0.8,
             onUpdate: () => {
-              const health_percent = parseFloat(healthBarVisibility.style.width);
+              const health_percent = parseFloat(
+                healthBarVisibility.style.width
+              );
 
               if (health_percent <= 60) {
                 healthBarVisibility.style.backgroundColor = "yellow";
 
-               if (health_percent <= 20) {
+                if (health_percent <= 20) {
                   healthBarVisibility.style.backgroundColor = "red";
                 }
               } else
@@ -624,8 +705,10 @@ export class Monster extends Sprite {
     }
   }
 
-  Check_Type(atk_type, opp_type) {
-    switch (atk_type) {
+  Check_Type(atk, opp_type) {
+    if (atk.damage === 0) return;
+
+    switch (atk.type) {
       case "Normal":
         if (opp_type === "Normal") this.Type_Effect.normal = true;
         if (opp_type === "Fire") this.Type_Effect.normal = true;
@@ -685,7 +768,7 @@ export class Monster extends Sprite {
 
   Type_Value_Set(recipient, attack) {
     // check for type advantage/disadvantage
-    this.Check_Type(attack.type, recipient.type);
+    this.Check_Type(attack, recipient.type);
 
     // Set type modifier values
     if (this.Type_Effect.normal) this.Type_Effect.val = 1;
@@ -754,7 +837,7 @@ export class Monster extends Sprite {
     let random = Math.floor(Math.random() * 16 + 85) / 100;
     let Type = this.Type_Effect.val;
     let Crit = this.Crit_Modifier(attack) ? 1.5 : 1;
-    let Stab = attack.type === this.type? 1.25 : 1;
+    let Stab = attack.type === this.type ? 1.25 : 1;
     let Burn = this.status === "BRND" ? 0.5 : 1;
 
     // console.log(this.name + " stage : " + this.Atk_Mod.stage + ", Atk: " + AtkMod);
@@ -765,15 +848,21 @@ export class Monster extends Sprite {
 
     // console.log(AtkMod * DefMod);
     // console.log(this.Type_Effect);
-    console.log("Type Value : " , this.Type_Effect);
 
-    let baseDamage = Math.floor((((100 + A + (15 * Level)) * Power) / (D + 50)) / 5);
+    Type_Check = Type;
+    console.log("Type Value : ", Type);
+
+    let baseDamage = Math.floor(
+      ((100 + A + 15 * Level) * Power) / (D + 50) / 5
+    );
     let modMultiplier = AtkMod * DefMod;
     let finalMultiplier = random * Type * Crit * Stab * Burn;
-    
-    let DAMAGE = Math.floor(Math.floor(baseDamage * modMultiplier) * finalMultiplier); 
+
+    let DAMAGE = Math.floor(
+      Math.floor(baseDamage * modMultiplier) * finalMultiplier
+    );
     console.log(DAMAGE);
-    
+
     recipient.health -= DAMAGE;
     // console.log(recipient.name + " health: " + recipient.health);
 
@@ -791,6 +880,69 @@ export class Monster extends Sprite {
     if (this.isEnemy) rotation = -2.2;
 
     switch (attack.name) {
+      case "Twister":
+        
+        const twisterImg = new Image();
+        twisterImg.src = "./img/Twister.png";
+
+        const twister = new Monster({
+          position: {
+            x: recipient.position.x - 70,
+            y: recipient.position.y - 100,
+          },
+          image: twisterImg,
+          scale: 1.3,
+          frames: {
+            max: 12,
+            hold: 8,
+          },
+          animate: true,
+        });
+        renderedSprites.splice(1, 0, twister); //'1' is the index of emby, we are not removing any element so '0' used, fireball gets inserted before emby so, index '1' is now fireball
+
+        gsap.to(twister.position, {
+          x: recipient.position.x - 90,
+          y: recipient.position.y - 100,
+
+          onComplete: () => {
+            //enemy gets hit
+            audio.TackleHit.play();
+
+            gsap.to(healthBar, {
+              width: (recipient.health / recipient.maxHealth) * 98.5 + "%",
+              duration: 0.8,
+              onComplete: () => {
+                this.healthbarColor();
+                if (recipient.health <= 0) {
+                  healthBarVisibility.style.visibility = "hidden";
+                }
+              },
+            });
+
+            this.current_status = status_tracker.value;
+            this.status_color(recipient);
+
+            if (this.Def_Mod.stage >= -3 && this.Def_Mod.stage < 3)
+              this.Def_Mod.stage += 1;
+
+            gsap.to(recipient.position, {
+              x: recipient.position.x + 10,
+              yoyo: true,
+              repeat: 5,
+              duration: 0.08,
+            });
+
+            gsap.to(recipient, {
+              opacity: 0,
+              yoyo: true,
+              repeat: 3,
+              duration: 0.08,
+            });
+            renderedSprites.splice(1, 1); //removing the dragonbreath after hitting target
+          },
+        });
+        break;
+
       case "DragonBreath":
         audio.initFireball.play();
         const dragonbreathImg = new Image();
@@ -832,9 +984,6 @@ export class Monster extends Sprite {
 
             this.current_status = status_tracker.value;
             this.status_color(recipient);
-            // console.log(" current: " + this.current_status);
-            // console.log(" track: " + status_tracker);
-            // console.log(" color: " + status_color_tracker);
 
             if (this.Def_Mod.stage >= -3 && this.Def_Mod.stage < 3)
               this.Def_Mod.stage += 1;
@@ -898,12 +1047,81 @@ export class Monster extends Sprite {
 
             this.current_status = status_tracker.value;
             this.status_color(recipient);
-            // console.log(" current: " + this.current_status);
-            // console.log(" track: " + status_tracker);
-            // console.log(" color: " + status_color_tracker);
 
             if (this.Atk_Mod.stage >= -3 && this.Atk_Mod.stage < 3)
               this.Atk_Mod.stage += 1;
+
+            gsap.to(recipient.position, {
+              x: recipient.position.x + 10,
+              yoyo: true,
+              repeat: 5,
+              duration: 0.08,
+            });
+
+            gsap.to(recipient, {
+              opacity: 0,
+              yoyo: true,
+              repeat: 3,
+              duration: 0.08,
+            });
+            renderedSprites.splice(1, 1); //removing the fireball after hitting target
+          },
+        });
+        break;
+      case "ThunderWave":
+        let flagT = true;
+
+        if (
+          recipient.status != "NRML" ||
+          (recipient.isPartner && status_tracker.value != "NRML") ||
+          (recipient.isEnemy && recipient.status != "NRML")
+        ) {
+          document.querySelector("#DialogueBox").innerHTML =
+            recipient.name + " is already under a status effect! ";
+          flagT = false;
+        }
+
+        if (!flagT) return;
+
+        const thunderWaveImg = new Image();
+        thunderWaveImg.src = "./img/ThunderWave.png";
+
+        const thunderWave = new Monster({
+          position: {
+            x: recipient.position.x - 50,
+            y: recipient.position.y - 60,
+          },
+          image: thunderWaveImg,
+          frames: {
+            max: 6,
+            hold: 12,
+          },
+          animate: true,
+        });
+        renderedSprites.splice(1, 0, thunderWave); //'1' is the index of emby, we are not removing any element so '0' used, fireball gets inserted before emby so, index '1' is now fireball
+
+        recipient.status = "PRLZ";
+        if (this.isEnemy) this.current_status = "PRLZ";
+
+        gsap.to(thunderWave.position, {
+          x: recipient.position.x - 50,
+          y: recipient.position.y - 60,
+
+          onComplete: () => {
+            //enemy gets hit
+            audio.paralyzed.play();
+
+            if (recipient.isEnemy) {
+              document.querySelector("#enemyStat").innerHTML = "PRLZ";
+            } else {
+              document.querySelector("#playerStat").innerHTML = "PRLZ";
+              status_tracker.value = "PRLZ";
+            }
+            this.status_color(recipient);
+
+            // console.log(" current: " + this.current_status);
+            // console.log(" track: " + status_tracker);
+            // console.log(" color: " + status_color_tracker);
 
             gsap.to(recipient.position, {
               x: recipient.position.x + 10,
@@ -978,11 +1196,6 @@ export class Monster extends Sprite {
               }
               this.status_color(recipient);
 
-              // console.log(recipient);
-              // console.log(" current: " + this.current_status);
-              // console.log(" track: " + status_tracker);
-              // console.log(" color: " + status_color_tracker);
-
               gsap.to(recipient.position, {
                 x: recipient.position.x + 10,
                 yoyo: true,
@@ -1000,6 +1213,67 @@ export class Monster extends Sprite {
             },
           });
         }
+        break;
+
+      case "Bite":
+        const biteImg = new Image();
+        biteImg.src = "./img/Bite.png";
+
+        const bite = new Monster({
+          position: {
+            x: recipient.position.x - 50,
+            y: recipient.position.y - 60,
+          },
+          image: biteImg,
+          frames: {
+            max: 4,
+            hold: 18,
+          },
+          animate: true,
+        });
+        renderedSprites.splice(1, 0, bite); //'1' is the index of emby, we are not removing any element so '0' used, fireball gets inserted before emby so, index '1' is now fireball
+
+        gsap.to(bite.position, {
+          x: recipient.position.x - 50,
+          y: recipient.position.y - 60,
+
+          onComplete: () => {
+            //enemy gets hit
+            audio.TackleHit.play();
+
+            gsap.to(healthBar, {
+              width: (recipient.health / recipient.maxHealth) * 98.5 + "%",
+              duration: 0.8,
+              onComplete: () => {
+                this.healthbarColor();
+                if (recipient.health <= 0) {
+                  healthBarVisibility.style.visibility = "hidden";
+                }
+              },
+            });
+
+            this.current_status = status_tracker.value;
+            this.status_color(recipient);
+
+            if (this.Atk_Mod.stage >= -3 && this.Atk_Mod.stage < 3)
+              this.Atk_Mod.stage += 1;
+
+            gsap.to(recipient.position, {
+              x: recipient.position.x + 10,
+              yoyo: true,
+              repeat: 5,
+              duration: 0.08,
+            });
+
+            gsap.to(recipient, {
+              opacity: 0,
+              yoyo: true,
+              repeat: 3,
+              duration: 0.08,
+            });
+            renderedSprites.splice(1, 1); //removing the fireball after hitting target
+          },
+        });
         break;
 
       case "Tackle":
@@ -1033,9 +1307,6 @@ export class Monster extends Sprite {
 
               this.current_status = status_tracker.value;
               this.status_color(recipient);
-              // console.log(" current: " + this.current_status);
-              // console.log(" track: " + status_tracker);
-              // console.log(" color: " + status_color_tracker);
 
               gsap.to(recipient.position, {
                 x: recipient.position.x + 10,

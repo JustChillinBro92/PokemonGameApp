@@ -247,7 +247,7 @@ const keys = {
 load_backpack();
 
 const movables = [
-  npc1,
+  // npc1,
   dialogue_prompt,
   background,
   ...campfires,
@@ -269,6 +269,8 @@ function RectangularCollision({ rectangle1, rectangle2 }) {
 export const battle = {
   initiated: false,
 };
+
+export let npc_collision = false;
 
 let pause = false;
 let load_transition = false;
@@ -459,7 +461,6 @@ export function animate() {
           })
         ) {
           moving = false;
-          // console.log("colliding");
           break;
         }
 
@@ -476,10 +477,11 @@ export function animate() {
             },
           })
         ) {
+          npc_collision = true;
           moving = false;
           // console.log("Npc colliding");
           break;
-        }
+        } else npc_collision = false;
       }
       if (moving === true) {
         movables.forEach((movable) => {
@@ -506,7 +508,6 @@ export function animate() {
           })
         ) {
           moving = false;
-          // console.log("colliding");
           break;
         }
 
@@ -523,10 +524,11 @@ export function animate() {
             },
           })
         ) {
+          npc_collision = true;        
           moving = false;
           // console.log("Npc colliding");
           break;
-        }
+        } else npc_collision = false;
       }
       if (moving === true) {
         movables.forEach((movable) => {
@@ -553,7 +555,6 @@ export function animate() {
           })
         ) {
           moving = false;
-          // console.log("colliding");
           break;
         }
 
@@ -570,10 +571,11 @@ export function animate() {
             },
           })
         ) {
+          npc_collision = true;
           moving = false;
           // console.log("Npc colliding");
           break;
-        }
+        } else npc_collision = false;
       }
       if (moving === true) {
         movables.forEach((movable) => {
@@ -617,10 +619,11 @@ export function animate() {
             },
           })
         ) {
+          npc_collision = true;
           moving = false;
-          console.log("Npc colliding");
+          // console.log("Npc colliding");
           break;
-        }
+        } else npc_collision = false;
       }
       if (moving === true) {
         movables.forEach((movable) => {
@@ -896,8 +899,8 @@ addEventListener("click", () => {
   }
 });
 
-animate();
-checkNpcInteraction();
+// animate();
+// checkNpcInteraction();
 
-// initBattle();     //maintaining this order of calling the two function is must
-// animateBattle();
+initBattle();     //maintaining this order of calling the two function is must
+animateBattle();
