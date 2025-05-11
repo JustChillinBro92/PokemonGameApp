@@ -12,7 +12,7 @@ import {
   lvl_up,
   Type_Check,
 } from "./classes.js";
-// import { battle, animate, menu, keys_active } from "./renderer.js";
+import { battle, animate, menu, keys_active } from "./renderer.js";
 import { animateBattleId } from "./battlescene.js";
 import { audio } from "./data/audio.js";
 import { playerMonsters, getRandomMonster } from "./data/monsters.js";

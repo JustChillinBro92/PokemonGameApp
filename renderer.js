@@ -1,4 +1,5 @@
-import { Boundary, Sprite, health_tracker, health_width_tracker } from "./classes.js";
+import { Boundary, Sprite } from "./classes.js";
+import { door_collisions } from "./data/door_collisions.js";
 import { collisions } from "./data/collisions.js";
 import { battleZonesData } from "./data/battlezones.js";
 import { audio } from "./data/audio.js";
@@ -15,14 +16,17 @@ import {
   checkNpcInteraction,
   npc_sprite_upon_interaction,
 } from "./npc.js";
-import { playerMonsters } from "./data/monsters.js";
-
 
 const collisionsMap = [];
 for (let i = 0; i <= collisions.length; i += 180) {
   collisionsMap.push(collisions.slice(i, 180 + i)); //slicing the array of collisons(acc to width of map 120 tiles) into sub-arrays and storing/pushing them in another Array
 }
 //console.log(collisionsMap)
+
+const door_collisionsMap = [];
+for (let i = 0; i <= door_collisions.length; i += 180) {
+  door_collisionsMap.push(door_collisions.slice(i, 180 + i));
+}
 
 const battleZonesMap = [];
 for (let i = 0; i <= battleZonesData.length; i += 180) {
@@ -50,6 +54,22 @@ collisionsMap.forEach((row, i) => {
   });
 });
 //console.log(boundaries);
+
+export const door_boundaries = [];
+
+door_collisionsMap.forEach((row, i) => {
+  row.forEach((symbol, j) => {
+    if (symbol === 1025)
+      door_boundaries.push(
+        new Boundary({
+          position: {
+            x: j * Boundary.width + offset.x,
+            y: i * Boundary.height + offset.y,
+          },
+        })
+      );
+  });
+});
 
 export const battleZones = [];
 export const grass_tiles = [];
@@ -125,7 +145,6 @@ playerDown_HalfImage.src = "./img/playerDown_Half.png";
 const playerUp_HalfImage = new Image();
 playerUp_HalfImage.src = "./img/playerUp_Half.png";
 
-
 export const player = new Sprite({
   position: {
     x: 704.8,
@@ -160,36 +179,8 @@ export const foreground = new Sprite({
   },
   image: foregroundimage,
 });
-// loadgame()
 
-// export const campfire_animated_1 = new Sprite({
-//   position: {
-//     x: offset.x + 1908,
-//     y: offset.y + 1719,
-//   },
-//   image: campfire,
-//   scale: 0.93,
-//   frames: {
-//     max: 4,
-//     hold: 8,
-//   },
-//   animate: true,
-// });
-
-// export const campfire_animated_2 = new Sprite({
-//   position: {
-//     x: offset.x + 1947,
-//     y: offset.y + 1719,
-//   },
-//   image: campfire,
-//   scale: 0.93,
-//   frames: {
-//     max: 4,
-//     hold: 8,
-//   },
-//   animate: true,
-// });
-
+// campfire positions set
 export const campfires = [
   { x: offset.x + 1908, y: offset.y + 1719 },
   { x: offset.x + 1947, y: offset.y + 1719 },
@@ -208,7 +199,7 @@ export const campfires = [
 );
 
 const dialogue_prompt_img = new Image();
-dialogue_prompt_img.src = "./img/dialogue_prompt.png"
+dialogue_prompt_img.src = "./img/dialogue_prompt.png";
 
 export const dialogue_prompt = new Sprite({
   position: {
@@ -221,7 +212,7 @@ export const dialogue_prompt = new Sprite({
     hold: 12,
   },
   animate: true,
-})
+});
 
 const keys = {
   w: {
@@ -247,12 +238,13 @@ const keys = {
 load_backpack();
 
 const movables = [
-  // npc1,
+  npc1,
   dialogue_prompt,
   background,
   ...campfires,
   foreground,
   ...boundaries,
+  ...door_boundaries,
   ...battleZones,
   ...grass_tiles,
 ];
@@ -263,6 +255,13 @@ function RectangularCollision({ rectangle1, rectangle2 }) {
     rectangle1.position.x <= rectangle2.position.x + rectangle2.width &&
     rectangle1.position.y + rectangle1.height >= rectangle2.position.y &&
     rectangle1.position.y <= rectangle2.position.y + rectangle2.height
+  );
+}
+
+function DoorRectangularCollision({ rectangle1, rectangle2 }) {
+  return (
+    rectangle1.position.x + rectangle1.width >=
+    (rectangle2.position.x + rectangle2.width) / 2
   );
 }
 
@@ -292,10 +291,10 @@ export function animate() {
   const animateId = window.requestAnimationFrame(animate);
   // console.log("aimate");
 
-  if(pause) {
+  if (pause) {
     window.cancelAnimationFrame(animateId);
 
-    if(load_transition) {
+    if (load_transition) {
       gsap.to("#OverlappingDiv", {
         opacity: 1,
         duration: 1,
@@ -305,14 +304,14 @@ export function animate() {
             opacity: 0,
           });
         },
-      })
+      });
       load_transition = false;
     }
-   
+
     setTimeout(() => {
       animate();
       pause = false;
-    },800)
+    }, 800);
   }
 
   if (deltaTime > 1000 / fps) {
@@ -320,6 +319,10 @@ export function animate() {
 
     boundaries.forEach((boundary) => {
       boundary.draw();
+    });
+
+    door_boundaries.forEach((door_Boundary) => {
+      door_Boundary.draw();
     });
 
     battleZones.forEach((battleZone) => {
@@ -333,13 +336,19 @@ export function animate() {
     player.draw();
 
     npc1.draw();
-    if(Npc1_Dialogue_Available.value) dialogue_prompt.draw();
+    if (Npc1_Dialogue_Available.value) dialogue_prompt.draw();
 
     foreground.draw();
 
+    let angle = 0;
     if (global_time >= 19 || global_time <= 3) {
       campfires.forEach((campfire) => {
         campfire.draw();
+
+        let radius = 90 + 10 * Math.sin(angle);
+        campfire.draw_light(campfire.position.x + 20, campfire.position.y + 25, radius)
+        angle += 0.05;
+        console.log(angle);
       });
     }
 
@@ -381,12 +390,10 @@ export function animate() {
           OverlappingArea > (player.height * player.width) / 2
         ) {
           inGrass = true;
-          console.log(inGrass)
           player.sprites.right = playerRight_HalfImage;
           player.sprites.left = playerLeft_HalfImage;
           player.sprites.down = playerDown_HalfImage;
           player.sprites.up = playerUp_HalfImage;
-
 
           if (!grassAudioPlay) {
             grassAudioPlay = true;
@@ -397,7 +404,7 @@ export function animate() {
             grassAudioPlay = false;
           }, 100);
 
-          let encounter_rate = Math.random()
+          let encounter_rate = Math.random();
           // console.log(encounter_rate);
 
           if (encounter_rate < 0.02) {
@@ -483,6 +490,7 @@ export function animate() {
           break;
         } else npc_collision = false;
       }
+
       if (moving === true) {
         movables.forEach((movable) => {
           movable.position.y += 3;
@@ -524,7 +532,7 @@ export function animate() {
             },
           })
         ) {
-          npc_collision = true;        
+          npc_collision = true;
           moving = false;
           // console.log("Npc colliding");
           break;
@@ -625,6 +633,25 @@ export function animate() {
           break;
         } else npc_collision = false;
       }
+
+      // for(let i = 0; i <= door_boundaries.length; i++) {
+      //   const door_boundary = door_boundaries[i];
+
+      //   if(DoorRectangularCollision({
+      //     rectangle1: player,
+      //     rectangle2: {
+      //       ...door_boundary,
+      //       position: {
+      //         x: door_boundary.position.x - 3,
+      //         y: door_boundary.position.y
+      //       }
+      //     }
+      //   })
+      // ) {
+      //     console.log("DOOR");
+      //   }
+      // }
+
       if (moving === true) {
         movables.forEach((movable) => {
           movable.position.x -= 3;
@@ -637,9 +664,8 @@ export function animate() {
 }
 
 let lastkey = "";
-export let keys_active ={ val: true };
+export let keys_active = { val: true };
 let bag_open = false;
-
 
 // Handle opening the menu
 function openMenu() {
@@ -647,7 +673,7 @@ function openMenu() {
   audio.button_press.play();
 
   menu = true;
-  keys_active.val =  false ;
+  keys_active.val = false;
 
   gsap.from("#MenuBox", {
     opacity: 0,
@@ -656,7 +682,6 @@ function openMenu() {
   document.querySelector("#MenuBox").style.display = "block";
   document.querySelector("#clockContainer").style.display = "block";
 }
-
 
 // Handle closing the menu
 function closeMenu() {
@@ -670,7 +695,6 @@ function closeMenu() {
   document.querySelector("#MenuBox").style.display = "none";
   document.querySelector("#clockContainer").style.display = "none";
 }
-
 
 //saving the game
 document.querySelector("#save").addEventListener("click", () => {
@@ -693,20 +717,16 @@ document.querySelector("#load").addEventListener("click", () => {
 
     // npc sprite on load
     for (let i = 0; i < all_npcs.length; i++) {
-      
       let image, direction;
       if (npc_direction[i] === "left") {
         image = all_npcs[i].sprites.left;
         direction = "left";
-
       } else if (npc_direction[i] === "right") {
         image = all_npcs[i].sprites.right;
         direction = "right";
-
       } else if (npc_direction[i] === "up") {
         image = all_npcs[i].sprites.up;
         direction = "up";
-
       } else {
         image = all_npcs[i].sprites.down;
         direction = "down";
@@ -717,7 +737,6 @@ document.querySelector("#load").addEventListener("click", () => {
     }
   }
 });
-
 
 // Handle opening the bag
 document.querySelector("#menu-bag").addEventListener("click", () => {
@@ -899,8 +918,8 @@ addEventListener("click", () => {
   }
 });
 
-// animate();
-// checkNpcInteraction();
+animate();
+checkNpcInteraction();
 
-initBattle();     //maintaining this order of calling the two function is must
-animateBattle();
+// initBattle();     //maintaining this order of calling the two function is must
+// animateBattle();

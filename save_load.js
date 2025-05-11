@@ -36,6 +36,14 @@ function getCircularReplacer() {
   };
 }
 
+// extracts necessary data from npc object
+function serializeNpc(npc) {
+  return {
+    position: { x: npc.position.x, y: npc.position.y },
+    npc_image_key: npc.npc_image_key,
+  };
+}
+
 export function savegame() {
   gameLoaded.onload = false;
   // console.log(gameLoaded)
@@ -50,7 +58,7 @@ export function savegame() {
     offset_position: offset,
     global_time: virtualSeconds.value,
     time: { formattedHours, formattedMinutes, interval },
-    npc_details: [npc1],
+    npc_details: [serializeNpc(npc1)],
     party: cleanParty,
     items: cleanItems,
     health: parseFloat(health_tracker.value),

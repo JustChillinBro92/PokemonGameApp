@@ -7,10 +7,10 @@ export let playerMonsters = {
       src: "./img/embySprite.png",
     },
     attack: [
-      attacks.Tackle,
-      attacks.ThunderWave,
+      attacks.Scratch,
+      attacks.Bite,
+      attacks.WaterGun,
       attacks.Twister,
-      attacks.BurnUp,
     ],
     frames: {
       max: 4,
@@ -135,10 +135,10 @@ export const monsters = {
       src: "./img/TerradonSprite.png",
     },
     attack: [
-      attacks.Tackle,
-      attacks.FireBall,
-      attacks.DragonBreath,
-      attacks.BurnUp,
+      // attacks.Scratch,
+      // // attacks.FireBall,
+      // // attacks.DragonBreath,
+      attacks.Bite,
       ],
     frames: {
       max: 4,

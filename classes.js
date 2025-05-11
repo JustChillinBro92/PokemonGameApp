@@ -124,6 +124,28 @@ export class Sprite {
     }
   }
 
+  draw_light(x, y, radius) {
+
+    c.save(); 
+    c.globalCompositeOperation = "soft-light";
+    c.fillStyle = " rgba(250, 202, 44, 0.43)"; // any color
+    c.beginPath();
+    c.arc(x, y, radius, 0, Math.PI * 2); // full circle
+    c.fill();
+    c.restore();
+
+    c.save();
+    c.globalCompositeOperation = "darken";
+    c.shadowColor = 'black';
+    c.shadowBlur = 30;
+    c.strokeStyle = "rgba(250, 202, 44, 0.07)";
+    c.lineWidth = 20;
+    c.beginPath();
+    c.arc(x, y, radius, 0, Math.PI * 2); // full circle
+    c.stroke();
+    c.restore();
+  }
+
   // Method to update position based on new offsets
   updateOffset(deltaX, deltaY) {
     if (deltaX != 0 || deltaY != 0) {
@@ -310,7 +332,7 @@ export class Monster extends Sprite {
     if (this.status === "PRLZ") {
       let paralyzed = Math.random();
 
-      if (paralyzed < 0.65) {
+      if (paralyzed < 0.45) {
         attack_occur = false;
 
         if (this.isPartner) {
@@ -335,16 +357,14 @@ export class Monster extends Sprite {
           },
           animate: true,
         });
-        if(this.isPartner) renderedSprites.splice(2, 0, paralyze);
+        if (this.isPartner) renderedSprites.splice(2, 0, paralyze);
         else renderedSprites.splice(1, 0, paralyze);
-        
 
         gsap.to(paralyze.position, {
           x: this.position.x - 50,
           y: this.position.y - 60,
 
           onComplete: () => {
-            //enemy gets hit
             audio.paralyzed.play();
 
             if (this.isPartner) renderedSprites.splice(2, 1);
@@ -881,11 +901,10 @@ export class Monster extends Sprite {
 
     switch (attack.name) {
       case "Twister":
-        
         const twisterImg = new Image();
         twisterImg.src = "./img/Twister.png";
 
-        const twister = new Monster({
+        const twister = new Sprite({
           position: {
             x: recipient.position.x - 70,
             y: recipient.position.y - 100,
@@ -948,7 +967,7 @@ export class Monster extends Sprite {
         const dragonbreathImg = new Image();
         dragonbreathImg.src = "./img/dragonbreath.png";
 
-        const dragonbreath = new Monster({
+        const dragonbreath = new Sprite({
           position: {
             x: this.position.x,
             y: this.position.y,
@@ -985,8 +1004,8 @@ export class Monster extends Sprite {
             this.current_status = status_tracker.value;
             this.status_color(recipient);
 
-            if (this.Def_Mod.stage >= -3 && this.Def_Mod.stage < 3)
-              this.Def_Mod.stage += 1;
+            // if (this.Def_Mod.stage >= -3 && this.Def_Mod.stage < 3)
+            //   this.Def_Mod.stage += 1;
 
             gsap.to(recipient.position, {
               x: recipient.position.x + 10,
@@ -1011,7 +1030,7 @@ export class Monster extends Sprite {
         const fireballImg = new Image();
         fireballImg.src = "./img/fireball.png";
 
-        const fireball = new Monster({
+        const fireball = new Sprite({
           position: {
             x: this.position.x,
             y: this.position.y,
@@ -1048,8 +1067,8 @@ export class Monster extends Sprite {
             this.current_status = status_tracker.value;
             this.status_color(recipient);
 
-            if (this.Atk_Mod.stage >= -3 && this.Atk_Mod.stage < 3)
-              this.Atk_Mod.stage += 1;
+            // if (this.Atk_Mod.stage >= -3 && this.Atk_Mod.stage < 3)
+            //   this.Atk_Mod.stage += 1;
 
             gsap.to(recipient.position, {
               x: recipient.position.x + 10,
@@ -1068,6 +1087,71 @@ export class Monster extends Sprite {
           },
         });
         break;
+
+      case "WaterGun":
+        // audio.initFireball.play();
+        rotation = 0;
+        if (this.isEnemy) rotation = -3.2;
+
+        const watergunImg = new Image();
+        watergunImg.src = "./img/WaterGun.png";
+
+        const watergun = new Sprite({
+          position: {
+            x: this.position.x,
+            y: this.position.y,
+          },
+          image: watergunImg,
+          scale: 1.2,
+          frames: {
+            max: 5,
+            hold: 16,
+          },
+          animate: true,
+          rotation,
+        });
+        renderedSprites.splice(1, 0, watergun); //'1' is the index of emby, we are not removing any element so '0' used, fireball gets inserted before emby so, index '1' is now fireball
+
+        gsap.to(watergun.position, {
+          x: recipient.position.x - 50,
+          y: recipient.position.y + 10,
+
+          onComplete: () => {
+            //enemy gets hit
+            audio.TackleHit.play();
+
+            gsap.to(healthBar, {
+              width: (recipient.health / recipient.maxHealth) * 98.5 + "%",
+              duration: 0.8,
+              onComplete: () => {
+                this.healthbarColor();
+                if (recipient.health <= 0) {
+                  healthBarVisibility.style.visibility = "hidden";
+                }
+              },
+            });
+
+            this.current_status = status_tracker.value;
+            this.status_color(recipient);
+
+            gsap.to(recipient.position, {
+              x: recipient.position.x + 10,
+              yoyo: true,
+              repeat: 5,
+              duration: 0.08,
+            });
+
+            gsap.to(recipient, {
+              opacity: 0,
+              yoyo: true,
+              repeat: 3,
+              duration: 0.08,
+            });
+            renderedSprites.splice(1, 1); //removing the fireball after hitting target
+          },
+        });
+        break;
+
       case "ThunderWave":
         let flagT = true;
 
@@ -1086,7 +1170,7 @@ export class Monster extends Sprite {
         const thunderWaveImg = new Image();
         thunderWaveImg.src = "./img/ThunderWave.png";
 
-        const thunderWave = new Monster({
+        const thunderWave = new Sprite({
           position: {
             x: recipient.position.x - 50,
             y: recipient.position.y - 60,
@@ -1098,7 +1182,7 @@ export class Monster extends Sprite {
           },
           animate: true,
         });
-        renderedSprites.splice(1, 0, thunderWave); //'1' is the index of emby, we are not removing any element so '0' used, fireball gets inserted before emby so, index '1' is now fireball
+        renderedSprites.splice(1, 0, thunderWave);
 
         recipient.status = "PRLZ";
         if (this.isEnemy) this.current_status = "PRLZ";
@@ -1136,7 +1220,7 @@ export class Monster extends Sprite {
               repeat: 3,
               duration: 0.08,
             });
-            renderedSprites.splice(1, 1); //removing the fireball after hitting target
+            renderedSprites.splice(1, 1);
           },
         });
         break;
@@ -1155,14 +1239,11 @@ export class Monster extends Sprite {
         }
 
         if (flag) {
-          // document.querySelector("#DialogueBox").innerHTML =
-          //   recipient.name + " has been burned! ";
-
           audio.initFireball.play();
           const BurnUpImg = new Image();
           BurnUpImg.src = "./img/fireball.png";
 
-          const burnUp = new Monster({
+          const burnUp = new Sprite({
             position: {
               x: this.position.x,
               y: this.position.y,
@@ -1219,7 +1300,7 @@ export class Monster extends Sprite {
         const biteImg = new Image();
         biteImg.src = "./img/Bite.png";
 
-        const bite = new Monster({
+        const bite = new Sprite({
           position: {
             x: recipient.position.x - 50,
             y: recipient.position.y - 60,
@@ -1231,7 +1312,8 @@ export class Monster extends Sprite {
           },
           animate: true,
         });
-        renderedSprites.splice(1, 0, bite); //'1' is the index of emby, we are not removing any element so '0' used, fireball gets inserted before emby so, index '1' is now fireball
+        if (this.isPartner) renderedSprites.splice(1, 0, bite);
+        else renderedSprites.splice(2, 0, bite);
 
         gsap.to(bite.position, {
           x: recipient.position.x - 50,
@@ -1271,22 +1353,110 @@ export class Monster extends Sprite {
               repeat: 3,
               duration: 0.08,
             });
-            renderedSprites.splice(1, 1); //removing the fireball after hitting target
+            if (this.isPartner) renderedSprites.splice(1, 1);
+            else renderedSprites.splice(2, 1);
           },
         });
         break;
 
-      case "Tackle":
+      case "Scratch":
         const tl = gsap.timeline(); //timeline object created using gsap library
 
         let movementDistance = 20;
         if (this.isEnemy) movementDistance = -20;
+
+        const scratchImg = new Image();
+        scratchImg.src = "./img/Scratch.png";
+
+        const scratch = new Sprite({
+          position: {
+            x: recipient.position.x,
+            y: recipient.position.y,
+          },
+          image: scratchImg,
+          frames: {
+            max: 4,
+            hold: 40,
+          },
+          animate: true,
+        });
 
         tl.to(this.position, {
           x: this.position.x - movementDistance,
         })
           .to(this.position, {
             x: this.position.x + movementDistance * 2,
+            duration: 0.1,
+
+            //enemy gets hit
+            onComplete: () => {
+              if (this.isPartner) renderedSprites.splice(1, 0, scratch);
+              else renderedSprites.splice(2, 0, scratch);
+
+              gsap.to(scratch.position, {
+                x: recipient.position.x,
+                y: recipient.position.y,
+                duration: 0.5,
+
+                onComplete: () => {
+                  //enemy gets hit
+                  audio.TackleHit.play();
+
+                  gsap.to(healthBar, {
+                    width:
+                      (recipient.health / recipient.maxHealth) * 98.5 + "%",
+                    duration: 0.8,
+                    onComplete: () => {
+                      this.healthbarColor();
+                      if (recipient.health <= 0) {
+                        healthBarVisibility.style.visibility = "hidden";
+                      }
+                    },
+                  });
+
+                  this.current_status = status_tracker.value;
+                  this.status_color(recipient);
+
+                  gsap.to(recipient.position, {
+                    x: recipient.position.x + 10,
+                    yoyo: true,
+                    repeat: 5,
+                    duration: 0.08,
+                  });
+
+                  gsap.to(recipient, {
+                    opacity: 0,
+                    yoyo: true,
+                    repeat: 3,
+                    duration: 0.08,
+                  });
+                },
+              });
+            },
+          })
+          .to(this.position, {
+            //player monster sprite returns to original position
+            x: this.position.x,
+
+            onComplete: () => {
+              if (this.isPartner) renderedSprites.splice(1, 1);
+              else renderedSprites.splice(2, 1);
+            },
+          });
+        break;
+
+      case "Tackle":
+        const tkl = gsap.timeline();
+
+        let movement_Distance = 20;
+        if (this.isEnemy) movement_Distance = -20;
+
+        tkl
+          .to(this.position, {
+            x: this.position.x - movement_Distance,
+          })
+          .to(this.position, {
+            x: this.position.x + movement_Distance * 2,
             duration: 0.1,
 
             //enemy gets hit
