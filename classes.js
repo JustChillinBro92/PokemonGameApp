@@ -34,7 +34,7 @@ export class Boundary {
     const scaledWidth = frameWidth * this.scale; // Scaled width of the frame
     const scaledHeight = frameHeight * this.scale; // Scaled height of the frame
 
-    c.fillStyle = "rgba(255, 0, 0, 0.1)";
+    c.fillStyle = "rgba(255, 0, 0, 0)";
     c.fillRect(this.position.x, this.position.y, scaledWidth, scaledHeight);
   }
 }

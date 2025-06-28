@@ -1,6 +1,5 @@
 import { Boundary, Sprite } from "./classes.js";
 import { door_collisions } from "./data/door_collisions.js";
-import { collisions } from "./data/collisions.js";
 import { battleZonesData } from "./data/battlezones.js";
 import { audio } from "./data/audio.js";
 import { initBattle } from "./initiateBattle.js";
@@ -22,19 +21,49 @@ import { MAP } from "./data/map.js";
 export function load_map(new_map_data) {
   maploaded.data = new_map_data;
 
+  offset.x = maploaded.data.camera.x;
+  offset.y = maploaded.data.camera.y;
+
+  background.position.x = maploaded.data.camera.x;
+  background.position.y = maploaded.data.camera.y;
   background.image.src = maploaded.data.background_image;
+  
+  foreground.position.x = maploaded.data.camera.x;
+  foreground.position.y = maploaded.data.camera.y;
   foreground.image.src = maploaded.data.foreground_image;
 
- 
+  collisionsMap = [];
+  area_loaded = maploaded.data;
+  area_map = area_loaded.map;
+  collison_spread = area_loaded.width;
+
+  for (let i = 0; i <= area_map.length; i += collison_spread) {
+    collisionsMap.push(area_map.slice(i, collison_spread + i));
+  }
+
+  boundaries = [];
+  collisionsMap.forEach((row, i) => {
+    row.forEach((symbol, j) => {
+      if (symbol === 1025)
+        boundaries.push(
+          new Boundary({
+            position: {
+              x: j * Boundary.width + maploaded.data.camera.x,
+              y: i * Boundary.height + maploaded.data.camera.y,
+            },
+          })
+        );
+    });
+  });
 }
 
-const collisionsMap = [];
-let area_loaded = collisions.PetalwoodTown;
+let collisionsMap = [];
+let area_loaded = MAP.petalwood_island;
 let area_map = area_loaded.map;
 let collison_spread = area_loaded.width;
 
 for (let i = 0; i <= area_map.length; i += collison_spread) {
-  collisionsMap.push(area_map.slice(i, collison_spread + i)); //slicing the array of collisons(acc to width of map 120 tiles) into sub-arrays and storing/pushing them in another Array
+  collisionsMap.push(area_map.slice(i, collison_spread + i));
 }
 
 // const door_collisionsMap = [];
@@ -47,8 +76,8 @@ for (let i = 0; i <= battleZonesData.length; i += 180) {
   battleZonesMap.push(battleZonesData.slice(i, 180 + i)); //slicing the array of battlezones(acc to width of map 120 tiles) into sub-arrays and storing/pushing them in another Array
 }
 
-export const boundaries = [];
-export const offset = maploaded.data.camera;
+export let boundaries = [];
+export let offset = { x: maploaded.data.camera.x, y: maploaded.data.camera.y };
 
 collisionsMap.forEach((row, i) => {
   row.forEach((symbol, j) => {
@@ -291,7 +320,7 @@ var now;
 export function animate() {
   now = Date.now();
   var deltaTime = now - then;
-  var fps = 120;
+  var fps = 60;
 
   const global_time = Math.floor((virtualSeconds.value / 3600) % 24);
 
