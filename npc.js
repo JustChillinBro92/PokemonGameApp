@@ -109,9 +109,8 @@ export function checkNpcInteraction() {
     if (npc_collision) {
       dialogue_prompt.position.x = npc1.position.x + 2;
       dialogue_prompt.position.y = npc1.position.y - 35;
-
+      
       Npc1_Dialogue_Available.value = true;
-
     } else Npc1_Dialogue_Available.value = false;
  
     thenTime = nowTime;

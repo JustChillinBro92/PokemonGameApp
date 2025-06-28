@@ -1,14 +1,19 @@
-import { app, BrowserWindow } from 'electron';
+// main.js
+import { app, BrowserWindow, ipcMain } from 'electron';
 import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 function createWindow() {
   const win = new BrowserWindow({
-    width: 1024,
-    height: 576,
+    fullscreen: true,
+    frame: false,
     webPreferences: {
-        nodeIntegration: true,
-        contextIsolation: false, // Allows access to DOM APIs in renderer
-        preload: path.join('preload.js') // Preload script
+      contextIsolation: true,
+      nodeIntegration: false,
+      preload: path.join(__dirname, 'preload.js'),
     },
   });
 
@@ -17,12 +22,6 @@ function createWindow() {
 
 app.whenReady().then(createWindow);
 
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') app.quit();
+ipcMain.on('quit-app', () => {
+  app.quit();
 });
-
-app.on('activate', () => {
-  if (BrowserWindow.getAllWindows().length === 0) createWindow();
-});
-
-

@@ -1,0 +1,35 @@
+import { audio } from "./data/audio.js";
+import { MAP } from "./data/map.js";
+
+// MAIN MENU LOADING ANIMATION
+
+gsap.to("#menu_box", {
+  delay: 1,
+  opacity: 1,
+  height: 80 + "%",
+  duration: 0.8,
+  onComplete: () => {
+    gsap.to("#menu_options", {
+      opacity: 1,
+      width: 50 + "%",
+      duration: 0.6,
+      onComplete: () => {
+        gsap.to("#menu_btn", {
+          opacity: 1,
+          duration: 0.05,
+        });
+      },
+    });
+  },
+});
+
+export const maploaded = {
+    data: MAP.petalwood_island,
+}
+
+document.querySelector("#map_name").innerHTML = maploaded.data.name
+
+document.querySelector(".new_game").addEventListener("click", () => {
+  document.querySelector("#main_menu").style.display = "none";
+  audio.Map.play();
+});

@@ -16,29 +16,39 @@ import {
   checkNpcInteraction,
   npc_sprite_upon_interaction,
 } from "./npc.js";
+import { maploaded } from "./main_menu.js";
+import { MAP } from "./data/map.js";
+
+export function load_map(new_map_data) {
+  maploaded.data = new_map_data;
+
+  background.image.src = maploaded.data.background_image;
+  foreground.image.src = maploaded.data.foreground_image;
+
+ 
+}
 
 const collisionsMap = [];
-for (let i = 0; i <= collisions.length; i += 180) {
-  collisionsMap.push(collisions.slice(i, 180 + i)); //slicing the array of collisons(acc to width of map 120 tiles) into sub-arrays and storing/pushing them in another Array
-}
-//console.log(collisionsMap)
+let area_loaded = collisions.PetalwoodTown;
+let area_map = area_loaded.map;
+let collison_spread = area_loaded.width;
 
-const door_collisionsMap = [];
-for (let i = 0; i <= door_collisions.length; i += 180) {
-  door_collisionsMap.push(door_collisions.slice(i, 180 + i));
+for (let i = 0; i <= area_map.length; i += collison_spread) {
+  collisionsMap.push(area_map.slice(i, collison_spread + i)); //slicing the array of collisons(acc to width of map 120 tiles) into sub-arrays and storing/pushing them in another Array
 }
+
+// const door_collisionsMap = [];
+// for (let i = 0; i <= door_collisions.length; i += 180) {
+//   door_collisionsMap.push(door_collisions.slice(i, 180 + i));
+// }
 
 const battleZonesMap = [];
 for (let i = 0; i <= battleZonesData.length; i += 180) {
   battleZonesMap.push(battleZonesData.slice(i, 180 + i)); //slicing the array of battlezones(acc to width of map 120 tiles) into sub-arrays and storing/pushing them in another Array
 }
-//console.log(battlezonesMap);
 
 export const boundaries = [];
-export const offset = {
-  x: -1150,
-  y: -712,
-};
+export const offset = maploaded.data.camera;
 
 collisionsMap.forEach((row, i) => {
   row.forEach((symbol, j) => {
@@ -57,19 +67,19 @@ collisionsMap.forEach((row, i) => {
 
 export const door_boundaries = [];
 
-door_collisionsMap.forEach((row, i) => {
-  row.forEach((symbol, j) => {
-    if (symbol === 1025)
-      door_boundaries.push(
-        new Boundary({
-          position: {
-            x: j * Boundary.width + offset.x,
-            y: i * Boundary.height + offset.y,
-          },
-        })
-      );
-  });
-});
+// door_collisionsMap.forEach((row, i) => {
+//   row.forEach((symbol, j) => {
+//     if (symbol === 1025)
+//       door_boundaries.push(
+//         new Boundary({
+//           position: {
+//             x: j * Boundary.width + offset.x,
+//             y: i * Boundary.height + offset.y,
+//           },
+//         })
+//       );
+//   });
+// });
 
 export const battleZones = [];
 export const grass_tiles = [];
@@ -107,19 +117,15 @@ battleZonesMap.forEach((row, i) => {
     }
   });
 });
-//console.log(battleZones);
 
-const image = new Image();
-image.src = "./img/PetalwoodTown.png"; //html element i.e. the image(map)
+const backgroundimage = new Image();
+backgroundimage.src = maploaded.data.background_image;
 
-// const grass_bottom = new Image();
-// grass_bottom.src = "./img/grass_bottom.png";
+const foregroundimage = new Image();
+foregroundimage.src = maploaded.data.foreground_image;
 
 const campfire = new Image();
 campfire.src = "./img/campfire.png";
-
-const foregroundimage = new Image();
-foregroundimage.src = "./img/ForegroundObjects.png";
 
 const playerDownImage = new Image();
 playerDownImage.src = "./img/playerDown.png";
@@ -130,7 +136,7 @@ playerUpImage.src = "./img/playerUp.png";
 const playerLeftImage = new Image();
 playerLeftImage.src = "./img/playerLeft.png";
 
-let playerRightImage = new Image();
+const playerRightImage = new Image();
 playerRightImage.src = "./img/playerRight.png";
 
 const playerRight_HalfImage = new Image();
@@ -169,7 +175,7 @@ export const background = new Sprite({
     x: offset.x,
     y: offset.y,
   },
-  image: image,
+  image: backgroundimage,
 });
 
 export const foreground = new Sprite({
@@ -179,6 +185,8 @@ export const foreground = new Sprite({
   },
   image: foregroundimage,
 });
+
+load_map(MAP.evergrande_island);
 
 // campfire positions set
 export const campfires = [
@@ -244,7 +252,7 @@ const movables = [
   ...campfires,
   foreground,
   ...boundaries,
-  ...door_boundaries,
+  // ...door_boundaries,
   ...battleZones,
   ...grass_tiles,
 ];
@@ -283,7 +291,7 @@ var now;
 export function animate() {
   now = Date.now();
   var deltaTime = now - then;
-  var fps = 60;
+  var fps = 120;
 
   const global_time = Math.floor((virtualSeconds.value / 3600) % 24);
 
@@ -321,16 +329,16 @@ export function animate() {
       boundary.draw();
     });
 
-    door_boundaries.forEach((door_Boundary) => {
-      door_Boundary.draw();
-    });
+    // door_boundaries.forEach((door_Boundary) => {
+    //   door_Boundary.draw();
+    // });
 
     battleZones.forEach((battleZone) => {
-      battleZone.draw();
+      // battleZone.draw();
     });
 
     grass_tiles.forEach((grass) => {
-      grass.draw();
+      // grass.draw();
     });
 
     player.draw();
@@ -345,10 +353,13 @@ export function animate() {
       campfires.forEach((campfire) => {
         campfire.draw();
 
-        let radius = 90 + 10 * Math.sin(angle);
-        campfire.draw_light(campfire.position.x + 20, campfire.position.y + 25, radius)
-        angle += 0.05;
-        console.log(angle);
+        // let radius = 90 + 10 * Math.sin(angle);
+        campfire.draw_light(
+          campfire.position.x + 20,
+          campfire.position.y + 25,
+          radius
+        );
+        // angle += 0.05;
       });
     }
 
@@ -451,6 +462,7 @@ export function animate() {
     if (keys.w.pressed && lastkey === "w") {
       player.animate = true;
       player.image = player.sprites.up;
+
       for (let i = 0; i < boundaries.length; i++) {
         const boundary = boundaries[i];
 
@@ -898,10 +910,6 @@ window.addEventListener("keyup", (e) => {
     case "d":
       keys.d.pressed = false;
       break;
-
-    // case "e":
-    //   keys.e.pressed = false;
-    //   break;
   }
 
   if (keys.w.pressed) lastkey = "w";
@@ -910,13 +918,13 @@ window.addEventListener("keyup", (e) => {
   else if (keys.d.pressed) lastkey = "d";
 });
 
-let clicked = false;
-addEventListener("click", () => {
-  if (!clicked) {
-    audio.Map.play();
-    clicked = true;
-  }
-});
+// let clicked = false;
+// addEventListener("click", () => {
+//   if (!clicked) {
+//     audio.Map.play();
+//     clicked = true;
+//   }
+// });
 
 animate();
 checkNpcInteraction();

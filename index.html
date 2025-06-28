@@ -22,9 +22,7 @@
 			width: 100%;
 			height: 100%;
 			background-color: black;
-			/* Full background color */
 			overflow: hidden;
-			/* Prevents scrollbars */
 			cursor: url("img/pointer.png"), auto;
 		}
 
@@ -76,14 +74,8 @@
 
 		#back_overworld:hover {
 			background-color: rgb(0, 166, 255);
-			/* Darker blue on hover */
 			transform: scale(1.05);
-			/* Slightly enlarge the button */
 		}
-
-		/* #backBox button:hover{
-			background-color: white;
-		} */
 
 		button {
 			border-radius: 10px;
@@ -96,8 +88,28 @@
 			background-color: #ddd;
 		}
 
+		#menu_btn {
+			opacity: 0;
+			background: transparent;
+			color: white;
+			border: 2px solid rgba(0, 157, 255, 0.5);
+			border-radius: 1rem;
+			width: 60%;
+			padding: 1.5rem 2rem;
+			font-size: 1.2rem;
+			letter-spacing: 1px;
+			transition: all 0.2s ease-in-out;
+		}
+
+		#menu_btn:hover {
+			color: aqua;
+			background-color: rgba(0, 157, 255, 0.1);
+			border-color: aqua;
+			transform: scale(1.05);
+			transition: all 0.2s ease-in-out
+		}
+
 		#List button {
-			height: 15%;
 			background-color: rgba(0, 0, 0, 0.4);
 			box-shadow: 0 0 1px rgba(2, 31, 59, 0.7),
 				1px 1.5px 2px -1px rgba(2, 31, 59, 0.65),
@@ -105,10 +117,18 @@
 			border: 3px dotted black;
 			color: white;
 			font-size: 18px;
+
+			width: 70%;
+			padding: 1.5rem 2rem;
+			font-size: 1.2rem;
+			letter-spacing: 1px;
+			transition: all 0.2s ease-in-out;
 		}
 
 		#List button:hover {
-			border: 3.5px dotted rgb(5, 131, 112);
+			border-color:rgb(5, 131, 112);
+			transform: scale(1.05);
+			transition: all 0.2s ease-in-out
 		}
 
 		#categories button,
@@ -139,6 +159,68 @@
 
 <body>
 	<div style="display: inline-block; position: relative">
+		<div id="main_menu" style="
+			background-image: linear-gradient(to right, #000000, #121365); 
+			position: absolute;
+		  	top: 0; 
+			bottom: 0; 
+			left: 0; 
+			right: 0; 
+			opacity: 1;
+			display: none;
+			z-index: 11;
+		">
+			<div id="menu_box" style="
+				position: absolute;
+				background-color: rgb(4, 22, 45); 
+				box-shadow: 0 0 1px rgba(2, 31, 59, 0.7),
+        			1px 1.5px 2px -1px rgba(2, 31, 59, 0.65),
+        			4px 4px 12px -2.5px rgba(2, 31, 59, 0.65);
+				border-top: 3.5px solid rgba(0, 157, 255, 0.753);
+				border-bottom: 3.5px solid rgba(0, 157, 255, 0.753);
+				border-radius: 1rem;
+
+				height: 0;
+				opacity: 0;
+
+				top: 10%; 
+				bottom: 10%; 
+				left: 10%; 
+				right: 10%;
+			">
+				<div id="menu_options" style="
+					position: absolute;
+					background-color: rgba(0, 0, 0, 0.295);
+     				border-color: rgba(0, 0, 0, 0.12);
+      				box-shadow: 0 0 1px rgba(2, 31, 59, 0.7),
+        				1px 1.5px 2px -1px rgba(2, 31, 59, 0.65),
+        				4px 4px 12px -2.5px rgba(2, 31, 59, 0.65);
+					border-left: 3.5px solid rgba(0, 157, 255, 0.753);
+					border-right: 3.5px solid rgba(0, 157, 255, 0.753);
+					border-radius: 1rem;
+
+					width: 0;
+					opacity: 0;
+					
+					top: 10%; 
+					bottom: 10%; 
+					left: 5%; 
+					right: 50%;
+
+					display: flex;
+  					flex-direction: column;
+  					justify-content: space-evenly;
+  					align-items: center;
+				">
+					<button id="menu_btn" class="continue">Continue</button>
+					<button id="menu_btn" class="new_game">New Game</button>
+					<button id="menu_btn" class="controls">Controls</button>
+					<button id="menu_btn" class="options">Options</button>
+					<button id="menu_btn" class="exit" onclick="window.api.quitApp()">Exit</button>
+				</div>
+			</div>
+		</div>
+
 		<div id="OverlappingDiv" style="
 			background-color: black; 
 			position: absolute;
@@ -148,25 +230,9 @@
 			right: 0; 
 			opacity: 0; 
 			pointer-events: none;
-			z-index: 10;">
+			z-index: 12;
+		">
 		</div>
-
-		<!-- <div id="light_source" style="
-				background-color:rgba(242, 176, 61, 0.368);
-				border-radius: 150px;
-
-				height: 220px;
-				width: 230px;
-
-				position: absolute;
-				top: 40%; 
-				left: 39.5%;
-
-				display: flex;
-				justify-content: center;
-				align-items: center;
-			">
-		</div> -->
 
 		<div id="DayNightCycle" style="
 			background-color:rgba(44, 14, 14, 0.3);
@@ -181,6 +247,30 @@
 		</div>
 
 		<canvas></canvas>
+
+		<div id="map_name" style="
+			position: absolute;
+			border-radius: 12px;
+			box-shadow: 0 0 1px rgba(2, 31, 59, 0.7),
+        	1px 1.5px 2px -1px rgba(2, 31, 59, 0.65),
+       		4px 4px 12px -2.5px rgba(2, 31, 59, 0.65);
+			background-color: rgba(0, 0, 0, 0.4);
+			border: 3.5px solid rgb(15, 41, 87);
+			backdrop-filter: blur(2px);
+
+			top: 2%;
+			left: 1%;
+			right: 75%;
+			bottom: 85%;
+
+			font-size: 19px;
+			color: rgb(228, 231, 232);
+
+			display: flex;
+			justify-content: center;
+			align-items: center;
+		">
+		</div>
 
 		<div id="OverworldDialogueBoxContainer" style="
 				color: rgb(81, 156, 188);
@@ -261,9 +351,9 @@
 			right: 100px;
 			top: 100px;
 			bottom: 120px;
+
 			border: 3.5px solid rgb(0, 31, 84);
 			border-radius: 12px;
-
 			box-shadow: 0 0 1px rgba(2, 31, 59, 0.7),
         	1px 1.5px 2px -1px rgba(2, 31, 59, 0.65),
        		4px 4px 12px -2.5px rgba(2, 31, 59, 0.65);
@@ -272,14 +362,24 @@
 			display: none;
 			">
 			<div id="List" style="
+				position: absolute;
+				background-color: rgba(0, 0, 0, 0.295);
+     			border-color: rgba(0, 0, 0, 0.12);
+      			box-shadow: 0 0 1px rgba(2, 31, 59, 0.7),
+        				1px 1.5px 2px -1px rgba(2, 31, 59, 0.65),
+        				4px 4px 12px -2.5px rgba(2, 31, 59, 0.65);
+				border-radius: 10px;
+
+				top: 0; 
+				bottom: 0; 
+				left: 0; 
+				right: 0;
+
+
 				display: flex;
-				flex-direction: column;
-				justify-content: space-evenly;
-				padding: 12px;
-				height: 93%;
-				box-shadow: 0 0 1px rgba(2, 31, 59, 0.7),
-        		1px 1.5px 2px -1px rgba(2, 31, 59, 0.65),
-       			4px 4px 12px -2.5px rgba(2, 31, 59, 0.65);
+  				flex-direction: column;
+  				justify-content: space-evenly;
+  				align-items: center;
 				">
 				<button id="archive">PokeDex</button>
 				<button id="partners">Pokemon</button>
@@ -747,6 +847,7 @@
 			</div>
 		</div>
 
+
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js"
 			integrity="sha512-6+YN/9o9BWrk6wSfGxQGpt3EUK6XeHi6yeHV+TYD2GR0Sj/cggRpXr1BrAQf0as6XslxomMUxXp2vIl+fv0QRA=="
 			crossorigin="anonymous" referrerpolicy="no-referrer"></script>
@@ -766,6 +867,7 @@
 		<script src="./classes.js" type="module"></script>
 		<script src="./initiateBattle.js" type="module"></script>
 		<script src="./npc.js" type="module"></script>
+		<script src="./main_menu.js" type="module"></script>
 		<script src="./renderer.js" type="module"></script>
 		<script src="./battlescene.js" type="module"></script>
 		<script src="./save_load.js" type="module"></script>

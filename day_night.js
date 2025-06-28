@@ -55,7 +55,7 @@ fullCycle.forEach(step => {
 const timeElement = document.querySelector("#clock");
 
 // Virtual time in seconds (8:00 AM)
-export let virtualSeconds = { value: 20 * 3600 }
+export let virtualSeconds = { value: 8 * 3600 }
 export let formattedHours;
 export let formattedMinutes;
 export let interval;

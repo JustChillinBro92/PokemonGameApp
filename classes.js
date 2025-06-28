@@ -34,7 +34,7 @@ export class Boundary {
     const scaledWidth = frameWidth * this.scale; // Scaled width of the frame
     const scaledHeight = frameHeight * this.scale; // Scaled height of the frame
 
-    c.fillStyle = "rgba(255, 0, 0, 0)";
+    c.fillStyle = "rgba(255, 0, 0, 0.1)";
     c.fillRect(this.position.x, this.position.y, scaledWidth, scaledHeight);
   }
 }
@@ -72,7 +72,6 @@ export class Sprite {
     this.sprites = sprites;
     this.opacity = 1;
   }
-
   draw() {
     c.save(); //if any global property added btwn save and restore, it only affects the code inside them
 
@@ -125,23 +124,22 @@ export class Sprite {
   }
 
   draw_light(x, y, radius) {
-
-    c.save(); 
+    c.save();
     c.globalCompositeOperation = "soft-light";
-    c.fillStyle = " rgba(250, 202, 44, 0.43)"; // any color
+    c.fillStyle = " rgba(250, 202, 44, 0.43)";
     c.beginPath();
-    c.arc(x, y, radius, 0, Math.PI * 2); // full circle
+    c.arc(x, y, radius, 0, Math.PI * 2);
     c.fill();
     c.restore();
 
     c.save();
     c.globalCompositeOperation = "darken";
-    c.shadowColor = 'black';
+    c.shadowColor = "black";
     c.shadowBlur = 30;
     c.strokeStyle = "rgba(250, 202, 44, 0.07)";
     c.lineWidth = 20;
     c.beginPath();
-    c.arc(x, y, radius, 0, Math.PI * 2); // full circle
+    c.arc(x, y, radius, 0, Math.PI * 2);
     c.stroke();
     c.restore();
   }
@@ -881,7 +879,7 @@ export class Monster extends Sprite {
     let DAMAGE = Math.floor(
       Math.floor(baseDamage * modMultiplier) * finalMultiplier
     );
-    console.log(DAMAGE);
+    // console.log(DAMAGE);
 
     recipient.health -= DAMAGE;
     // console.log(recipient.name + " health: " + recipient.health);
