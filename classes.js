@@ -42,6 +42,7 @@ export class Boundary {
 export class Sprite {
   constructor({
     position,
+    map,
     image,
     npc_image_key,
     frames = { max: 1, hold: 25 },
@@ -49,15 +50,21 @@ export class Sprite {
     sprites,
     animate = false,
     isMoving = false,
+    triggerEvent = false,
     dialogue,
+    onetimeDialogue,
+    dialogue_available,
     rotation = 0,
   }) {
     this.position = position;
+    this.map = map;
     this.npc_image_key = npc_image_key;
     this.image = new Image();
     this.frames = { ...frames, val: 0, elapsed: 0 };
     this.scale = scale;
     this.dialogue = dialogue;
+    this.onetimeDialogue = onetimeDialogue;
+    this.dialogue_available = dialogue_available;
     this.rotation = rotation;
 
     this.image.onload = () => {
@@ -69,9 +76,11 @@ export class Sprite {
     this.image.src = image.src;
     this.animate = animate;
     this.isMoving = isMoving;
+    this.triggerEvent = triggerEvent;
     this.sprites = sprites;
     this.opacity = 1;
   }
+
   draw() {
     c.save(); //if any global property added btwn save and restore, it only affects the code inside them
 
@@ -153,8 +162,8 @@ export class Sprite {
   }
 
   // Method to simulate npc movement
-  npc_movement(NpcPos, Npc, Player, interact) {
-    if (interact) return;
+  npc_movement(NpcPos, Npc, Player) {
+    if (Npc.dialogue_available.interact) return;
 
     function RectangularCollision({ rectangle1, rectangle2 }) {
       return (
@@ -165,7 +174,7 @@ export class Sprite {
       );
     }
 
-    const direction = ["left", "right", "up", "down"];
+    const direction = ["up", "down", "left", "right"];
     const randomDirection =
       direction[Math.floor(Math.random() * direction.length)];
 
@@ -219,6 +228,7 @@ export class Sprite {
     ) {
       if (!Player.animate) {
         this.animate = true;
+
         gsap.to(this.position, {
           x: nextPosition.x,
           y: nextPosition.y,
@@ -230,14 +240,14 @@ export class Sprite {
         });
       }
 
-      // No collision, move and animate
+      // // No collision, move and animate
       // this.position.x = nextPosition.x;
       // this.position.y = nextPosition.y;
       // this.animate = true;
 
       // setTimeout(() => {
       //   this.animate = false; // Reset animation after a short delay
-      // }, 300); // Adjust time for animation duration
+      // }, 350); // Adjust time for animation duration
     }
   }
 }

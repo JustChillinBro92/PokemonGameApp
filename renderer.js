@@ -9,8 +9,6 @@ import { gameState, gameLoaded } from "./gameState.js";
 import { savegame, loadgame } from "./save_load.js";
 import { virtualSeconds } from "./day_night.js";
 import {
-  npc1,
-  Npc1_Dialogue_Available,
   all_npcs,
   checkNpcInteraction,
   npc_sprite_upon_interaction,
@@ -20,6 +18,19 @@ import { MAP } from "./data/map.js";
 
 export function load_map(new_map_data) {
   maploaded.data = new_map_data;
+  document.querySelector("#map_name").innerHTML = maploaded.data.name;
+
+  gsap.to("#map_name", {
+    top: 2 + "%",
+    bottom: 85 + "%",
+    duration: 0.6,
+    onComplete: () => {
+      gsap.to("#map_name", {
+        opacity: 0,
+        delay: 3,
+      });
+    },
+  });
 
   offset.x = maploaded.data.camera.x;
   offset.y = maploaded.data.camera.y;
@@ -27,7 +38,7 @@ export function load_map(new_map_data) {
   background.position.x = maploaded.data.camera.x;
   background.position.y = maploaded.data.camera.y;
   background.image.src = maploaded.data.background_image;
-  
+
   foreground.position.x = maploaded.data.camera.x;
   foreground.position.y = maploaded.data.camera.y;
   foreground.image.src = maploaded.data.foreground_image;
@@ -56,6 +67,9 @@ export function load_map(new_map_data) {
     });
   });
 }
+
+//LOAD OVERWORLD BACKPACK
+load_backpack();
 
 let collisionsMap = [];
 let area_loaded = MAP.petalwood_island;
@@ -157,16 +171,16 @@ const campfire = new Image();
 campfire.src = "./img/campfire.png";
 
 const playerDownImage = new Image();
-playerDownImage.src = "./img/playerDown.png";
+playerDownImage.src = "./img/characters/player/player_downV2.png";
 
 const playerUpImage = new Image();
-playerUpImage.src = "./img/playerUp.png";
+playerUpImage.src = "./img/characters/player/player_upV2.png";
 
 const playerLeftImage = new Image();
-playerLeftImage.src = "./img/playerLeft.png";
+playerLeftImage.src = "./img/characters/player/player_leftV2.png";
 
 const playerRightImage = new Image();
-playerRightImage.src = "./img/playerRight.png";
+playerRightImage.src = "./img/characters/player/player_rightV2.png";
 
 const playerRight_HalfImage = new Image();
 playerRight_HalfImage.src = "./img/playerRight_Half.png";
@@ -182,13 +196,13 @@ playerUp_HalfImage.src = "./img/playerUp_Half.png";
 
 export const player = new Sprite({
   position: {
-    x: 704.8,
-    y: 280.8,
+    x: 1380,
+    y: 1212,
   },
   image: playerDownImage,
   frames: {
     max: 4,
-    hold: 8,
+    hold: 10,
   },
   sprites: {
     up: playerUpImage,
@@ -196,7 +210,7 @@ export const player = new Sprite({
     right: playerRightImage,
     down: playerDownImage,
   },
-  scale: 0.75,
+  scale: 0.65,
 });
 
 export const background = new Sprite({
@@ -215,7 +229,7 @@ export const foreground = new Sprite({
   image: foregroundimage,
 });
 
-load_map(MAP.evergrande_island);
+// load_map(MAP.evergrande_island);
 
 // campfire positions set
 export const campfires = [
@@ -272,10 +286,7 @@ const keys = {
   },
 };
 
-load_backpack();
-
 const movables = [
-  npc1,
   dialogue_prompt,
   background,
   ...campfires,
@@ -285,6 +296,19 @@ const movables = [
   ...battleZones,
   ...grass_tiles,
 ];
+
+let map_npcs = [];
+export let colliding_npc = [];
+
+all_npcs.forEach((npc) => {
+  let current_map = maploaded.data.name;
+
+  if (npc.map === current_map) {
+    movables.push(npc);
+    map_npcs.push(npc);
+  }
+});
+// console.log(movables);
 
 function RectangularCollision({ rectangle1, rectangle2 }) {
   return (
@@ -337,7 +361,6 @@ export function animate() {
         duration: 1,
         onComplete() {
           gsap.to("#OverlappingDiv", {
-            //keeps the canvas covered by the 'overlapping div' as no yoyo property present...done to change the canvas behind it to battle scene
             opacity: 0,
           });
         },
@@ -372,8 +395,18 @@ export function animate() {
 
     player.draw();
 
-    npc1.draw();
-    if (Npc1_Dialogue_Available.value) dialogue_prompt.draw();
+    all_npcs.forEach((npc) => {
+      let current_map = maploaded.data.name;
+
+      if (npc.map === current_map) {
+        npc.draw();
+        checkNpcInteraction();
+
+        let prompt_Npc = colliding_npc[0] || false;
+        if (prompt_Npc && prompt_Npc.dialogue_available.value)
+          dialogue_prompt.draw();
+      }
+    });
 
     foreground.draw();
 
@@ -382,7 +415,7 @@ export function animate() {
       campfires.forEach((campfire) => {
         campfire.draw();
 
-        // let radius = 90 + 10 * Math.sin(angle);
+        let radius = 90 + 10 * Math.sin(angle);
         campfire.draw_light(
           campfire.position.x + 20,
           campfire.position.y + 25,
@@ -398,12 +431,12 @@ export function animate() {
     if (battle.initiated) return;
 
     let inGrass = false;
-    if (!inGrass) {
-      player.sprites.right = playerRightImage;
-      player.sprites.left = playerLeftImage;
-      player.sprites.down = playerDownImage;
-      player.sprites.up = playerUpImage;
-    }
+    // if (!inGrass) {
+    //   player.sprites.right = playerRightImage;
+    //   player.sprites.left = playerLeftImage;
+    //   player.sprites.down = playerDownImage;
+    //   player.sprites.up = playerUpImage;
+    // }
 
     //activate a battle
     if (keys.w.pressed || keys.a.pressed || keys.s.pressed || keys.d.pressed) {
@@ -429,11 +462,11 @@ export function animate() {
           }) &&
           OverlappingArea > (player.height * player.width) / 2
         ) {
-          inGrass = true;
-          player.sprites.right = playerRight_HalfImage;
-          player.sprites.left = playerLeft_HalfImage;
-          player.sprites.down = playerDown_HalfImage;
-          player.sprites.up = playerUp_HalfImage;
+          // inGrass = true;
+          // player.sprites.right = playerRight_HalfImage;
+          // player.sprites.left = playerLeft_HalfImage;
+          // player.sprites.down = playerDown_HalfImage;
+          // player.sprites.up = playerUp_HalfImage;
 
           if (!grassAudioPlay) {
             grassAudioPlay = true;
@@ -513,26 +546,33 @@ export function animate() {
         }
 
         //npc collision check
-        if (
-          RectangularCollision({
+        for (let npc of map_npcs) {
+          const isColliding = RectangularCollision({
             rectangle1: player,
             rectangle2: {
-              ...npc1,
+              ...npc,
               position: {
-                x: npc1.position.x,
-                y: npc1.position.y + 3,
+                x: npc.position.x,
+                y: npc.position.y + 3,
               },
             },
-          })
-        ) {
-          npc_collision = true;
-          moving = false;
-          // console.log("Npc colliding");
-          break;
-        } else npc_collision = false;
+          });
+
+          if (isColliding) {
+            npc_collision = true;
+            colliding_npc[0] = npc;
+
+            moving = false;
+            // console.log("Npc colliding");
+            break;
+          }
+        }
       }
 
       if (moving === true) {
+        npc_collision = false;
+        colliding_npc.length = 0;
+
         movables.forEach((movable) => {
           movable.position.y += 3;
         });
@@ -540,6 +580,7 @@ export function animate() {
     } else if (keys.a.pressed && lastkey === "a") {
       player.animate = true;
       player.image = player.sprites.left;
+
       for (let i = 0; i < boundaries.length; i++) {
         const boundary = boundaries[i];
 
@@ -561,25 +602,34 @@ export function animate() {
         }
 
         //npc collision check
-        if (
-          RectangularCollision({
+        for (let npc of map_npcs) {
+          const isColliding = RectangularCollision({
             rectangle1: player,
             rectangle2: {
-              ...npc1,
+              ...npc,
               position: {
-                x: npc1.position.x + 3,
-                y: npc1.position.y,
+                x: npc.position.x + 3,
+                y: npc.position.y,
               },
             },
-          })
-        ) {
-          npc_collision = true;
-          moving = false;
-          // console.log("Npc colliding");
-          break;
-        } else npc_collision = false;
+          });
+
+          if (isColliding) {
+            npc_collision = true;
+            colliding_npc[0] = npc;
+
+            moving = false;
+            // console.log("Npc colliding");
+            break;
+          }
+        }
       }
+
       if (moving === true) {
+        npc_collision = false;
+        colliding_npc.length = 0;
+        console.log(colliding_npc[0]);
+
         movables.forEach((movable) => {
           movable.position.x += 3;
         });
@@ -587,6 +637,7 @@ export function animate() {
     } else if (keys.s.pressed && lastkey === "s") {
       player.animate = true;
       player.image = player.sprites.down;
+
       for (let i = 0; i < boundaries.length; i++) {
         const boundary = boundaries[i];
 
@@ -608,25 +659,33 @@ export function animate() {
         }
 
         //npc collision check
-        if (
-          RectangularCollision({
+        for (let npc of map_npcs) {
+          const isColliding = RectangularCollision({
             rectangle1: player,
             rectangle2: {
-              ...npc1,
+              ...npc,
               position: {
-                x: npc1.position.x,
-                y: npc1.position.y - 3,
+                x: npc.position.x,
+                y: npc.position.y - 3,
               },
             },
-          })
-        ) {
-          npc_collision = true;
-          moving = false;
-          // console.log("Npc colliding");
-          break;
-        } else npc_collision = false;
+          });
+
+          if (isColliding) {
+            npc_collision = true;
+            colliding_npc[0] = npc;
+
+            moving = false;
+            // console.log("Npc colliding");
+            break;
+          }
+        }
       }
+
       if (moving === true) {
+        npc_collision = false;
+        colliding_npc.length = 0;
+
         movables.forEach((movable) => {
           movable.position.y -= 3;
         });
@@ -634,6 +693,7 @@ export function animate() {
     } else if (keys.d.pressed && lastkey === "d") {
       player.animate = true;
       player.image = player.sprites.right;
+
       for (let i = 0; i < boundaries.length; i++) {
         const boundary = boundaries[i];
 
@@ -656,23 +716,27 @@ export function animate() {
         }
 
         //npc collision check
-        if (
-          RectangularCollision({
+        for (let npc of map_npcs) {
+          const isColliding = RectangularCollision({
             rectangle1: player,
             rectangle2: {
-              ...npc1,
+              ...npc,
               position: {
-                x: npc1.position.x - 3,
-                y: npc1.position.y,
+                x: npc.position.x - 3,
+                y: npc.position.y,
               },
             },
-          })
-        ) {
-          npc_collision = true;
-          moving = false;
-          // console.log("Npc colliding");
-          break;
-        } else npc_collision = false;
+          });
+
+          if (isColliding) {
+            npc_collision = true;
+            colliding_npc[0] = npc;
+
+            moving = false;
+            // console.log("Npc colliding");
+            break;
+          }
+        }
       }
 
       // for(let i = 0; i <= door_boundaries.length; i++) {
@@ -694,6 +758,9 @@ export function animate() {
       // }
 
       if (moving === true) {
+        npc_collision = false;
+        colliding_npc.length = 0;
+
         movables.forEach((movable) => {
           movable.position.x -= 3;
         });
@@ -815,47 +882,97 @@ document.querySelector("#menu-exit").addEventListener("click", () => {
 
 // Handle opening and closing of dialogue
 function OpenDialogue(npc) {
+  let interval;
   keys_active.val = false;
 
+  let NpcDialogueBox = document.querySelector("#OverworldDialogueBoxContainer");
   let NpcDialogue = document.querySelector("#OverworldDialogueBox");
+
+  let oneTime_available = npc.onetimeDialogue || false;
+  let onetimeDialogue, onetimeDialogue_triggerd, onetimeDialogue_array;
+
+  onetimeDialogue_triggerd = npc.onetimeDialogue?.triggered || false;
+  // console.log(onetimeDialogue_triggerd);
+
+  if (oneTime_available && !onetimeDialogue_triggerd) {
+    onetimeDialogue = npc.onetimeDialogue.dialogue;
+    onetimeDialogue_array = Object.values(onetimeDialogue);
+  }
+
   let dialogue = npc.dialogue;
   let dialogue_array = Object.values(dialogue);
+
   let dialogue_index = 0;
   let typing = false;
 
   function CloseDialogue() {
-    NpcDialogue.onclick = null; // Prevent additional clicks
-    document.querySelector("#OverworldDialogueBoxContainer").style.opacity =
-      "0";
+    if (interval) {
+      clearInterval(interval);
+      interval = null;
+    }
+    console.log("close");
+
+    NpcDialogueBox.onclick = null; // Prevent additional clicks
+    NpcDialogueBox.style.opacity = "0";
     keys_active.val = true;
-    Npc1_Dialogue_Available.value = false;
-    Npc1_Dialogue_Available.interact = false;
+
+    if (oneTime_available) npc.onetimeDialogue.triggered = true;
+    npc.dialogue_available.value = false;
+    npc.dialogue_available.interact = false;
+
+    colliding_npc.pop();
   }
 
   function NextDialogue() {
-    if (dialogue_index >= dialogue_array.length) {
-      CloseDialogue();
-      return;
+    let onetime_char_array, char_array;
+
+    // Before anything: check if we’re at the end
+    if (oneTime_available && !onetimeDialogue_triggerd) {
+      if (dialogue_index >= onetimeDialogue_array.length) {
+        CloseDialogue();
+        return;
+      }
+      onetime_char_array = onetimeDialogue_array[dialogue_index];
+    } else {
+      if (dialogue_index >= dialogue_array.length) {
+        CloseDialogue();
+        return;
+      }
+      char_array = dialogue_array[dialogue_index];
     }
 
-    let char_array = dialogue_array[dialogue_index];
     let char_index = 0;
     NpcDialogue.innerHTML = "";
     typing = true;
 
-    const interval = setInterval(() => {
-      if (char_index < char_array.length) {
-        NpcDialogue.innerHTML += char_array[char_index];
-        char_index++;
+    interval = setInterval(() => {
+      if (onetime_char_array) {
+        if (char_index < onetime_char_array.length) {
+          NpcDialogue.innerHTML += onetime_char_array[char_index];
+          char_index++;
+        } else {
+          clearInterval(interval);
+          typing = false;
+          dialogue_index++;
+        }
+      } else if (char_array) {
+        if (char_index < char_array.length) {
+          NpcDialogue.innerHTML += char_array[char_index];
+          char_index++;
+        } else {
+          clearInterval(interval);
+          typing = false;
+          dialogue_index++;
+        }
       } else {
+        // Defensive fallback
         clearInterval(interval);
         typing = false;
-        dialogue_index++;
       }
     }, 20);
   }
 
-  NpcDialogue.onclick = () => {
+  NpcDialogueBox.onclick = () => {
     if (!typing) {
       audio.button_press.play();
       NextDialogue();
@@ -863,7 +980,7 @@ function OpenDialogue(npc) {
   };
 
   NextDialogue();
-  document.querySelector("#OverworldDialogueBoxContainer").style.opacity = "1";
+  NpcDialogueBox.style.opacity = "1";
 }
 
 // Handle keydown events
@@ -909,12 +1026,18 @@ window.addEventListener("keydown", (e) => {
       break;
 
     case "e":
-      if (Npc1_Dialogue_Available.value) {
+      let npc = colliding_npc[0] || false;
+      if (!npc) return;
+
+      if (npc.dialogue_available.value) {
         audio.button_press.play();
 
-        Npc1_Dialogue_Available.interact = true;
-        npc_sprite_upon_interaction();
-        OpenDialogue(npc1);
+        // let oneTime_available = npc.onetimeDialogue || false;
+        // if (oneTime_available) npc.onetimeDialogue.triggered = true;
+
+        npc.dialogue_available.interact = true;
+        npc_sprite_upon_interaction(npc);
+        OpenDialogue(npc);
       }
       break;
   }
@@ -956,7 +1079,6 @@ window.addEventListener("keyup", (e) => {
 // });
 
 animate();
-checkNpcInteraction();
 
 // initBattle();     //maintaining this order of calling the two function is must
 // animateBattle();

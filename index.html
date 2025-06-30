@@ -118,7 +118,7 @@
 			color: white;
 			font-size: 18px;
 
-			width: 70%;
+			width: 80%;
 			padding: 1.5rem 2rem;
 			font-size: 1.2rem;
 			letter-spacing: 1px;
@@ -258,10 +258,10 @@
 			border: 3.5px solid rgb(15, 41, 87);
 			backdrop-filter: blur(2px);
 
-			top: 2%;
+			top: -20%;
 			left: 1%;
 			right: 75%;
-			bottom: 85%;
+			bottom: 101%;
 
 			font-size: 19px;
 			color: rgb(228, 231, 232);
@@ -270,7 +270,7 @@
 			justify-content: center;
 			align-items: center;
 
-			opacity: 0;
+			opacity: 1;
 		">
 		</div>
 
@@ -305,6 +305,7 @@
 				display: flex;
 				">
 				<div id="OverworldDialogueBox" style="
+					line-height: 1.8;
 					transform: translateX(3px) translateY(10px);
 					">
 				</div>
@@ -360,6 +361,7 @@
         	1px 1.5px 2px -1px rgba(2, 31, 59, 0.65),
        		4px 4px 12px -2.5px rgba(2, 31, 59, 0.65);
 			background-color: rgba(0, 0, 0, 0.4);
+			backdrop-filter: blur(3px);
 			
 			display: none;
 			">
@@ -368,15 +370,14 @@
 				background-color: rgba(0, 0, 0, 0.295);
      			border-color: rgba(0, 0, 0, 0.12);
       			box-shadow: 0 0 1px rgba(2, 31, 59, 0.7),
-        				1px 1.5px 2px -1px rgba(2, 31, 59, 0.65),
-        				4px 4px 12px -2.5px rgba(2, 31, 59, 0.65);
+        			1px 1.5px 2px -1px rgba(2, 31, 59, 0.65),
+        			4px 4px 12px -2.5px rgba(2, 31, 59, 0.65);
 				border-radius: 10px;
 
 				top: 0; 
 				bottom: 0; 
 				left: 0; 
 				right: 0;
-
 
 				display: flex;
   				flex-direction: column;
@@ -858,7 +859,6 @@
 			crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 		<script src="./data/audio.js" type="module"></script>
 		<script src="./data/battlezones.js" type="module"></script>
-		<script src="./data/collisions.js" type="module"></script>
 		<script src="./data/items.js" type="module"></script>
 		<script src="./data/attacks.js" type="module"></script> <!--make sure to load attacks before classes-->
 		<script src="./data/monsters.js" type="module"></script>

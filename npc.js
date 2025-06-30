@@ -1,124 +1,181 @@
 import { Sprite } from "./classes.js";
-import { gameLoaded } from "./gameState.js";
-import { player, background, offset, dialogue_prompt, npc_collision} from "./renderer.js";
+import {
+  player,
+  background,
+  offset,
+  dialogue_prompt,
+  npc_collision,
+  colliding_npc,
+} from "./renderer.js";
+import { MAP } from "./data/map.js";
 
-const npc1DownImage = new Image();
-npc1DownImage.src = "./img/playerDown.png";
+// <------------- SAILOR ---------------- //
+const sailorDownImage = new Image();
+sailorDownImage.src = "./img/characters/npc/sailor/sailor_down.png";
 
-const npc1UpImage = new Image();
-npc1UpImage.src = "./img/playerUp.png";
+const sailorUpImage = new Image();
+sailorUpImage.src = "./img/characters/npc/sailor/sailor_up.png";
 
-const npc1LeftImage = new Image();
-npc1LeftImage.src = "./img/playerLeft.png";
+const sailorLeftImage = new Image();
+sailorLeftImage.src = "./img/characters/npc/sailor/sailor_left.png";
 
-const npc1RightImage = new Image();
-npc1RightImage.src = "./img/playerRight.png";
+const sailorRightImage = new Image();
+sailorRightImage.src = "./img/characters/npc/sailor/sailor_right.png";
 
-export const direction_img = [npc1DownImage, npc1UpImage, npc1LeftImage, npc1RightImage];
+// -----------------------------------------> //
 
-export let npc1 = new Sprite({
+export const direction_img = [
+  sailorDownImage,
+  sailorUpImage,
+  sailorLeftImage,
+  sailorRightImage,
+];
+
+export let sailor1 = new Sprite({
+  map: MAP.petalwood_island.name,
   position: {
-    x: 305,
-    y: 120,
+    x: 508,
+    y: 1212,
   },
-  image: npc1DownImage,
+  image: sailorDownImage,
   npc_image_key: "down",
+  isMoving: false,
   frames: {
     max: 4,
     hold: 10,
   },
   sprites: {
-    up: npc1UpImage,
-    left: npc1LeftImage,
-    right: npc1RightImage,
-    down: npc1DownImage,
+    up: sailorUpImage,
+    left: sailorLeftImage,
+    right: sailorRightImage,
+    down: sailorDownImage,
   },
   dialogue: {
-    text_1: "Joemama so phat she could split the Earth into two if she jumps!",
-    text_2: "Joemama so phat she could eat the entire chain of Mc Donalds!", 
+    text_1:
+      "Sorry kid the water around these parts have been pretty hefty lately. So, the boat to Trinity Island is not available right now!",
+    text_2:
+      "You should come back later! Maybe try visiting Evergrande Island in the meantime?",
   },
-  scale: 0.75,
+  dialogue_available: {
+    value: false,
+    interact: false,
+  },
+  scale: 0.65,
 });
-export let Npc1_Dialogue_Available = {
-  value: false,
-  interact: false,
-};
 
-export const all_npcs = [npc1]
+export let sailor2 = new Sprite({
+  map: MAP.petalwood_island.name,
+  position: {
+    x: 1480,
+    y: 1212,
+  },
+  image: sailorDownImage,
+  npc_image_key: "down",
+  isMoving: false,
+  frames: {
+    max: 4,
+    hold: 10,
+  },
+  sprites: {
+    up: sailorUpImage,
+    left: sailorLeftImage,
+    right: sailorRightImage,
+    down: sailorDownImage,
+  },
+  onetimeDialogue: {
+    dialogue: {
+      text_1:
+        "Heya lil fella whats with the face? Ye seem to be pretty lost about moving further eh?",
+      text_2:
+        "Well worry not son cuz this nice old man can take ye for a ride to the next island!",
+      text_3:
+        "But how about ye explore around these parts here first? Might find something interesting!",
+    },
+    triggered: false,
+  },
+  dialogue_available: {
+    value: false,
+    interact: false,
+  },
+  dialogue: {
+    text_1: "Would ye like me to take ye to Evergrande Island now lil fella?",
+  },
+  scale: 0.65,
+});
 
-// console.log(gameLoaded)
+export const all_npcs = [sailor1, sailor2];
 
-export function npc_sprite_upon_interaction() {
-  if (!Npc1_Dialogue_Available.interact) return;
+export function npc_sprite_upon_interaction(npc) {
+  if (!npc.dialogue_available.interact) return;
 
-  const dx = player.position.x - npc1.position.x;
-  const dy = player.position.y - npc1.position.y;
+  const dx = player.position.x - npc.position.x;
+  const dy = player.position.y - npc.position.y;
 
   if (Math.abs(dx) > Math.abs(dy)) {
-    // Player is to the left or right of NPC
     if (dx > 0) {
-      npc1.image = npc1RightImage; // Player is to the right
-      npc1.npc_image_key = "right";
+      npc.image = npc.sprites.right; // Player is to the right
+      npc.npc_image_key = "right";
     } else {
-      npc1.image = npc1LeftImage; // Player is to the left
-      npc1.npc_image_key = "left";
+      npc.image = npc.sprites.left; // Player is to the left
+      npc.npc_image_key = "left";
     }
   } else {
-    // Player is above or below NPC
     if (dy > 0) {
-      npc1.image = npc1DownImage; // Player is below
-      npc1.npc_image_key = "down";
+      npc.image = npc.sprites.down; // Player is below
+      npc.npc_image_key = "down";
     } else {
-      npc1.image = npc1UpImage; // Player is above
-      npc1.npc_image_key = "up";
+      npc.image = npc.sprites.up; // Player is above
+      npc.npc_image_key = "up";
     }
   }
 }
-
-
 
 var thenTime = Date.now();
 var nowTime;
 
-
 export function checkNpcInteraction() {
   nowTime = Date.now();
   var deltaTime = nowTime - thenTime;
-  // var fps = 0.5;
 
-
-  if(deltaTime > 1000) {
-    let initialPosNpc1 = {
-      x: 305,
-      y: 120,
+  if (deltaTime > 1000) {
+    let initialPos = {
+      npc1: {
+        x: 305,
+        y: 120,
+      },
     };
-  
+
     let cameraOffset = {
-      x: (offset.x - background.position.x),
-      y: (offset.y - background.position.y)
+      x: offset.x - background.position.x,
+      y: offset.y - background.position.y,
     };
-  
+
     if (cameraOffset.x !== 0 || cameraOffset.y !== 0) {
-      initialPosNpc1.x -= cameraOffset.x;
-      initialPosNpc1.y -= cameraOffset.y;
+      initialPos.npc1.x -= cameraOffset.x;
+      initialPos.npc1.y -= cameraOffset.y;
     }
-  
-    let Npc1collide = npc1.npc_movement(initialPosNpc1, npc1, player, Npc1_Dialogue_Available.interact);
-    // console.log(gameLoaded)
-    
-    if (npc_collision) {
-      dialogue_prompt.position.x = npc1.position.x + 2;
-      dialogue_prompt.position.y = npc1.position.y - 35;
-      
-      Npc1_Dialogue_Available.value = true;
-    } else Npc1_Dialogue_Available.value = false;
- 
+
+    all_npcs.forEach((Npc) => {
+      let movement_flag = Npc.isMoving;
+      if (movement_flag) Npc.npc_movement(initialPos.npc1, Npc, player);
+
+      if (npc_collision) {
+        // gsap.to(dialogue_prompt.position, {
+        //   x: Npc.position.x + 2,
+        //   y: Npc.position.y - 35,
+        // });
+
+        let collidingNpcExist = colliding_npc[0] || false;
+        if (collidingNpcExist) {
+          dialogue_prompt.position.x = colliding_npc[0].position.x + 2;
+          dialogue_prompt.position.y = colliding_npc[0].position.y - 35;
+        }
+
+        Npc.dialogue_available.value = true;
+      } else Npc.dialogue_available.value = false;
+    });
+
     thenTime = nowTime;
   }
-
-  requestAnimationFrame(checkNpcInteraction); // Continue the loop
 }
-
-
 // console.log("Npc pos: " + npc1.position.x + " " + npc1.position.y)
-

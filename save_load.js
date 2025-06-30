@@ -21,7 +21,7 @@ import {
   status_tracker,
   status_color_tracker,
 } from "./classes.js";
-import { npc1, all_npcs } from "./npc.js";
+import { sailor1, all_npcs } from "./npc.js";
 import { virtualSeconds, formattedHours, formattedMinutes, interval } from "./day_night.js";
 
 // Helper function to remove circular references
@@ -58,7 +58,7 @@ export function savegame() {
     offset_position: offset,
     global_time: virtualSeconds.value,
     time: { formattedHours, formattedMinutes, interval },
-    npc_details: [serializeNpc(npc1)],
+    npc_details: [serializeNpc(sailor1)],
     party: cleanParty,
     items: cleanItems,
     health: parseFloat(health_tracker.value),
@@ -113,7 +113,7 @@ export function loadgame() {
   }
   // console.log(npc_direction);
 
-  npc1.position = data.npc_details[0].position;
+  sailor1.position = data.npc_details[0].position;
   // console.log(direction_img);
 
   boundaries.forEach((boundary) => {
