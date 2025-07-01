@@ -106,7 +106,6 @@ collisionsMap.forEach((row, i) => {
       );
   });
 });
-//console.log(boundaries);
 
 export const door_boundaries = [];
 
@@ -128,7 +127,7 @@ export const battleZones = [];
 export const grass_tiles = [];
 
 const grass = new Image();
-grass.src = "./img/animated_grass.png";
+grass.src = "./img/animated_objects/animated_grass.png";
 
 battleZonesMap.forEach((row, i) => {
   row.forEach((symbol, j) => {
@@ -168,7 +167,9 @@ const foregroundimage = new Image();
 foregroundimage.src = maploaded.data.foreground_image;
 
 const campfire = new Image();
-campfire.src = "./img/campfire.png";
+campfire.src = "./img/animated_objects/campfire.png";
+
+// <----------------- PLAYER SPRITE -------------------------------- //
 
 const playerDownImage = new Image();
 playerDownImage.src = "./img/characters/player/player_downV2.png";
@@ -194,10 +195,12 @@ playerDown_HalfImage.src = "./img/playerDown_Half.png";
 const playerUp_HalfImage = new Image();
 playerUp_HalfImage.src = "./img/playerUp_Half.png";
 
+// -----------------------------------------------------------------> //
+
 export const player = new Sprite({
   position: {
-    x: 1380,
-    y: 1212,
+    x: 704.8,
+    y: 270,
   },
   image: playerDownImage,
   frames: {
@@ -250,7 +253,7 @@ export const campfires = [
 );
 
 const dialogue_prompt_img = new Image();
-dialogue_prompt_img.src = "./img/dialogue_prompt.png";
+dialogue_prompt_img.src = "./img/animated_objects/dialogue_prompt.png";
 
 export const dialogue_prompt = new Sprite({
   position: {
@@ -260,7 +263,7 @@ export const dialogue_prompt = new Sprite({
   image: dialogue_prompt_img,
   frames: {
     max: 4,
-    hold: 12,
+    hold: 24,
   },
   animate: true,
 });
@@ -308,7 +311,7 @@ all_npcs.forEach((npc) => {
     map_npcs.push(npc);
   }
 });
-// console.log(movables);
+// console.log(map_npcs);
 
 function RectangularCollision({ rectangle1, rectangle2 }) {
   return (
@@ -395,7 +398,7 @@ export function animate() {
 
     player.draw();
 
-    all_npcs.forEach((npc) => {
+    for (let npc of all_npcs) {
       let current_map = maploaded.data.name;
 
       if (npc.map === current_map) {
@@ -406,7 +409,20 @@ export function animate() {
         if (prompt_Npc && prompt_Npc.dialogue_available.value)
           dialogue_prompt.draw();
       }
-    });
+    }
+
+    // all_npcs.forEach((npc) => {
+    //   let current_map = maploaded.data.name;
+
+    //   if (npc.map === current_map) {
+    //     npc.draw();
+    //     checkNpcInteraction();
+
+    //     let prompt_Npc = colliding_npc[0] || false;
+    //     if (prompt_Npc && prompt_Npc.dialogue_available.value)
+    //       dialogue_prompt.draw();
+    //   }
+    // });
 
     foreground.draw();
 
@@ -563,7 +579,6 @@ export function animate() {
             colliding_npc[0] = npc;
 
             moving = false;
-            // console.log("Npc colliding");
             break;
           }
         }
@@ -619,7 +634,6 @@ export function animate() {
             colliding_npc[0] = npc;
 
             moving = false;
-            // console.log("Npc colliding");
             break;
           }
         }
@@ -628,7 +642,6 @@ export function animate() {
       if (moving === true) {
         npc_collision = false;
         colliding_npc.length = 0;
-        console.log(colliding_npc[0]);
 
         movables.forEach((movable) => {
           movable.position.x += 3;
@@ -676,7 +689,6 @@ export function animate() {
             colliding_npc[0] = npc;
 
             moving = false;
-            // console.log("Npc colliding");
             break;
           }
         }
@@ -711,7 +723,6 @@ export function animate() {
           })
         ) {
           moving = false;
-          // console.log("colliding");
           break;
         }
 
@@ -733,7 +744,6 @@ export function animate() {
             colliding_npc[0] = npc;
 
             moving = false;
-            // console.log("Npc colliding");
             break;
           }
         }
@@ -1031,9 +1041,6 @@ window.addEventListener("keydown", (e) => {
 
       if (npc.dialogue_available.value) {
         audio.button_press.play();
-
-        // let oneTime_available = npc.onetimeDialogue || false;
-        // if (oneTime_available) npc.onetimeDialogue.triggered = true;
 
         npc.dialogue_available.interact = true;
         npc_sprite_upon_interaction(npc);

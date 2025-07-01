@@ -9,7 +9,8 @@ import {
 } from "./renderer.js";
 import { MAP } from "./data/map.js";
 
-// <------------- SAILOR ---------------- //
+// <------------- NPC SPRITES ---------------- //
+
 const sailorDownImage = new Image();
 sailorDownImage.src = "./img/characters/npc/sailor/sailor_down.png";
 
@@ -22,6 +23,30 @@ sailorLeftImage.src = "./img/characters/npc/sailor/sailor_left.png";
 const sailorRightImage = new Image();
 sailorRightImage.src = "./img/characters/npc/sailor/sailor_right.png";
 
+const fatGuyDownImage = new Image();
+fatGuyDownImage.src = "./img/characters/npc/fat_guy/fat_guy_down.png";
+
+const fatGuyUpImage = new Image();
+fatGuyUpImage.src = "./img/characters/npc/fat_guy/fat_guy_up.png";
+
+const fatGuyLeftImage = new Image();
+fatGuyLeftImage.src = "./img/characters/npc/fat_guy/fat_guy_left.png";
+
+const fatGuyRightImage = new Image();
+fatGuyRightImage.src = "./img/characters/npc/fat_guy/fat_guy_right.png";
+
+const oldManDownImage = new Image();
+oldManDownImage.src = "./img/characters/npc/grandpa/grandpa_down.png";
+
+const oldManUpImage = new Image();
+oldManUpImage.src = "./img/characters/npc/grandpa/grandpa_up.png";
+
+const oldManLeftImage = new Image();
+oldManLeftImage.src = "./img/characters/npc/grandpa/grandpa_left.png";
+
+const oldManRightImage = new Image();
+oldManRightImage.src = "./img/characters/npc/grandpa/grandpa_right.png";
+
 // -----------------------------------------> //
 
 export const direction_img = [
@@ -30,6 +55,72 @@ export const direction_img = [
   sailorLeftImage,
   sailorRightImage,
 ];
+
+export let oldman1 = new Sprite({
+  id: "oldman1",
+  map: MAP.petalwood_island.name,
+  position: {
+    x: 305,
+    y: 120,
+  },
+  image: oldManDownImage,
+  npc_image_key: "down",
+  isMoving: true,
+  frames: {
+    max: 4,
+    hold: 10,
+  },
+  sprites: {
+    up: oldManUpImage,
+    left: oldManLeftImage,
+    right: oldManRightImage,
+    down: oldManDownImage,
+  },
+  dialogue: {
+    text_1:
+      "Sorry kid the water around these parts have been pretty hefty lately. So, the boat to Trinity Island is not available right now!",
+    text_2:
+      "You should come back later! Maybe try visiting Evergrande Island in the meantime?",
+  },
+  dialogue_available: {
+    value: false,
+    interact: false,
+  },
+  scale: 0.65,
+});
+
+export let fatGuy1 = new Sprite({
+  id: "fatGuy1",
+  map: MAP.petalwood_island.name,
+  position: {
+    x: 980,
+    y: 280,
+  },
+  image: fatGuyDownImage,
+  npc_image_key: "down",
+  isMoving: true,
+  frames: {
+    max: 4,
+    hold: 10,
+  },
+  sprites: {
+    up: fatGuyUpImage,
+    left: fatGuyLeftImage,
+    right: fatGuyRightImage,
+    down: fatGuyDownImage,
+  },
+  dialogue: {
+    text_1:
+      "Sorry kid the water around these parts have been pretty hefty lately. So, the boat to Trinity Island is not available right now!",
+    text_2:
+      "You should come back later! Maybe try visiting Evergrande Island in the meantime?",
+  },
+  dialogue_available: {
+    value: false,
+    interact: false,
+  },
+  scale: 0.65,
+});
 
 export let sailor1 = new Sprite({
   map: MAP.petalwood_island.name,
@@ -103,7 +194,7 @@ export let sailor2 = new Sprite({
   scale: 0.65,
 });
 
-export const all_npcs = [sailor1, sailor2];
+export const all_npcs = [oldman1, sailor1, sailor2, fatGuy1];
 
 export function npc_sprite_upon_interaction(npc) {
   if (!npc.dialogue_available.interact) return;
@@ -138,10 +229,14 @@ export function checkNpcInteraction() {
   var deltaTime = nowTime - thenTime;
 
   if (deltaTime > 1000) {
-    let initialPos = {
-      npc1: {
+    let initialPosNpc = {
+      oldman1: {
         x: 305,
         y: 120,
+      },
+      fatGuy1: {
+        x: 980,
+        y: 290,
       },
     };
 
@@ -151,13 +246,17 @@ export function checkNpcInteraction() {
     };
 
     if (cameraOffset.x !== 0 || cameraOffset.y !== 0) {
-      initialPos.npc1.x -= cameraOffset.x;
-      initialPos.npc1.y -= cameraOffset.y;
+      initialPosNpc.oldman1.x -= cameraOffset.x;
+      initialPosNpc.oldman1.y -= cameraOffset.y;
+
+      initialPosNpc.fatGuy1.x -= cameraOffset.x;
+      initialPosNpc.fatGuy1.y -= cameraOffset.y;
     }
 
-    all_npcs.forEach((Npc) => {
+    for (let Npc of all_npcs) {
       let movement_flag = Npc.isMoving;
-      if (movement_flag) Npc.npc_movement(initialPos.npc1, Npc, player);
+
+      if (movement_flag) Npc.npc_movement(Npc, player, initialPosNpc);
 
       if (npc_collision) {
         // gsap.to(dialogue_prompt.position, {
@@ -167,14 +266,13 @@ export function checkNpcInteraction() {
 
         let collidingNpcExist = colliding_npc[0] || false;
         if (collidingNpcExist) {
-          dialogue_prompt.position.x = colliding_npc[0].position.x + 2;
+          dialogue_prompt.position.x = colliding_npc[0].position.x + 6;
           dialogue_prompt.position.y = colliding_npc[0].position.y - 35;
         }
 
         Npc.dialogue_available.value = true;
       } else Npc.dialogue_available.value = false;
-    });
-
+    }
     thenTime = nowTime;
   }
 }

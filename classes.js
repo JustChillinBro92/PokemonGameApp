@@ -6,7 +6,7 @@ import { gameState, gameLoaded } from "./gameState.js";
 // import { gameLoaded } from "./save_load.js";
 
 export const progress_gif = new Image();
-progress_gif.src = "./img/progress.gif";
+progress_gif.src = "./img/animated_objects/progress.gif";
 
 export class Boundary {
   static width = 36;
@@ -41,6 +41,7 @@ export class Boundary {
 
 export class Sprite {
   constructor({
+    id,
     position,
     map,
     image,
@@ -56,6 +57,7 @@ export class Sprite {
     dialogue_available,
     rotation = 0,
   }) {
+    this.id = id;
     this.position = position;
     this.map = map;
     this.npc_image_key = npc_image_key;
@@ -162,7 +164,7 @@ export class Sprite {
   }
 
   // Method to simulate npc movement
-  npc_movement(NpcPos, Npc, Player) {
+  npc_movement(Npc, Player, initialPosNpc) {
     if (Npc.dialogue_available.interact) return;
 
     function RectangularCollision({ rectangle1, rectangle2 }) {
@@ -174,13 +176,17 @@ export class Sprite {
       );
     }
 
-    const direction = ["up", "down", "left", "right"];
+    const direction = ["left","right", "up","down"];
     const randomDirection =
       direction[Math.floor(Math.random() * direction.length)];
 
-    let initial_pos = NpcPos;
+
+    const key = Npc.id;
+    let initial_pos = initialPosNpc[key];
+
     let target_posX = initial_pos.x + 100;
     let target_posY = initial_pos.y + 20;
+
     let distance_moved = 16;
     let buffer = 3; // Extra space to avoid overlap
 
