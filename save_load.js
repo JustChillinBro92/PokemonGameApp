@@ -1,7 +1,8 @@
 import { playerMonsters } from "./data/monsters.js";
 import { playerItems } from "./data/playerBag.js";
-import { gameState, gameLoaded} from "./gameState.js";
-import { 
+import { gameState, gameLoaded } from "./gameState.js";
+import {
+  load_map,
   background,
   foreground,
   boundaries,
@@ -9,8 +10,9 @@ import {
   grass_tiles,
   campfires,
   offset,
-  npc_direction,
+  // npc_direction,
   player,
+  map_id,
 } from "./renderer.js";
 import {
   health_tracker,
@@ -21,8 +23,14 @@ import {
   status_tracker,
   status_color_tracker,
 } from "./classes.js";
+import { maploaded } from "./main_menu.js";
 import { sailor1, all_npcs } from "./npc.js";
-import { virtualSeconds, formattedHours, formattedMinutes, interval } from "./day_night.js";
+import {
+  virtualSeconds,
+  formattedHours,
+  formattedMinutes,
+  interval,
+} from "./day_night.js";
 
 // Helper function to remove circular references
 function getCircularReplacer() {
@@ -49,10 +57,16 @@ export function savegame() {
   // console.log(gameLoaded)
 
   // Clone the party and items to avoid any non-serializable properties
-  const cleanParty = JSON.parse(JSON.stringify(playerMonsters, getCircularReplacer()));
-  const cleanItems = JSON.parse(JSON.stringify(playerItems, getCircularReplacer()));
+  const cleanParty = JSON.parse(
+    JSON.stringify(playerMonsters, getCircularReplacer())
+  );
+  const cleanItems = JSON.parse(
+    JSON.stringify(playerItems, getCircularReplacer())
+  );
 
   const saveData = {
+    map_loaded: maploaded,
+    map_loaded_id: maploaded.data.id,
     background_position: background.position,
     foreground_position: foreground.position,
     offset_position: offset,
@@ -97,20 +111,26 @@ export function loadgame() {
   gameState.time = data.time;
   gameState.playerMonsters = data.party;
 
-
   // time update on load
   virtualSeconds.value = data.global_time;
 
+  //reload last saved map
+  map_id.value = data.map_loaded_id;
+
+  // Reset the maploaded.data
+  Object.keys(maploaded.data).forEach((key) => delete maploaded.data[key]);
+  Object.assign(maploaded.data, data.map_loaded.data);
+
+  load_map(maploaded.data);
+
   // background related stuff on load
-  const offset_changeX = background.position.x - data.background_position.x
+  const offset_changeX = background.position.x - data.background_position.x;
   const offset_changeY = background.position.y - data.background_position.y;
 
-  background.position = data.background_position;
-  foreground.position = data.foreground_position;
-  
-  for (let i = 0; i < all_npcs.length; i++) {
-    npc_direction[i] = data.npc_details[i].npc_image_key;
-  }
+
+  // for (let i = 0; i < all_npcs.length; i++) {
+  //   npc_direction[i] = data.npc_details[i].npc_image_key;
+  // }
   // console.log(npc_direction);
 
   sailor1.position = data.npc_details[0].position;
@@ -130,21 +150,18 @@ export function loadgame() {
 
   campfires.forEach((campfire) => {
     campfire.updateOffset(offset_changeX, offset_changeY);
-  })
+  });
 
-  
-  // console.log("Offset After Setting:", offset);
-  // console.log("Loaded Background Position:", gameState.background.position);
-  // console.log("Offset Change:", offset_changeX, offset_changeY);
+  background.position = data.background_position;
+  foreground.position = data.foreground_position;
 
 
   // Update the players items
   for (const key in data.items) {
-    if(playerItems[key]) {
+    if (playerItems[key]) {
       Object.assign(playerItems, data.items);
     } else playerItems = data.items;
   }
-
 
   // Update playerMonsters
   for (const key in data.party) {
@@ -170,6 +187,4 @@ export function loadgame() {
 
   // status_tracker = data.status;
   // status_color_tracker = data.statusColor;
-
 }
-

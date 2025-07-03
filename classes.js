@@ -34,7 +34,7 @@ export class Boundary {
     const scaledWidth = frameWidth * this.scale; // Scaled width of the frame
     const scaledHeight = frameHeight * this.scale; // Scaled height of the frame
 
-    c.fillStyle = "rgba(255, 0, 0, 0)";
+    c.fillStyle = "rgba(255, 0, 0, 0.2)";
     c.fillRect(this.position.x, this.position.y, scaledWidth, scaledHeight);
   }
 }
@@ -51,9 +51,11 @@ export class Sprite {
     sprites,
     animate = false,
     isMoving = false,
-    triggerEvent = false,
+    yes_no_choice = false,
+    triggerTeleport = false,
     dialogue,
-    onetimeDialogue,
+    onetimeDialogue = false,
+    randomDialogue = false,
     dialogue_available,
     rotation = 0,
   }) {
@@ -66,6 +68,7 @@ export class Sprite {
     this.scale = scale;
     this.dialogue = dialogue;
     this.onetimeDialogue = onetimeDialogue;
+    this.randomDialogue = randomDialogue;
     this.dialogue_available = dialogue_available;
     this.rotation = rotation;
 
@@ -78,7 +81,8 @@ export class Sprite {
     this.image.src = image.src;
     this.animate = animate;
     this.isMoving = isMoving;
-    this.triggerEvent = triggerEvent;
+    this.yes_no_choice = yes_no_choice;
+    this.triggerTeleport = triggerTeleport;
     this.sprites = sprites;
     this.opacity = 1;
   }

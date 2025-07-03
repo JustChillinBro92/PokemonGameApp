@@ -1,9 +1,10 @@
 export let MAP = {
   petalwood_island: {
     name: "PetalWood Island",
+    id: "petalwood_island",
     background_image: "./img/islands/maps/PetalwoodTown.png",
     foreground_image: "./img/islands/foregrounds/ForegroundObjects1.png",
-    camera: { x: -1150, y: -712 },
+    camera: { x: -3955, y: -1830 },
     map: [
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -913,6 +914,7 @@ export let MAP = {
   },
   evergrande_island: {
     name: "Evergrande Island",
+    id: "evergrande_island",
     background_image: "./img/islands/maps/Evergrande-Island.png",
     foreground_image: "./img/islands/foregrounds/ForegroundObjects2.png",
     camera: { x: -965,  y: -2260 },

@@ -60,12 +60,12 @@ export let oldman1 = new Sprite({
   id: "oldman1",
   map: MAP.petalwood_island.name,
   position: {
-    x: 305,
-    y: 120,
+    x: -2500,
+    y: -995,
   },
   image: oldManDownImage,
   npc_image_key: "down",
-  isMoving: true,
+  isMoving: false,
   frames: {
     max: 4,
     hold: 10,
@@ -93,12 +93,12 @@ export let fatGuy1 = new Sprite({
   id: "fatGuy1",
   map: MAP.petalwood_island.name,
   position: {
-    x: 980,
-    y: 280,
+    x: -1850,
+    y: -840,
   },
   image: fatGuyDownImage,
   npc_image_key: "down",
-  isMoving: true,
+  isMoving: false,
   frames: {
     max: 4,
     hold: 10,
@@ -125,8 +125,8 @@ export let fatGuy1 = new Sprite({
 export let sailor1 = new Sprite({
   map: MAP.petalwood_island.name,
   position: {
-    x: 508,
-    y: 1212,
+    x: -2300,
+    y: 90,
   },
   image: sailorDownImage,
   npc_image_key: "down",
@@ -157,8 +157,8 @@ export let sailor1 = new Sprite({
 export let sailor2 = new Sprite({
   map: MAP.petalwood_island.name,
   position: {
-    x: 1480,
-    y: 1212,
+    x: -1325,
+    y: 90,
   },
   image: sailorDownImage,
   npc_image_key: "down",
@@ -173,6 +173,10 @@ export let sailor2 = new Sprite({
     right: sailorRightImage,
     down: sailorDownImage,
   },
+  dialogue_available: {
+    value: false,
+    interact: false,
+  },
   onetimeDialogue: {
     dialogue: {
       text_1:
@@ -184,17 +188,74 @@ export let sailor2 = new Sprite({
     },
     triggered: false,
   },
-  dialogue_available: {
-    value: false,
-    interact: false,
-  },
   dialogue: {
     text_1: "Would ye like me to take ye to Evergrande Island now lil fella?",
+  },
+  yes_no_choice: true,
+  triggerTeleport: {
+    area: MAP.evergrande_island,
   },
   scale: 0.65,
 });
 
-export const all_npcs = [oldman1, sailor1, sailor2, fatGuy1];
+export let sailor3 = new Sprite({
+  map: MAP.petalwood_island.name,
+  position: {
+    x: 800,
+    y: 272,
+  },
+  image: sailorDownImage,
+  npc_image_key: "down",
+  isMoving: false,
+  frames: {
+    max: 4,
+    hold: 10,
+  },
+  sprites: {
+    up: sailorUpImage,
+    left: sailorLeftImage,
+    right: sailorRightImage,
+    down: sailorDownImage,
+  },
+  dialogue_available: {
+    value: false,
+    interact: false,
+  },
+  // onetimeDialogue: {
+  //   dialogue: {
+  //     text_1:
+  //       "Heya lil fella whats with the face? Ye seem to be pretty lost about moving further eh?",
+  //     text_2:
+  //       "Well worry not son cuz this nice old man can take ye for a ride to the next island!",
+  //     text_3:
+  //       "But how about ye explore around these parts here first? Might find something interesting!",
+  //   },
+  //   triggered: false,
+  // },
+  randomDialogue: {
+    dialogue: {
+      text_1:
+        "Hold tight pal we are on a tight schedule today. Reaching Evergrande in a minute.",
+      text_2:
+        "So how's yer day been lad? Enjoyin the weather here? Maybe try getting a tan next time eh?",
+      text_3:
+        "Rumour has it ye can spot a ghost sometimes in Evergrande! Be careful at night lil fella.",
+      text_4:
+        "If you run into mah brothers on yer way make sure to say hi. Can't miss em, they look just like me.",
+    },
+    triggered: false,
+  },
+  dialogue: {
+    text_1: "Would ye like me to take ye to Evergrande Island now lil fella?",
+  },
+  yes_no_choice: true,
+  triggerTeleport: {
+    area: MAP.evergrande_island,
+  },
+  scale: 0.65,
+});
+
+export const all_npcs = [oldman1, fatGuy1, sailor1, sailor2, sailor3];
 
 export function npc_sprite_upon_interaction(npc) {
   if (!npc.dialogue_available.interact) return;

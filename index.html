@@ -126,7 +126,30 @@
 		}
 
 		#List button:hover {
-			border-color:rgb(5, 131, 112);
+			border-color: rgb(5, 131, 112);
+			transform: scale(1.05);
+			transition: all 0.2s ease-in-out
+		}
+
+		#yes_no_choice button {
+			font-size: 18px;
+			background-color: transparent;
+			box-shadow: 0 0 1px rgba(2, 31, 59, 0.7),
+				1px 1.5px 2px -1px rgba(2, 31, 59, 0.65),
+				4px 4px 12px -2.5px rgba(2, 31, 59, 0.65);
+			border: none;
+
+			width: 80%;
+			padding: 1.5rem 2rem;
+			font-size: 1.2rem;
+			letter-spacing: 1px;
+			color: rgb(218, 217, 217);
+			transition: all 0.2s ease-in-out;
+			border: 2px solid rgba(0, 157, 255, 0.753);
+		}
+
+		#yes_no_choice button:hover {
+			border-color: rgb(0, 149, 255);
 			transform: scale(1.05);
 			transition: all 0.2s ease-in-out
 		}
@@ -221,6 +244,7 @@
 			</div>
 		</div>
 
+
 		<div id="OverlappingDiv" style="
 			background-color: black; 
 			position: absolute;
@@ -231,7 +255,67 @@
 			opacity: 0; 
 			pointer-events: none;
 			z-index: 12;
-		">
+			">
+			<div id="OverlappingDialogueBoxContainer" style="
+				color: rgb(81, 156, 188);
+				font-size: 20px;
+				height: 23%;
+				position: absolute;
+
+				left: 1%;
+				right: 1%;
+				bottom: 0;
+
+				background-color: rgba(0, 0, 0, 0.93);
+    			backdrop-filter: blur(5px);
+    			box-shadow: 0 0 1px rgba(2, 31, 59, 0.7),
+        		1px 1.5px 2px -1px rgba(2, 31, 59, 0.65),
+        		4px 4px 12px -2.5px rgba(2, 31, 59, 0.65);
+    			border: 3.5px solid rgba(0, 157, 255, 0.753);
+
+				display: none;
+				">
+				<div style="
+					position: absolute;
+					border: 3.5px solid rgba(202, 76, 3, 0.753);
+					font-size: 20px;
+					top: 5%;
+					bottom: 5%;
+					left: 0.5%;
+					right: 0.5%;
+					padding: 12px;
+
+					display: flex;
+					flex-direction: row;
+					align-items: center;
+					">
+					<div id="name" style="
+						position: absolute;
+						top: 19%;
+						left: 2%;
+
+						font-size: 21px;
+						color: rgb(0, 170, 255);
+
+						display: flex;
+						">Sailor
+						<div style="transform: translateY(3px);">:</div>
+					</div>
+
+					<div id="OverlappingDialogueBox" style="
+						position: absolute;
+						top: 15%;
+						bottom: 10%;
+						left: 14%;
+						right: 1%;
+
+						text-align: left;
+						line-height: 1.8;
+						color: rgb(218, 217, 217);
+						">
+					</div>
+				</div>
+			</div>
 		</div>
 
 		<div id="DayNightCycle" style="
@@ -274,13 +358,54 @@
 		">
 		</div>
 
+		<div id="yes_no_Box" style="
+			color: rgb(81, 156, 188);
+			font-size: 20px;
+			height: 30%;
+			position: absolute;
+
+			top: 43%;
+			left: 80%;
+			right: 1%;
+
+			background-color: rgba(0, 0, 0, 0.93);
+			backdrop-filter: blur(5px);
+			box-shadow: 0 0 1px rgba(2, 31, 59, 0.7),
+			1px 1.5px 2px -1px rgba(2, 31, 59, 0.65),
+			4px 4px 12px -2.5px rgba(2, 31, 59, 0.65);
+			border: 3.5px solid rgba(0, 157, 255, 0.753);
+
+			display: none;
+			">
+			<div id="yes_no_choice" style="
+				position: absolute;
+				border: 3.5px solid rgba(202, 76, 3, 0.753);
+				font-size: 20px;
+				top: 5%;
+				bottom: 5%;
+				left: 2.5%;
+				right: 2.5%;
+				padding: 12px;
+				
+				
+				display: flex;
+  				flex-direction: column;
+  				justify-content: space-evenly;
+  				align-items: center;
+			">
+				<button id="yes">YES</button>
+				<button id="no">NO</button>
+			</div>
+		</div>
+
 		<div id="OverworldDialogueBoxContainer" style="
 				color: rgb(81, 156, 188);
 				font-size: 20px;
 				height: 23%;
 				position: absolute;
-				left: 0;
-				right: 0;
+
+				left: 1%;
+				right: 1%;
 				bottom: 0;
 
 				background-color: rgba(0, 0, 0, 0.93);
@@ -290,8 +415,7 @@
         		4px 4px 12px -2.5px rgba(2, 31, 59, 0.65);
     			border: 3.5px solid rgba(0, 157, 255, 0.753);
 
-				display: flex;
-				opacity: 0;
+				display: none;
 			">
 			<div style="
 				position: absolute;
@@ -302,11 +426,34 @@
 				left: 0.5%;
 				right: 0.5%;
 				padding: 12px;
+
 				display: flex;
+				flex-direction: row;
+				align-items: center;
 				">
+				<div id="name" style="
+					position: absolute;
+					top: 19%;
+					left: 2%;
+
+					font-size: 21px;
+					color: rgb(0, 170, 255);
+
+					display: flex;
+				">Sailor
+					<div style="transform: translateY(3px);">:</div>
+				</div>
+
 				<div id="OverworldDialogueBox" style="
+					position: absolute;
+					top: 15%;
+					bottom: 10%;
+					left: 14%;
+					right: 1%;
+
+					text-align: left;
 					line-height: 1.8;
-					transform: translateX(3px) translateY(10px);
+					color: rgb(218, 217, 217);
 					">
 				</div>
 			</div>
@@ -384,8 +531,8 @@
   				justify-content: space-evenly;
   				align-items: center;
 				">
-				<button id="archive">PokeDex</button>
-				<button id="partners">Pokemon</button>
+				<button id="pokedex">PokeDex</button>
+				<button id="pokemon">Pokemon</button>
 				<button id="menu-bag">Bag</button>
 				<button id="save">Save</button>
 				<button id="load">Load</button>

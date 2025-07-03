@@ -16,34 +16,55 @@ import {
 import { maploaded } from "./main_menu.js";
 import { MAP } from "./data/map.js";
 
+// LOADING MAP FUNCTION
+
 export function load_map(new_map_data) {
+  if (!gameLoaded.onload) {
+    window.cancelAnimationFrame(animateId);
+    let overlayListenerAdded = false;
+
+    gsap.to("#OverlappingDiv", {
+      opacity: 1,
+      duration: 0.3,
+      onComplete: () => {
+        //Attach listener ONLY ONCE after fade-in completes
+        if (!overlayListenerAdded) {
+          document.addEventListener("disable_overlay", handleOverlayDisable);
+          overlayListenerAdded = true;
+        }
+        setTimeout(() => {
+          animate();
+        }, 1700);
+      },
+    });
+
+    function handleOverlayDisable() {
+      gsap.to("#OverlappingDiv", {
+        opacity: 0,
+      });
+
+      gsap.to("#map_name", {
+        top: "2%",
+        bottom: "85%",
+        duration: 0.6,
+        onComplete: () => {
+          gsap.to("#map_name", {
+            opacity: 0,
+            delay: 3,
+          });
+        },
+      });
+      document.removeEventListener("disable_overlay", handleOverlayDisable);
+    }
+  }
+
   maploaded.data = new_map_data;
   document.querySelector("#map_name").innerHTML = maploaded.data.name;
-
-  gsap.to("#map_name", {
-    top: 2 + "%",
-    bottom: 85 + "%",
-    duration: 0.6,
-    onComplete: () => {
-      gsap.to("#map_name", {
-        opacity: 0,
-        delay: 3,
-      });
-    },
-  });
 
   offset.x = maploaded.data.camera.x;
   offset.y = maploaded.data.camera.y;
 
-  background.position.x = maploaded.data.camera.x;
-  background.position.y = maploaded.data.camera.y;
-  background.image.src = maploaded.data.background_image;
-
-  foreground.position.x = maploaded.data.camera.x;
-  foreground.position.y = maploaded.data.camera.y;
-  foreground.image.src = maploaded.data.foreground_image;
-
-  collisionsMap = [];
+  collisionsMap.length = 0;
   area_loaded = maploaded.data;
   area_map = area_loaded.map;
   collison_spread = area_loaded.width;
@@ -52,19 +73,52 @@ export function load_map(new_map_data) {
     collisionsMap.push(area_map.slice(i, collison_spread + i));
   }
 
-  boundaries = [];
+  boundaries.length = 0;
   collisionsMap.forEach((row, i) => {
     row.forEach((symbol, j) => {
       if (symbol === 1025)
         boundaries.push(
           new Boundary({
             position: {
-              x: j * Boundary.width + maploaded.data.camera.x,
-              y: i * Boundary.height + maploaded.data.camera.y,
+              x: j * Boundary.width + offset.x,
+              y: i * Boundary.height + offset.y,
             },
           })
         );
     });
+  });
+
+  
+  background.position.x = offset.x;
+  background.position.y = offset.y;
+
+  foreground.position.x = offset.x;
+  foreground.position.y = offset.y;
+
+  background.image.src = maploaded.data.background_image;
+  foreground.image.src = maploaded.data.foreground_image;
+
+  movables.length = 0;
+
+  movables = [
+    dialogue_prompt,
+    background,
+    ...campfires,
+    foreground,
+    ...boundaries,
+    // ...door_boundaries,
+    ...battleZones,
+    ...grass_tiles,
+  ];
+
+  map_npcs = [];
+  all_npcs.forEach((npc) => {
+    let current_map = maploaded.data.name;
+
+    if (npc.map === current_map) {
+      movables.push(npc);
+      map_npcs.push(npc);
+    }
   });
 }
 
@@ -289,7 +343,7 @@ const keys = {
   },
 };
 
-const movables = [
+let movables = [
   dialogue_prompt,
   background,
   ...campfires,
@@ -336,7 +390,6 @@ export const battle = {
 export let npc_collision = false;
 
 let pause = false;
-let load_transition = false;
 
 let grassAudioPlay = false;
 export let menu = false; // user menu
@@ -344,37 +397,34 @@ export let menu = false; // user menu
 var then = Date.now();
 var now;
 
+let animateId;
 export function animate() {
   now = Date.now();
   var deltaTime = now - then;
-  var fps = 60;
+  var fps = 90;
 
   const global_time = Math.floor((virtualSeconds.value / 3600) % 24);
 
   // Animation logic...
-  const animateId = window.requestAnimationFrame(animate);
+  animateId = window.requestAnimationFrame(animate);
   // console.log("aimate");
 
   if (pause) {
     window.cancelAnimationFrame(animateId);
 
-    if (load_transition) {
-      gsap.to("#OverlappingDiv", {
-        opacity: 1,
-        duration: 1,
-        onComplete() {
-          gsap.to("#OverlappingDiv", {
-            opacity: 0,
-          });
-        },
-      });
-      load_transition = false;
-    }
+    gsap.to("#OverlappingDiv", {
+      opacity: 1,
+      duration: 0.04,
+      onComplete() {
+        pause = false;
 
-    setTimeout(() => {
-      animate();
-      pause = false;
-    }, 800);
+        gsap.to("#OverlappingDiv", {
+          opacity: 0,
+          delay: 0.4,
+        });
+        animate();
+      },
+    });
   }
 
   if (deltaTime > 1000 / fps) {
@@ -410,19 +460,6 @@ export function animate() {
           dialogue_prompt.draw();
       }
     }
-
-    // all_npcs.forEach((npc) => {
-    //   let current_map = maploaded.data.name;
-
-    //   if (npc.map === current_map) {
-    //     npc.draw();
-    //     checkNpcInteraction();
-
-    //     let prompt_Npc = colliding_npc[0] || false;
-    //     if (prompt_Npc && prompt_Npc.dialogue_available.value)
-    //       dialogue_prompt.draw();
-    //   }
-    // });
 
     foreground.draw();
 
@@ -820,6 +857,9 @@ document.querySelector("#save").addEventListener("click", () => {
 });
 
 export let npc_direction = [];
+export let map_id = {
+  value: maploaded.data.id,
+};
 
 //loading the game
 document.querySelector("#load").addEventListener("click", () => {
@@ -828,10 +868,12 @@ document.querySelector("#load").addEventListener("click", () => {
 
   if (gameLoaded.onload) {
     pause = true;
-    load_transition = true;
 
     // reload bag
     load_backpack();
+    // load_map(MAP[map_id.value]);
+
+    // load_map(MAP[maploaded]);
 
     // npc sprite on load
     for (let i = 0; i < all_npcs.length; i++) {
@@ -891,22 +933,50 @@ document.querySelector("#menu-exit").addEventListener("click", () => {
 });
 
 // Handle opening and closing of dialogue
+let randomDialogue_flag = false;
+
 function OpenDialogue(npc) {
   let interval;
   keys_active.val = false;
 
   let NpcDialogueBox = document.querySelector("#OverworldDialogueBoxContainer");
   let NpcDialogue = document.querySelector("#OverworldDialogueBox");
+  let YesNo_ChoiceBox = document.querySelector("#yes_no_Box");
+  let yes = document.querySelector("#yes");
+  let no = document.querySelector("#no");
 
-  let oneTime_available = npc.onetimeDialogue || false;
+  let teleport = npc.triggerTeleport?.area || false;
+
+  let oneTime_available = npc.onetimeDialogue;
   let onetimeDialogue, onetimeDialogue_triggerd, onetimeDialogue_array;
-
   onetimeDialogue_triggerd = npc.onetimeDialogue?.triggered || false;
-  // console.log(onetimeDialogue_triggerd);
 
   if (oneTime_available && !onetimeDialogue_triggerd) {
     onetimeDialogue = npc.onetimeDialogue.dialogue;
     onetimeDialogue_array = Object.values(onetimeDialogue);
+  }
+
+  let NpcRandomDialogueBox, NpcRandomDialogue;
+  let randomDialogue_available = npc.randomDialogue;
+  let randomDialogue_array_total, randomDialogue, randomDialogue_array;
+  // randomDialogue_triggered = false;
+
+  if (randomDialogue_available && !randomDialogue_flag) {
+    NpcRandomDialogueBox = document.querySelector(
+      "#OverlappingDialogueBoxContainer"
+    );
+    NpcRandomDialogue = document.querySelector("#OverlappingDialogueBox");
+
+    // randomDialogue_triggered = npc.randomDialogue.triggered;
+
+    randomDialogue = npc.randomDialogue.dialogue;
+    randomDialogue_array_total = Object.values(randomDialogue);
+
+    randomDialogue_array = [
+      randomDialogue_array_total[
+        Math.floor(Math.random() * randomDialogue_array_total.length)
+      ],
+    ];
   }
 
   let dialogue = npc.dialogue;
@@ -920,68 +990,129 @@ function OpenDialogue(npc) {
       clearInterval(interval);
       interval = null;
     }
-    console.log("close");
 
     NpcDialogueBox.onclick = null; // Prevent additional clicks
-    NpcDialogueBox.style.opacity = "0";
+    NpcDialogueBox.style.display = "none";
+
     keys_active.val = true;
 
+    if (NpcRandomDialogueBox) {
+      NpcRandomDialogueBox.onclick = null;
+      NpcRandomDialogueBox.style.display = "none";
+      document.querySelector("#OverlappingDiv").style.pointerEvents = "none";
+    }
+
     if (oneTime_available) npc.onetimeDialogue.triggered = true;
+
     npc.dialogue_available.value = false;
     npc.dialogue_available.interact = false;
 
     colliding_npc.pop();
   }
 
-  function NextDialogue() {
-    let onetime_char_array, char_array;
+  function startRandomDialogue() {
+    if (!randomDialogue_available) return;
+    randomDialogue_flag = true;
 
-    // Before anything: check if we’re at the end
-    if (oneTime_available && !onetimeDialogue_triggerd) {
+    dialogue_index = 0;
+    NpcRandomDialogue.innerHTML = "";
+    NpcRandomDialogueBox.style.display = "flex";
+    document.querySelector("#OverlappingDiv").style.pointerEvents = "auto";
+
+    NpcRandomDialogueBox.onclick = () => {
+      if (!typing) {
+        audio.button_press.play();
+        NextDialogue();
+      }
+    };
+    NextDialogue();
+  }
+
+  function NextDialogue() {
+    let current_text = null;
+
+    // Handle one-time dialogue
+    if (onetimeDialogue_array && !onetimeDialogue_triggerd) {
       if (dialogue_index >= onetimeDialogue_array.length) {
         CloseDialogue();
         return;
       }
-      onetime_char_array = onetimeDialogue_array[dialogue_index];
-    } else {
-      if (dialogue_index >= dialogue_array.length) {
-        CloseDialogue();
-        return;
-      }
-      char_array = dialogue_array[dialogue_index];
+      current_text = onetimeDialogue_array[dialogue_index];
     }
 
+    // Handle normal dialogue
+    else if (!randomDialogue_flag) {
+      if (dialogue_index >= dialogue_array.length) {
+        CloseDialogue();
+        if (randomDialogue_available) startRandomDialogue();
+        return;
+      }
+      current_text = dialogue_array[dialogue_index];
+    }
+
+    // Handle random dialogue
+    else if (randomDialogue_flag) {
+      if (dialogue_index >= randomDialogue_array.length) {
+        CloseDialogue();
+        randomDialogue_flag = false;
+        document.dispatchEvent(new Event("disable_overlay"));
+        return;
+      }
+      current_text = randomDialogue_array[dialogue_index];
+    }
+
+    // Reset and type the current_text
     let char_index = 0;
-    NpcDialogue.innerHTML = "";
     typing = true;
+    NpcDialogue.innerHTML = "";
 
     interval = setInterval(() => {
-      if (onetime_char_array) {
-        if (char_index < onetime_char_array.length) {
-          NpcDialogue.innerHTML += onetime_char_array[char_index];
-          char_index++;
+      if (char_index < current_text.length) {
+        if (randomDialogue_flag) {
+          NpcRandomDialogue.innerHTML += current_text[char_index];
         } else {
-          clearInterval(interval);
-          typing = false;
-          dialogue_index++;
+          NpcDialogue.innerHTML += current_text[char_index];
         }
-      } else if (char_array) {
-        if (char_index < char_array.length) {
-          NpcDialogue.innerHTML += char_array[char_index];
-          char_index++;
-        } else {
-          clearInterval(interval);
-          typing = false;
-          dialogue_index++;
-        }
+        char_index++;
       } else {
-        // Defensive fallback
         clearInterval(interval);
         typing = false;
+        dialogue_index++;
+
+        // Handle Yes/No choice after full text
+        if (
+          !randomDialogue_flag &&
+          !onetimeDialogue_array &&
+          npc.yes_no_choice
+        ) {
+          YesNo_ChoiceBox.style.display = "flex";
+
+          yes.onclick = () => {
+            YesNo_ChoiceBox.style.display = "none";
+
+            clearInterval(interval);
+            typing = false;
+            dialogue_index++;
+            NextDialogue();
+
+            if (teleport) load_map(teleport);
+          };
+
+          no.onclick = () => {
+            YesNo_ChoiceBox.style.display = "none";
+
+            clearInterval(interval);
+            typing = false;
+            dialogue_index++;
+            NextDialogue();
+          };
+          return;
+        }
       }
     }, 20);
   }
 
+  // Initial click binding
   NpcDialogueBox.onclick = () => {
     if (!typing) {
       audio.button_press.play();
@@ -989,8 +1120,8 @@ function OpenDialogue(npc) {
     }
   };
 
+  NpcDialogueBox.style.display = "flex";
   NextDialogue();
-  NpcDialogueBox.style.opacity = "1";
 }
 
 // Handle keydown events
