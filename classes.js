@@ -34,7 +34,7 @@ export class Boundary {
     const scaledWidth = frameWidth * this.scale; // Scaled width of the frame
     const scaledHeight = frameHeight * this.scale; // Scaled height of the frame
 
-    c.fillStyle = "rgba(255, 0, 0, 0.2)";
+    c.fillStyle = "rgba(255, 0, 0, 0)";
     c.fillRect(this.position.x, this.position.y, scaledWidth, scaledHeight);
   }
 }
@@ -141,7 +141,7 @@ export class Sprite {
   draw_light(x, y, radius) {
     c.save();
     c.globalCompositeOperation = "soft-light";
-    c.fillStyle = " rgba(250, 202, 44, 0.43)";
+    c.fillStyle = " rgba(250, 236, 44, 0.43)";
     c.beginPath();
     c.arc(x, y, radius, 0, Math.PI * 2);
     c.fill();
@@ -150,9 +150,9 @@ export class Sprite {
     c.save();
     c.globalCompositeOperation = "darken";
     c.shadowColor = "black";
-    c.shadowBlur = 30;
+    c.shadowBlur = 40;
     c.strokeStyle = "rgba(250, 202, 44, 0.07)";
-    c.lineWidth = 20;
+    c.lineWidth = 30;
     c.beginPath();
     c.arc(x, y, radius, 0, Math.PI * 2);
     c.stroke();

@@ -1,4 +1,4 @@
-import { Boundary, Sprite } from "./classes.js";
+import { Boundary, Sprite, stats_tracker } from "./classes.js";
 import { door_collisions } from "./data/door_collisions.js";
 import { battleZonesData } from "./data/battlezones.js";
 import { audio } from "./data/audio.js";
@@ -67,13 +67,21 @@ export function load_map(new_map_data) {
   collisionsMap.length = 0;
   area_loaded = maploaded.data;
   area_map = area_loaded.map;
-  collison_spread = area_loaded.width;
+  map_width = area_loaded.width;
 
-  for (let i = 0; i <= area_map.length; i += collison_spread) {
-    collisionsMap.push(area_map.slice(i, collison_spread + i));
+  battleZonesMap.length = 0;
+  grass_map = area_loaded.grass;
+
+  for (let i = 0; i <= area_map.length; i += map_width) {
+    collisionsMap.push(area_map.slice(i, map_width + i));
+  }
+
+  for (let i = 0; i <= grass_map.length; i += map_width) {
+    battleZonesMap.push(grass_map.slice(i, map_width + i));
   }
 
   boundaries.length = 0;
+
   collisionsMap.forEach((row, i) => {
     row.forEach((symbol, j) => {
       if (symbol === 1025)
@@ -88,7 +96,40 @@ export function load_map(new_map_data) {
     });
   });
 
-  
+  battleZones.length = 0;
+  grass_tiles.length = 0;
+
+  battleZonesMap.forEach((row, i) => {
+    row.forEach((symbol, j) => {
+      if (symbol === 1025) {
+        battleZones.push(
+          new Boundary({
+            position: {
+              x: j * Boundary.width + offset.x,
+              y: i * Boundary.height + offset.y,
+            },
+          })
+        );
+
+        grass_tiles.push(
+          new Sprite({
+            position: {
+              x: j * Boundary.width + offset.x,
+              y: i * Boundary.height + offset.y,
+            },
+            image: grass,
+            frames: {
+              max: 8,
+              hold: 8,
+            },
+            animate: true,
+            scale: 1.2,
+          })
+        );
+      }
+    });
+  });
+
   background.position.x = offset.x;
   background.position.y = offset.y;
 
@@ -103,7 +144,7 @@ export function load_map(new_map_data) {
   movables = [
     dialogue_prompt,
     background,
-    ...campfires,
+    // ...campfires,
     foreground,
     ...boundaries,
     // ...door_boundaries,
@@ -111,7 +152,7 @@ export function load_map(new_map_data) {
     ...grass_tiles,
   ];
 
-  map_npcs = [];
+  map_npcs.length = 0;
   all_npcs.forEach((npc) => {
     let current_map = maploaded.data.name;
 
@@ -120,6 +161,69 @@ export function load_map(new_map_data) {
       map_npcs.push(npc);
     }
   });
+
+  animated_objects = maploaded.data?.animated_objects || false;
+
+  map_campfire.length = 0;
+  (street_lightMap.length = 0), (street_light_tiles.length = 0);
+
+  Object.keys(animated_objects).forEach((object) => {
+    if (object === "campfire") {
+      map_campfire = animated_objects[object].position;
+
+      map_campfire = map_campfire.map(
+        (position) =>
+          new Sprite({
+            position: { x: offset.x + position.x, y: offset.y + position.y },
+            image: campfire,
+            scale: 1,
+            frames: {
+              max: 4,
+              hold: 8,
+            },
+            animate: true,
+          })
+      );
+
+      map_campfire.forEach((campfire) => {
+        movables.push(campfire);
+      });
+    } else if (object === "street_light") {
+      let map_streetLight = animated_objects[object];
+
+      for (let i = 0; i <= map_streetLight.length; i += map_width) {
+        street_lightMap.push(map_streetLight.slice(i, map_width + i));
+      }
+    }
+  });
+
+  if (street_lightMap.length) {
+    street_lightMap.forEach((row, i) => {
+      row.forEach((symbol, j) => {
+        if (symbol === 1025) {
+          street_light_tiles.push(
+            new Sprite({
+              position: {
+                x: j * Boundary.width + offset.x - 27,
+                y: i * Boundary.height + offset.y - 60,
+              },
+              image: street_light,
+              frames: {
+                max: 6,
+                hold: 8,
+              },
+              animate: true,
+              scale: 1,
+            })
+          );
+        }
+      });
+    });
+
+    street_light_tiles.forEach((street_light) => {
+      movables.push(street_light);
+    });
+  }
 }
 
 //LOAD OVERWORLD BACKPACK
@@ -128,20 +232,17 @@ load_backpack();
 let collisionsMap = [];
 let area_loaded = MAP.petalwood_island;
 let area_map = area_loaded.map;
-let collison_spread = area_loaded.width;
+let map_width = area_loaded.width;
 
-for (let i = 0; i <= area_map.length; i += collison_spread) {
-  collisionsMap.push(area_map.slice(i, collison_spread + i));
+let battleZonesMap = [];
+let grass_map = area_loaded.grass;
+
+for (let i = 0; i <= area_map.length; i += map_width) {
+  collisionsMap.push(area_map.slice(i, map_width + i));
 }
 
-// const door_collisionsMap = [];
-// for (let i = 0; i <= door_collisions.length; i += 180) {
-//   door_collisionsMap.push(door_collisions.slice(i, 180 + i));
-// }
-
-const battleZonesMap = [];
-for (let i = 0; i <= battleZonesData.length; i += 180) {
-  battleZonesMap.push(battleZonesData.slice(i, 180 + i)); //slicing the array of battlezones(acc to width of map 120 tiles) into sub-arrays and storing/pushing them in another Array
+for (let i = 0; i <= grass_map.length; i += map_width) {
+  battleZonesMap.push(grass_map.slice(i, map_width + i));
 }
 
 export let boundaries = [];
@@ -177,8 +278,8 @@ export const door_boundaries = [];
 //   });
 // });
 
-export const battleZones = [];
-export const grass_tiles = [];
+export let battleZones = [];
+export let grass_tiles = [];
 
 const grass = new Image();
 grass.src = "./img/animated_objects/animated_grass.png";
@@ -214,14 +315,21 @@ battleZonesMap.forEach((row, i) => {
   });
 });
 
+const campfire = new Image();
+campfire.src = "./img/animated_objects/campfire.png";
+
+const street_light = new Image();
+street_light.src = "./img/animated_objects/street_light3.png";
+
+// <-------------------- BACKGROUND & FOREGROUND ------------------------ //
+
 const backgroundimage = new Image();
 backgroundimage.src = maploaded.data.background_image;
 
 const foregroundimage = new Image();
 foregroundimage.src = maploaded.data.foreground_image;
 
-const campfire = new Image();
-campfire.src = "./img/animated_objects/campfire.png";
+// ------------------------------------------------------------------> //
 
 // <----------------- PLAYER SPRITE -------------------------------- //
 
@@ -286,26 +394,6 @@ export const foreground = new Sprite({
   image: foregroundimage,
 });
 
-// load_map(MAP.evergrande_island);
-
-// campfire positions set
-export const campfires = [
-  { x: offset.x + 1908, y: offset.y + 1719 },
-  { x: offset.x + 1947, y: offset.y + 1719 },
-].map(
-  (position) =>
-    new Sprite({
-      position: position,
-      image: campfire,
-      scale: 0.93,
-      frames: {
-        max: 4,
-        hold: 8,
-      },
-      animate: true,
-    })
-);
-
 const dialogue_prompt_img = new Image();
 dialogue_prompt_img.src = "./img/animated_objects/dialogue_prompt.png";
 
@@ -346,7 +434,6 @@ const keys = {
 let movables = [
   dialogue_prompt,
   background,
-  ...campfires,
   foreground,
   ...boundaries,
   // ...door_boundaries,
@@ -354,7 +441,7 @@ let movables = [
   ...grass_tiles,
 ];
 
-let map_npcs = [];
+export let map_npcs = [];
 export let colliding_npc = [];
 
 all_npcs.forEach((npc) => {
@@ -365,7 +452,76 @@ all_npcs.forEach((npc) => {
     map_npcs.push(npc);
   }
 });
-// console.log(map_npcs);
+
+let animated_objects = maploaded.data?.animated_objects || false;
+// console.log(animated_objects);
+
+export let map_campfire;
+let street_lightMap = [],
+  street_light_tiles = [];
+
+Object.keys(animated_objects).forEach((object) => {
+  if (object === "campfire") {
+    map_campfire = animated_objects[object].position;
+
+    map_campfire = map_campfire.map(
+      (position) =>
+        new Sprite({
+          position: {
+            x: offset.x + position.x,
+            y: offset.y + position.y,
+          },
+          image: campfire,
+          scale: 1,
+          frames: {
+            max: 4,
+            hold: 8,
+          },
+          animate: true,
+        })
+    );
+
+    map_campfire.forEach((campfire) => {
+      movables.push(campfire);
+    });
+  } else if (object === "street_light") {
+    let map_streetLight = animated_objects[object];
+
+    for (let i = 0; i <= map_streetLight.length; i += map_width) {
+      street_lightMap.push(map_streetLight.slice(i, map_width + i));
+    }
+  }
+});
+
+if (street_lightMap.length) {
+  street_lightMap.forEach((row, i) => {
+    row.forEach((symbol, j) => {
+      if (symbol === 1025) {
+        street_light_tiles.push(
+          new Sprite({
+            position: {
+              x: j * Boundary.width + offset.x - 27,
+              y: i * Boundary.height + offset.y - 60,
+            },
+            image: street_light,
+            frames: {
+              max: 6,
+              hold: 8,
+            },
+            animate: true,
+            scale: 1,
+          })
+        );
+      }
+    });
+  });
+
+  street_light_tiles.forEach((street_light) => {
+    movables.push(street_light);
+  });
+}
+
+// console.log(movables);
 
 function RectangularCollision({ rectangle1, rectangle2 }) {
   return (
@@ -398,6 +554,7 @@ var then = Date.now();
 var now;
 
 let animateId;
+
 export function animate() {
   now = Date.now();
   var deltaTime = now - then;
@@ -439,42 +596,45 @@ export function animate() {
     // });
 
     battleZones.forEach((battleZone) => {
-      // battleZone.draw();
+      battleZone.draw();
     });
 
     grass_tiles.forEach((grass) => {
-      // grass.draw();
+      grass.draw();
     });
 
     player.draw();
 
-    for (let npc of all_npcs) {
-      let current_map = maploaded.data.name;
+    for (let npc of map_npcs) {
+      npc.draw();
+      checkNpcInteraction();
 
-      if (npc.map === current_map) {
-        npc.draw();
-        checkNpcInteraction();
-
-        let prompt_Npc = colliding_npc[0] || false;
-        if (prompt_Npc && prompt_Npc.dialogue_available.value)
-          dialogue_prompt.draw();
-      }
+      let prompt_Npc = colliding_npc[0] || false;
+      if (prompt_Npc && prompt_Npc.dialogue_available.value)
+        dialogue_prompt.draw();
     }
 
     foreground.draw();
 
-    let angle = 0;
-    if (global_time >= 19 || global_time <= 3) {
-      campfires.forEach((campfire) => {
-        campfire.draw();
+    // light source animated objects
 
-        let radius = 90 + 10 * Math.sin(angle);
-        campfire.draw_light(
-          campfire.position.x + 20,
-          campfire.position.y + 25,
-          radius
-        );
-        // angle += 0.05;
+    let radius;
+    if (global_time >= 19 || global_time <= 3) {
+      if (map_campfire) {
+        map_campfire.forEach((campfire) => {
+          campfire.draw();
+
+          radius = 100;
+          campfire.draw_light(
+            campfire.position.x + 20,
+            campfire.position.y + 25,
+            radius
+          );
+        });
+      }
+
+      street_light_tiles.forEach((street_light) => {
+        street_light.draw();
       });
     }
 
@@ -871,30 +1031,6 @@ document.querySelector("#load").addEventListener("click", () => {
 
     // reload bag
     load_backpack();
-    // load_map(MAP[map_id.value]);
-
-    // load_map(MAP[maploaded]);
-
-    // npc sprite on load
-    for (let i = 0; i < all_npcs.length; i++) {
-      let image, direction;
-      if (npc_direction[i] === "left") {
-        image = all_npcs[i].sprites.left;
-        direction = "left";
-      } else if (npc_direction[i] === "right") {
-        image = all_npcs[i].sprites.right;
-        direction = "right";
-      } else if (npc_direction[i] === "up") {
-        image = all_npcs[i].sprites.up;
-        direction = "up";
-      } else {
-        image = all_npcs[i].sprites.down;
-        direction = "down";
-      }
-
-      all_npcs[i].image = image;
-      all_npcs[i].npc_image_key = direction;
-    }
   }
 });
 
@@ -959,7 +1095,7 @@ function OpenDialogue(npc) {
   let NpcRandomDialogueBox, NpcRandomDialogue;
   let randomDialogue_available = npc.randomDialogue;
   let randomDialogue_array_total, randomDialogue, randomDialogue_array;
-  // randomDialogue_triggered = false;
+  let randomDialogue_triggered;
 
   if (randomDialogue_available && !randomDialogue_flag) {
     NpcRandomDialogueBox = document.querySelector(
@@ -967,7 +1103,7 @@ function OpenDialogue(npc) {
     );
     NpcRandomDialogue = document.querySelector("#OverlappingDialogueBox");
 
-    // randomDialogue_triggered = npc.randomDialogue.triggered;
+    randomDialogue_triggered = npc.randomDialogue.triggered;
 
     randomDialogue = npc.randomDialogue.dialogue;
     randomDialogue_array_total = Object.values(randomDialogue);
@@ -1044,7 +1180,8 @@ function OpenDialogue(npc) {
     else if (!randomDialogue_flag) {
       if (dialogue_index >= dialogue_array.length) {
         CloseDialogue();
-        if (randomDialogue_available) startRandomDialogue();
+        if (randomDialogue_available && randomDialogue_triggered)
+          startRandomDialogue();
         return;
       }
       current_text = dialogue_array[dialogue_index];
@@ -1089,6 +1226,7 @@ function OpenDialogue(npc) {
 
           yes.onclick = () => {
             YesNo_ChoiceBox.style.display = "none";
+            randomDialogue_triggered = true;
 
             clearInterval(interval);
             typing = false;
@@ -1096,10 +1234,12 @@ function OpenDialogue(npc) {
             NextDialogue();
 
             if (teleport) load_map(teleport);
+            randomDialogue_triggered = false;
           };
 
           no.onclick = () => {
             YesNo_ChoiceBox.style.display = "none";
+            randomDialogue_triggered = false;
 
             clearInterval(interval);
             typing = false;

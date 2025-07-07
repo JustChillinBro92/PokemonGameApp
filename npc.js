@@ -49,14 +49,7 @@ oldManRightImage.src = "./img/characters/npc/grandpa/grandpa_right.png";
 
 // -----------------------------------------> //
 
-export const direction_img = [
-  sailorDownImage,
-  sailorUpImage,
-  sailorLeftImage,
-  sailorRightImage,
-];
-
-export let oldman1 = new Sprite({
+let oldman1 = new Sprite({
   id: "oldman1",
   map: MAP.petalwood_island.name,
   position: {
@@ -89,7 +82,7 @@ export let oldman1 = new Sprite({
   scale: 0.65,
 });
 
-export let fatGuy1 = new Sprite({
+let fatGuy1 = new Sprite({
   id: "fatGuy1",
   map: MAP.petalwood_island.name,
   position: {
@@ -122,7 +115,8 @@ export let fatGuy1 = new Sprite({
   scale: 0.65,
 });
 
-export let sailor1 = new Sprite({
+let sailor1 = new Sprite({
+  id: "sailor1",
   map: MAP.petalwood_island.name,
   position: {
     x: -2300,
@@ -154,7 +148,8 @@ export let sailor1 = new Sprite({
   scale: 0.65,
 });
 
-export let sailor2 = new Sprite({
+let sailor2 = new Sprite({
+  id: "sailor2",
   map: MAP.petalwood_island.name,
   position: {
     x: -1325,
@@ -198,7 +193,8 @@ export let sailor2 = new Sprite({
   scale: 0.65,
 });
 
-export let sailor3 = new Sprite({
+let sailor3 = new Sprite({
+  id: "sailor3",
   map: MAP.petalwood_island.name,
   position: {
     x: 800,
@@ -221,17 +217,6 @@ export let sailor3 = new Sprite({
     value: false,
     interact: false,
   },
-  // onetimeDialogue: {
-  //   dialogue: {
-  //     text_1:
-  //       "Heya lil fella whats with the face? Ye seem to be pretty lost about moving further eh?",
-  //     text_2:
-  //       "Well worry not son cuz this nice old man can take ye for a ride to the next island!",
-  //     text_3:
-  //       "But how about ye explore around these parts here first? Might find something interesting!",
-  //   },
-  //   triggered: false,
-  // },
   randomDialogue: {
     dialogue: {
       text_1:

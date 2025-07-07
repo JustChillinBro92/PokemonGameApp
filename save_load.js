@@ -8,10 +8,10 @@ import {
   boundaries,
   battleZones,
   grass_tiles,
-  campfires,
+  map_campfire,
   offset,
+  map_npcs,
   // npc_direction,
-  player,
   map_id,
 } from "./renderer.js";
 import {
@@ -24,7 +24,7 @@ import {
   status_color_tracker,
 } from "./classes.js";
 import { maploaded } from "./main_menu.js";
-import { sailor1, all_npcs } from "./npc.js";
+import { all_npcs } from "./npc.js";
 import {
   virtualSeconds,
   formattedHours,
@@ -72,7 +72,7 @@ export function savegame() {
     offset_position: offset,
     global_time: virtualSeconds.value,
     time: { formattedHours, formattedMinutes, interval },
-    npc_details: [serializeNpc(sailor1)],
+    map_npcs_details: map_npcs,
     party: cleanParty,
     items: cleanItems,
     health: parseFloat(health_tracker.value),
@@ -114,27 +114,42 @@ export function loadgame() {
   // time update on load
   virtualSeconds.value = data.global_time;
 
-  //reload last saved map
+  // reload last saved map
   map_id.value = data.map_loaded_id;
 
   // Reset the maploaded.data
   Object.keys(maploaded.data).forEach((key) => delete maploaded.data[key]);
   Object.assign(maploaded.data, data.map_loaded.data);
 
+  // update npc positions
+  data.map_npcs_details.forEach((map_npc) => {
+    let id = map_npc.id;
+
+    let oneTime_available = map_npc.onetimeDialogue || false;
+    let oneTime_tiggered;
+    if(oneTime_available) oneTime_tiggered = oneTime_available.triggered;
+    
+    all_npcs.forEach((npc) => {
+      if(npc.id === id) {
+        npc.position = map_npc.position;
+        npc.npc_image_key = map_npc.npc_image_key;
+
+        let image_key = npc.npc_image_key;
+        npc.image = npc.sprites[image_key];
+
+        let oneTime = npc.onetimeDialogue || false;
+        if(oneTime) npc.onetimeDialogue.triggered = oneTime_tiggered;
+      } 
+    })
+  })
+
+
   load_map(maploaded.data);
 
-  // background related stuff on load
+  // update background related stuff
   const offset_changeX = background.position.x - data.background_position.x;
   const offset_changeY = background.position.y - data.background_position.y;
 
-
-  // for (let i = 0; i < all_npcs.length; i++) {
-  //   npc_direction[i] = data.npc_details[i].npc_image_key;
-  // }
-  // console.log(npc_direction);
-
-  sailor1.position = data.npc_details[0].position;
-  // console.log(direction_img);
 
   boundaries.forEach((boundary) => {
     boundary.updateOffset(offset_changeX, offset_changeY);
@@ -148,7 +163,7 @@ export function loadgame() {
     grass.updateOffset(offset_changeX, offset_changeY);
   });
 
-  campfires.forEach((campfire) => {
+  map_campfire.forEach((campfire) => {
     campfire.updateOffset(offset_changeX, offset_changeY);
   });
 
