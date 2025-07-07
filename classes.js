@@ -138,24 +138,47 @@ export class Sprite {
     }
   }
 
-  draw_light(x, y, radius) {
+  // draw_light(x, y, radius, light_color, stroke_color) {
+  //   c.save();
+  //   c.globalCompositeOperation = "soft-light";
+  //   c.fillStyle = light_color;
+  //   c.beginPath();
+  //   c.arc(x, y, radius, 0, Math.PI * 2);
+  //   c.fill();
+
+  //   c.globalCompositeOperation = "darken";
+  //   c.shadowBlur = 40;
+  //   c.lineWidth = 20;
+  //   c.strokeStyle = stroke_color;
+  //   c.beginPath(); 
+  //   c.arc(x, y, radius + 10, 0, Math.PI * 2);
+  //   c.stroke();
+  //   c.restore();
+  // }
+
+  draw_light(x, y, radius, vibe, alpha) {
+    const innerColor = "rgba(252, 122, 0, 0.66)";
+    const outerColor = "rgba(0, 0, 0, 0.6)";
+    const gradient = c.createRadialGradient(x, y, 0, x, y, radius);
+    gradient.addColorStop(0, innerColor);     // Core bright light
+    gradient.addColorStop(1, outerColor);     // Fades into transparency
+
     c.save();
-    c.globalCompositeOperation = "soft-light";
-    c.fillStyle = " rgba(250, 236, 44, 0.43)";
+    c.globalAlpha = alpha;
+    c.globalCompositeOperation = vibe;   // Makes glows blend well
+    c.fillStyle = gradient;
     c.beginPath();
     c.arc(x, y, radius, 0, Math.PI * 2);
     c.fill();
-    c.restore();
 
-    c.save();
-    c.globalCompositeOperation = "darken";
-    c.shadowColor = "black";
-    c.shadowBlur = 40;
-    c.strokeStyle = "rgba(250, 202, 44, 0.07)";
-    c.lineWidth = 30;
-    c.beginPath();
-    c.arc(x, y, radius, 0, Math.PI * 2);
-    c.stroke();
+      c.globalCompositeOperation = "darken";
+      c.shadowBlur = 40;
+      c.lineWidth = 25;
+      c.strokeStyle = "rgba(24, 23, 20, 0.01)";
+      c.beginPath(); 
+      c.arc(x, y, radius-20, 0, Math.PI * 2);
+      c.stroke();
+
     c.restore();
   }
 

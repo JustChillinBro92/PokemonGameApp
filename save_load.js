@@ -9,9 +9,9 @@ import {
   battleZones,
   grass_tiles,
   map_campfire,
+  street_light_tiles,
   offset,
   map_npcs,
-  // npc_direction,
   map_id,
 } from "./renderer.js";
 import {
@@ -166,6 +166,10 @@ export function loadgame() {
   map_campfire.forEach((campfire) => {
     campfire.updateOffset(offset_changeX, offset_changeY);
   });
+
+  street_light_tiles.forEach((street_light) => {
+    street_light.updateOffset(offset_changeX, offset_changeY);
+  })
 
   background.position = data.background_position;
   foreground.position = data.foreground_position;

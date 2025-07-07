@@ -144,7 +144,6 @@ export function load_map(new_map_data) {
   movables = [
     dialogue_prompt,
     background,
-    // ...campfires,
     foreground,
     ...boundaries,
     // ...door_boundaries,
@@ -165,7 +164,7 @@ export function load_map(new_map_data) {
   animated_objects = maploaded.data?.animated_objects || false;
 
   map_campfire.length = 0;
-  (street_lightMap.length = 0), (street_light_tiles.length = 0);
+  street_lightMap.length = 0, street_light_tiles.length = 0;
 
   Object.keys(animated_objects).forEach((object) => {
     if (object === "campfire") {
@@ -188,6 +187,7 @@ export function load_map(new_map_data) {
       map_campfire.forEach((campfire) => {
         movables.push(campfire);
       });
+
     } else if (object === "street_light") {
       let map_streetLight = animated_objects[object];
 
@@ -457,8 +457,8 @@ let animated_objects = maploaded.data?.animated_objects || false;
 // console.log(animated_objects);
 
 export let map_campfire;
-let street_lightMap = [],
-  street_light_tiles = [];
+let street_lightMap = [];
+export let street_light_tiles = [];
 
 Object.keys(animated_objects).forEach((object) => {
   if (object === "campfire") {
@@ -618,22 +618,29 @@ export function animate() {
 
     // light source animated objects
 
-    let radius;
+    let radius, vibe, alpha;
     if (global_time >= 19 || global_time <= 3) {
       if (map_campfire) {
         map_campfire.forEach((campfire) => {
-          campfire.draw();
-
-          radius = 100;
+          radius = 50, vibe = "screen", alpha = 1;
           campfire.draw_light(
             campfire.position.x + 20,
             campfire.position.y + 25,
-            radius
+            radius, vibe, alpha
           );
+
+          campfire.draw();
         });
       }
 
       street_light_tiles.forEach((street_light) => {
+        radius = 130, vibe = "lighter", alpha = 0.7;
+        street_light.draw_light(
+          street_light.position.x + 45,
+          street_light.position.y + 45,
+          radius, vibe, alpha
+        );
+
         street_light.draw();
       });
     }
