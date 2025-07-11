@@ -42,6 +42,7 @@ export class Boundary {
 export class Sprite {
   constructor({
     id,
+    name,
     position,
     map,
     image,
@@ -60,6 +61,7 @@ export class Sprite {
     rotation = 0,
   }) {
     this.id = id;
+    this.name = name;
     this.position = position;
     this.map = map;
     this.npc_image_key = npc_image_key;
@@ -174,7 +176,7 @@ export class Sprite {
       c.globalCompositeOperation = "darken";
       c.shadowBlur = 40;
       c.lineWidth = 25;
-      c.strokeStyle = "rgba(24, 23, 20, 0.01)";
+      c.strokeStyle = "rgba(24, 23, 20, 0.02)";
       c.beginPath(); 
       c.arc(x, y, radius-20, 0, Math.PI * 2);
       c.stroke();
@@ -204,8 +206,7 @@ export class Sprite {
     }
 
     const direction = ["left","right", "up","down"];
-    const randomDirection =
-      direction[Math.floor(Math.random() * direction.length)];
+    const randomDirection = direction[Math.floor(Math.random() * direction.length)];
 
 
     const key = Npc.id;

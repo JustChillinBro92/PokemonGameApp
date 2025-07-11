@@ -190,7 +190,7 @@
 			left: 0; 
 			right: 0; 
 			opacity: 1;
-			display: none;
+			/* display: none; */
 			z-index: 11;
 		">
 			<div id="menu_box" style="
@@ -289,16 +289,17 @@
 					flex-direction: row;
 					align-items: center;
 					">
-					<div id="name" style="
+					<div class="name" style="
 						position: absolute;
-						top: 19%;
+						top: 20%;
 						left: 2%;
 
 						font-size: 21px;
 						color: rgb(0, 170, 255);
 
 						display: flex;
-						">Sailor
+						">
+						<div class="npc_name"></div>
 						<div style="transform: translateY(3px);">:</div>
 					</div>
 
@@ -310,7 +311,7 @@
 						right: 1%;
 
 						text-align: left;
-						line-height: 1.8;
+						line-height: 2;
 						color: rgb(218, 217, 217);
 						">
 					</div>
@@ -431,16 +432,17 @@
 				flex-direction: row;
 				align-items: center;
 				">
-				<div id="name" style="
+				<div class="name" style="
 					position: absolute;
-					top: 19%;
+					top: 20%;
 					left: 2%;
 
 					font-size: 21px;
 					color: rgb(0, 170, 255);
 
 					display: flex;
-				">Sailor
+					">
+					<div class="npc_name"></div>
 					<div style="transform: translateY(3px);">:</div>
 				</div>
 
@@ -452,7 +454,7 @@
 					right: 1%;
 
 					text-align: left;
-					line-height: 1.8;
+					line-height: 2;
 					color: rgb(218, 217, 217);
 					">
 				</div>
@@ -1007,7 +1009,8 @@
 		<script src="./data/audio.js" type="module"></script>
 		<script src="./data/battlezones.js" type="module"></script>
 		<script src="./data/items.js" type="module"></script>
-		<script src="./data/attacks.js" type="module"></script> <!--make sure to load attacks before classes-->
+		<script src="./data/map.js" type="module"></script>
+		<script src="./data/attacks.js" type="module"></script>
 		<script src="./data/monsters.js" type="module"></script>
 		<script src="./data/playerBag.js" type="module"></script>
 		<script src="./backpack.js" type="module"></script>

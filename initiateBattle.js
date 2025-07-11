@@ -13,6 +13,7 @@ import {
   Type_Check,
 } from "./classes.js";
 import { battle, animate, menu, keys_active } from "./renderer.js";
+import { maploaded } from "./main_menu.js";
 import { animateBattleId } from "./battlescene.js";
 import { audio } from "./data/audio.js";
 import { playerMonsters, getRandomMonster } from "./data/monsters.js";
@@ -189,7 +190,7 @@ export function initBattle() {
           keys_active.val = true;
           battle.initiated = false;
           audio.battle.stop();
-          audio.Map.play();
+          audio[maploaded.data.id].play();
         },
       });
     });

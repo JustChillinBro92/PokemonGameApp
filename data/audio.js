@@ -1,8 +1,15 @@
 export const audio = {
-    Map : new Howl({
-        src: './audio/map.wav',
+    petalwood_island : new Howl({
+        src: './audio/petalwood_island.wav',
         html5: true,
-        volume: 0.2
+        volume: 0.2,
+        loop: true
+    }),
+    evergrande_island : new Howl({
+        src: './audio/evergrande_island.wav',
+        html5: true,
+        volume: 0.2,
+        loop: true
     }),
     grass: new Howl ({
         src: './audio/grass.wav',
@@ -32,7 +39,8 @@ export const audio = {
     battle : new Howl({
         src: './audio/battle.mp3',
         html5: true,
-        volume: 0.1
+        volume: 0.1,
+        loop: true
     }),
     victory : new Howl({
         src: './audio/victory.wav',

@@ -47,17 +47,30 @@ oldManLeftImage.src = "./img/characters/npc/grandpa/grandpa_left.png";
 const oldManRightImage = new Image();
 oldManRightImage.src = "./img/characters/npc/grandpa/grandpa_right.png";
 
+const oldLadyDownImage = new Image();
+oldLadyDownImage.src = "./img/characters/npc/grandma/grandma_down.png";
+
+const oldLadyUpImage = new Image();
+oldLadyUpImage.src = "./img/characters/npc/grandma/grandma_up.png";
+
+const oldLadyLeftImage = new Image();
+oldLadyLeftImage.src = "./img/characters/npc/grandma/grandma_left.png";
+
+const oldLadyRightImage = new Image();
+oldLadyRightImage.src = "./img/characters/npc/grandma/grandma_right.png";
+
 // -----------------------------------------> //
 
 let oldman1 = new Sprite({
   id: "oldman1",
+  name: "Mr. White",
   map: MAP.petalwood_island.name,
   position: {
-    x: -2500,
-    y: -995,
+    x: -2100,
+    y: -123,
   },
-  image: oldManDownImage,
-  npc_image_key: "down",
+  image: oldManRightImage,
+  npc_image_key: "right",
   isMoving: false,
   frames: {
     max: 4,
@@ -71,9 +84,45 @@ let oldman1 = new Sprite({
   },
   dialogue: {
     text_1:
-      "Sorry kid the water around these parts have been pretty hefty lately. So, the boat to Trinity Island is not available right now!",
+      "Quietly sitting out in the open while taking in nature's beauty is truly the bliss of old age!",
     text_2:
-      "You should come back later! Maybe try visiting Evergrande Island in the meantime?",
+      "It's not like I was forced to accompany my wife or anything! Hahahaha...haha...ha...",
+    text_3:
+      "...shouldn't have stolen those cookies...*sigh*",
+  },
+  dialogue_available: {
+    value: false,
+    interact: false,
+  },
+  scale: 0.65,
+});
+
+let oldlady1 = new Sprite({
+  id: "oldlady1",
+  name: "Mrs. White",
+  map: MAP.petalwood_island.name,
+  position: {
+    x: -1960,
+    y: -123,
+  },
+  image: oldLadyLeftImage,
+  npc_image_key: "left",
+  isMoving: false,
+  frames: {
+    max: 4,
+    hold: 10,
+  },
+  sprites: {
+    up: oldLadyUpImage,
+    left: oldLadyLeftImage,
+    right: oldLadyRightImage,
+    down: oldLadyDownImage,
+  },
+  dialogue: {
+    text_1:
+      "Oh now that's a new face! We haven't gotten any new folks on this small island for a while now.",
+    text_2:
+      "My grandaughter would probably be around your age if she were around. Make yourself home kid!",
   },
   dialogue_available: {
     value: false,
@@ -84,6 +133,7 @@ let oldman1 = new Sprite({
 
 let fatGuy1 = new Sprite({
   id: "fatGuy1",
+  name: "Jeremy",
   map: MAP.petalwood_island.name,
   position: {
     x: -1850,
@@ -91,7 +141,7 @@ let fatGuy1 = new Sprite({
   },
   image: fatGuyDownImage,
   npc_image_key: "down",
-  isMoving: false,
+  isMoving: true,
   frames: {
     max: 4,
     hold: 10,
@@ -104,9 +154,9 @@ let fatGuy1 = new Sprite({
   },
   dialogue: {
     text_1:
-      "Sorry kid the water around these parts have been pretty hefty lately. So, the boat to Trinity Island is not available right now!",
+      "I just caught my first pokemon the other day! So, I am thinking about challenging the Evergrande gym.",
     text_2:
-      "You should come back later! Maybe try visiting Evergrande Island in the meantime?",
+      "I heard the gym specializes in ghost type pokemon! You would probably have a hard time without a psychic or a ghost type.",
   },
   dialogue_available: {
     value: false,
@@ -117,6 +167,7 @@ let fatGuy1 = new Sprite({
 
 let sailor1 = new Sprite({
   id: "sailor1",
+  name: "Sailor",
   map: MAP.petalwood_island.name,
   position: {
     x: -2300,
@@ -150,6 +201,7 @@ let sailor1 = new Sprite({
 
 let sailor2 = new Sprite({
   id: "sailor2",
+  name: "Sailor",
   map: MAP.petalwood_island.name,
   position: {
     x: -1325,
@@ -183,6 +235,19 @@ let sailor2 = new Sprite({
     },
     triggered: false,
   },
+  randomDialogue: {
+    dialogue: {
+      text_1:
+        "Hold tight pal we are on a tight schedule today. Reaching Evergrande in a minute.",
+      text_2:
+        "So how's yer day been lad? Enjoyin the weather here? Maybe try getting a tan next time eh?",
+      text_3:
+        "Rumour has it ye can spot a ghost sometimes in Evergrande! Be careful at night lil fella.",
+      text_4:
+        "If you run into mah brothers on yer way make sure to say hi. Can't miss em, they look just like me.",
+    },
+    triggered: false,
+  },
   dialogue: {
     text_1: "Would ye like me to take ye to Evergrande Island now lil fella?",
   },
@@ -195,6 +260,7 @@ let sailor2 = new Sprite({
 
 let sailor3 = new Sprite({
   id: "sailor3",
+  name: "Sailor",
   map: MAP.petalwood_island.name,
   position: {
     x: 800,
@@ -240,7 +306,7 @@ let sailor3 = new Sprite({
   scale: 0.65,
 });
 
-export const all_npcs = [oldman1, fatGuy1, sailor1, sailor2, sailor3];
+export const all_npcs = [oldman1, oldlady1, fatGuy1, sailor1, sailor2, sailor3];
 
 export function npc_sprite_upon_interaction(npc) {
   if (!npc.dialogue_available.interact) return;
@@ -276,13 +342,9 @@ export function checkNpcInteraction() {
 
   if (deltaTime > 1000) {
     let initialPosNpc = {
-      oldman1: {
-        x: 305,
-        y: 120,
-      },
       fatGuy1: {
-        x: 980,
-        y: 290,
+        x: -1850,
+        y: -840,
       },
     };
 
@@ -292,9 +354,6 @@ export function checkNpcInteraction() {
     };
 
     if (cameraOffset.x !== 0 || cameraOffset.y !== 0) {
-      initialPosNpc.oldman1.x -= cameraOffset.x;
-      initialPosNpc.oldman1.y -= cameraOffset.y;
-
       initialPosNpc.fatGuy1.x -= cameraOffset.x;
       initialPosNpc.fatGuy1.y -= cameraOffset.y;
     }
@@ -312,8 +371,8 @@ export function checkNpcInteraction() {
 
         let collidingNpcExist = colliding_npc[0] || false;
         if (collidingNpcExist) {
-          dialogue_prompt.position.x = colliding_npc[0].position.x + 6;
-          dialogue_prompt.position.y = colliding_npc[0].position.y - 35;
+          dialogue_prompt.position.x = collidingNpcExist.position.x + 6;
+          dialogue_prompt.position.y = collidingNpcExist.position.y - 35;
         }
 
         Npc.dialogue_available.value = true;

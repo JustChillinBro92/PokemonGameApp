@@ -16,216 +16,6 @@ import {
 import { maploaded } from "./main_menu.js";
 import { MAP } from "./data/map.js";
 
-// LOADING MAP FUNCTION
-
-export function load_map(new_map_data) {
-  if (!gameLoaded.onload) {
-    window.cancelAnimationFrame(animateId);
-    let overlayListenerAdded = false;
-
-    gsap.to("#OverlappingDiv", {
-      opacity: 1,
-      duration: 0.3,
-      onComplete: () => {
-        //Attach listener ONLY ONCE after fade-in completes
-        if (!overlayListenerAdded) {
-          document.addEventListener("disable_overlay", handleOverlayDisable);
-          overlayListenerAdded = true;
-        }
-        setTimeout(() => {
-          animate();
-        }, 1700);
-      },
-    });
-
-    function handleOverlayDisable() {
-      gsap.to("#OverlappingDiv", {
-        opacity: 0,
-      });
-
-      gsap.to("#map_name", {
-        top: "2%",
-        bottom: "85%",
-        duration: 0.6,
-        onComplete: () => {
-          gsap.to("#map_name", {
-            opacity: 0,
-            delay: 3,
-          });
-        },
-      });
-      document.removeEventListener("disable_overlay", handleOverlayDisable);
-    }
-  }
-
-  maploaded.data = new_map_data;
-  document.querySelector("#map_name").innerHTML = maploaded.data.name;
-
-  offset.x = maploaded.data.camera.x;
-  offset.y = maploaded.data.camera.y;
-
-  collisionsMap.length = 0;
-  area_loaded = maploaded.data;
-  area_map = area_loaded.map;
-  map_width = area_loaded.width;
-
-  battleZonesMap.length = 0;
-  grass_map = area_loaded.grass;
-
-  for (let i = 0; i <= area_map.length; i += map_width) {
-    collisionsMap.push(area_map.slice(i, map_width + i));
-  }
-
-  for (let i = 0; i <= grass_map.length; i += map_width) {
-    battleZonesMap.push(grass_map.slice(i, map_width + i));
-  }
-
-  boundaries.length = 0;
-
-  collisionsMap.forEach((row, i) => {
-    row.forEach((symbol, j) => {
-      if (symbol === 1025)
-        boundaries.push(
-          new Boundary({
-            position: {
-              x: j * Boundary.width + offset.x,
-              y: i * Boundary.height + offset.y,
-            },
-          })
-        );
-    });
-  });
-
-  battleZones.length = 0;
-  grass_tiles.length = 0;
-
-  battleZonesMap.forEach((row, i) => {
-    row.forEach((symbol, j) => {
-      if (symbol === 1025) {
-        battleZones.push(
-          new Boundary({
-            position: {
-              x: j * Boundary.width + offset.x,
-              y: i * Boundary.height + offset.y,
-            },
-          })
-        );
-
-        grass_tiles.push(
-          new Sprite({
-            position: {
-              x: j * Boundary.width + offset.x,
-              y: i * Boundary.height + offset.y,
-            },
-            image: grass,
-            frames: {
-              max: 8,
-              hold: 8,
-            },
-            animate: true,
-            scale: 1.2,
-          })
-        );
-      }
-    });
-  });
-
-  background.position.x = offset.x;
-  background.position.y = offset.y;
-
-  foreground.position.x = offset.x;
-  foreground.position.y = offset.y;
-
-  background.image.src = maploaded.data.background_image;
-  foreground.image.src = maploaded.data.foreground_image;
-
-  movables.length = 0;
-
-  movables = [
-    dialogue_prompt,
-    background,
-    foreground,
-    ...boundaries,
-    // ...door_boundaries,
-    ...battleZones,
-    ...grass_tiles,
-  ];
-
-  map_npcs.length = 0;
-  all_npcs.forEach((npc) => {
-    let current_map = maploaded.data.name;
-
-    if (npc.map === current_map) {
-      movables.push(npc);
-      map_npcs.push(npc);
-    }
-  });
-
-  animated_objects = maploaded.data?.animated_objects || false;
-
-  map_campfire.length = 0;
-  street_lightMap.length = 0, street_light_tiles.length = 0;
-
-  Object.keys(animated_objects).forEach((object) => {
-    if (object === "campfire") {
-      map_campfire = animated_objects[object].position;
-
-      map_campfire = map_campfire.map(
-        (position) =>
-          new Sprite({
-            position: { x: offset.x + position.x, y: offset.y + position.y },
-            image: campfire,
-            scale: 1,
-            frames: {
-              max: 4,
-              hold: 8,
-            },
-            animate: true,
-          })
-      );
-
-      map_campfire.forEach((campfire) => {
-        movables.push(campfire);
-      });
-
-    } else if (object === "street_light") {
-      let map_streetLight = animated_objects[object];
-
-      for (let i = 0; i <= map_streetLight.length; i += map_width) {
-        street_lightMap.push(map_streetLight.slice(i, map_width + i));
-      }
-    }
-  });
-
-  if (street_lightMap.length) {
-    street_lightMap.forEach((row, i) => {
-      row.forEach((symbol, j) => {
-        if (symbol === 1025) {
-          street_light_tiles.push(
-            new Sprite({
-              position: {
-                x: j * Boundary.width + offset.x - 27,
-                y: i * Boundary.height + offset.y - 60,
-              },
-              image: street_light,
-              frames: {
-                max: 6,
-                hold: 8,
-              },
-              animate: true,
-              scale: 1,
-            })
-          );
-        }
-      });
-    });
-
-    street_light_tiles.forEach((street_light) => {
-      movables.push(street_light);
-    });
-  }
-}
-
 //LOAD OVERWORLD BACKPACK
 load_backpack();
 
@@ -237,83 +27,16 @@ let map_width = area_loaded.width;
 let battleZonesMap = [];
 let grass_map = area_loaded.grass;
 
-for (let i = 0; i <= area_map.length; i += map_width) {
-  collisionsMap.push(area_map.slice(i, map_width + i));
-}
-
-for (let i = 0; i <= grass_map.length; i += map_width) {
-  battleZonesMap.push(grass_map.slice(i, map_width + i));
-}
-
 export let boundaries = [];
 export let offset = { x: maploaded.data.camera.x, y: maploaded.data.camera.y };
 
-collisionsMap.forEach((row, i) => {
-  row.forEach((symbol, j) => {
-    if (symbol === 1025)
-      boundaries.push(
-        new Boundary({
-          position: {
-            x: j * Boundary.width + offset.x,
-            y: i * Boundary.height + offset.y,
-          },
-        })
-      );
-  });
-});
-
 export const door_boundaries = [];
-
-// door_collisionsMap.forEach((row, i) => {
-//   row.forEach((symbol, j) => {
-//     if (symbol === 1025)
-//       door_boundaries.push(
-//         new Boundary({
-//           position: {
-//             x: j * Boundary.width + offset.x,
-//             y: i * Boundary.height + offset.y,
-//           },
-//         })
-//       );
-//   });
-// });
 
 export let battleZones = [];
 export let grass_tiles = [];
 
 const grass = new Image();
 grass.src = "./img/animated_objects/animated_grass.png";
-
-battleZonesMap.forEach((row, i) => {
-  row.forEach((symbol, j) => {
-    if (symbol === 1025) {
-      battleZones.push(
-        new Boundary({
-          position: {
-            x: j * Boundary.width + offset.x,
-            y: i * Boundary.height + offset.y,
-          },
-        })
-      );
-
-      grass_tiles.push(
-        new Sprite({
-          position: {
-            x: j * Boundary.width + offset.x,
-            y: i * Boundary.height + offset.y,
-          },
-          image: grass,
-          frames: {
-            max: 8,
-            hold: 8,
-          },
-          animate: true,
-          scale: 1.2,
-        })
-      );
-    }
-  });
-});
 
 const campfire = new Image();
 campfire.src = "./img/animated_objects/campfire.png";
@@ -378,7 +101,7 @@ export const player = new Sprite({
   scale: 0.65,
 });
 
-export const background = new Sprite({
+export let background = new Sprite({
   position: {
     x: offset.x,
     y: offset.y,
@@ -386,7 +109,7 @@ export const background = new Sprite({
   image: backgroundimage,
 });
 
-export const foreground = new Sprite({
+export let foreground = new Sprite({
   position: {
     x: offset.x,
     y: offset.y,
@@ -444,82 +167,12 @@ let movables = [
 export let map_npcs = [];
 export let colliding_npc = [];
 
-all_npcs.forEach((npc) => {
-  let current_map = maploaded.data.name;
-
-  if (npc.map === current_map) {
-    movables.push(npc);
-    map_npcs.push(npc);
-  }
-});
-
 let animated_objects = maploaded.data?.animated_objects || false;
 // console.log(animated_objects);
 
-export let map_campfire;
+export let map_campfire = [];
 let street_lightMap = [];
 export let street_light_tiles = [];
-
-Object.keys(animated_objects).forEach((object) => {
-  if (object === "campfire") {
-    map_campfire = animated_objects[object].position;
-
-    map_campfire = map_campfire.map(
-      (position) =>
-        new Sprite({
-          position: {
-            x: offset.x + position.x,
-            y: offset.y + position.y,
-          },
-          image: campfire,
-          scale: 1,
-          frames: {
-            max: 4,
-            hold: 8,
-          },
-          animate: true,
-        })
-    );
-
-    map_campfire.forEach((campfire) => {
-      movables.push(campfire);
-    });
-  } else if (object === "street_light") {
-    let map_streetLight = animated_objects[object];
-
-    for (let i = 0; i <= map_streetLight.length; i += map_width) {
-      street_lightMap.push(map_streetLight.slice(i, map_width + i));
-    }
-  }
-});
-
-if (street_lightMap.length) {
-  street_lightMap.forEach((row, i) => {
-    row.forEach((symbol, j) => {
-      if (symbol === 1025) {
-        street_light_tiles.push(
-          new Sprite({
-            position: {
-              x: j * Boundary.width + offset.x - 27,
-              y: i * Boundary.height + offset.y - 60,
-            },
-            image: street_light,
-            frames: {
-              max: 6,
-              hold: 8,
-            },
-            animate: true,
-            scale: 1,
-          })
-        );
-      }
-    });
-  });
-
-  street_light_tiles.forEach((street_light) => {
-    movables.push(street_light);
-  });
-}
 
 // console.log(movables);
 
@@ -555,6 +208,8 @@ var now;
 
 let animateId;
 
+// load_map(MAP.petalwood_island)
+
 export function animate() {
   now = Date.now();
   var deltaTime = now - then;
@@ -564,7 +219,7 @@ export function animate() {
 
   // Animation logic...
   animateId = window.requestAnimationFrame(animate);
-  // console.log("aimate");
+  // console.log("animate");
 
   if (pause) {
     window.cancelAnimationFrame(animateId);
@@ -622,11 +277,13 @@ export function animate() {
     if (global_time >= 19 || global_time <= 3) {
       if (map_campfire) {
         map_campfire.forEach((campfire) => {
-          radius = 50, vibe = "screen", alpha = 1;
+          (radius = 50), (vibe = "screen"), (alpha = 1);
           campfire.draw_light(
             campfire.position.x + 20,
             campfire.position.y + 25,
-            radius, vibe, alpha
+            radius,
+            vibe,
+            alpha
           );
 
           campfire.draw();
@@ -634,11 +291,13 @@ export function animate() {
       }
 
       street_light_tiles.forEach((street_light) => {
-        radius = 130, vibe = "lighter", alpha = 0.7;
+        (radius = 130), (vibe = "lighter"), (alpha = 0.7);
         street_light.draw_light(
           street_light.position.x + 45,
           street_light.position.y + 45,
-          radius, vibe, alpha
+          radius,
+          vibe,
+          alpha
         );
 
         street_light.draw();
@@ -702,14 +361,14 @@ export function animate() {
 
           if (encounter_rate < 0.02) {
             //console.log("battleZone Activate");
-            window.cancelAnimationFrame(animateId); //deactivates current animation loop
-            audio.Map.stop(); //stops map music
+            window.cancelAnimationFrame(animateId);
+            audio[maploaded.data.id].stop();
 
             battle.initiated = true;
             keys_active.val = false;
 
-            audio.initBattle.play(); //starts battle initialise music
-            audio.battle.play(); //starts battle music
+            audio.initBattle.play();
+            audio.battle.play(); 
 
             //flashing animation on battle activation
             gsap.to("#OverlappingDiv", {
@@ -719,11 +378,9 @@ export function animate() {
               duration: 0.4,
               onComplete() {
                 gsap.to("#OverlappingDiv", {
-                  //keeps the canvas covered by the 'overlapping div' as no yoyo property present...done to change the canvas behind it to battle scene
                   opacity: 1,
                   duration: 0.4,
                   onComplete() {
-                    //activate a new animation loop (battle sequence)
                     initBattle();
                     animateBattle();
 
@@ -1088,6 +745,13 @@ function OpenDialogue(npc) {
   let yes = document.querySelector("#yes");
   let no = document.querySelector("#no");
 
+  document.querySelectorAll(".npc_name").forEach(e => {
+    e.textContent = npc.name;
+  });
+
+  if(npc.name.length < 7)  NpcDialogue.style.left = 14 + "%";
+  else NpcDialogue.style.left = 20 + "%";
+
   let teleport = npc.triggerTeleport?.area || false;
 
   let oneTime_available = npc.onetimeDialogue;
@@ -1105,10 +769,11 @@ function OpenDialogue(npc) {
   let randomDialogue_triggered;
 
   if (randomDialogue_available && !randomDialogue_flag) {
-    NpcRandomDialogueBox = document.querySelector(
-      "#OverlappingDialogueBoxContainer"
-    );
+    NpcRandomDialogueBox = document.querySelector("#OverlappingDialogueBoxContainer");
     NpcRandomDialogue = document.querySelector("#OverlappingDialogueBox");
+
+    if(npc.name.length < 10)  NpcRandomDialogue.style.left = 14 + "%";
+    else NpcRandomDialogue.style.left = 20 + "%";
 
     randomDialogue_triggered = npc.randomDialogue.triggered;
 
@@ -1240,7 +905,10 @@ function OpenDialogue(npc) {
             dialogue_index++;
             NextDialogue();
 
-            if (teleport) load_map(teleport);
+            if (teleport) {
+              audio[maploaded.data.id].stop();
+              load_map(teleport);
+            }
             randomDialogue_triggered = false;
           };
 
@@ -1269,6 +937,321 @@ function OpenDialogue(npc) {
 
   NpcDialogueBox.style.display = "flex";
   NextDialogue();
+}
+
+export function OpenSceneDialogue(speaker, newGame) {
+  let interval;
+  keys_active.val = false;
+
+  let DialogueBox = document.querySelector("#OverworldDialogueBoxContainer");
+  let Dialogue = document.querySelector("#OverworldDialogueBox");
+
+  let OverlapDialogueBox = document.querySelector(
+    "#OverlappingDialogueBoxContainer"
+  );
+  let OverlapDialogue = document.querySelector("#OverlappingDialogueBox");
+
+  document.querySelectorAll(".npc_name").forEach(e => {
+    e.textContent = speaker.name;
+  });
+
+
+  if(speaker.name.length < 7) OverlapDialogue.style.left = 14 + "%";
+  else OverlapDialogue.style.left = 20 + "%";
+
+  let dialogue_type = speaker.dialogue_type;
+  let dialogue = speaker.dialogue;
+  let dialogue_array = Object.values(dialogue);
+
+  let dialogue_index = 0;
+  let typing = false;
+
+  function CloseDialogue() {
+    if (interval) {
+      clearInterval(interval);
+      interval = null;
+    }
+
+    if (dialogue_type === "overlap") {
+      OverlapDialogueBox.onclick = null; // Prevent additional clicks
+      OverlapDialogueBox.style.display = "none";
+      document.querySelector("#OverlappingDiv").style.pointerEvents = "none";
+      document.dispatchEvent(new Event("disable_overlay"));
+
+      if (newGame) document.dispatchEvent(new Event("start_anim"));
+    } else {
+      DialogueBox.onclick = null; // Prevent additional clicks
+      DialogueBox.style.display = "none";
+    }
+
+    keys_active.val = true;
+  }
+
+  function NextDialogue() {
+    let current_text = null;
+
+    if (dialogue_index >= dialogue_array.length) {
+      CloseDialogue();
+      return;
+    }
+    current_text = dialogue_array[dialogue_index];
+
+    let char_index = 0;
+    typing = true;
+    if (dialogue_type === "overlap") OverlapDialogue.innerHTML = "";
+    else Dialogue.innerHTML = "";
+
+    interval = setInterval(() => {
+      if (char_index < current_text.length) {
+        if (dialogue_type === "overlap")
+          OverlapDialogue.innerHTML += current_text[char_index];
+        else Dialogue.innerHTML += current_text[char_index];
+
+        char_index++;
+      } else {
+        clearInterval(interval);
+        typing = false;
+        dialogue_index++;
+      }
+    }, 20);
+  }
+
+  // Initial click binding
+  OverlapDialogueBox.onclick = () => {
+    if (!typing) {
+      audio.button_press.play();
+      NextDialogue();
+    }
+  };
+
+  DialogueBox.onclick = () => {
+    if (!typing) {
+      audio.button_press.play();
+      NextDialogue();
+    }
+  };
+
+  if (dialogue_type === "overlap") {
+    OverlapDialogueBox.style.display = "flex";
+    document.querySelector("#OverlappingDiv").style.pointerEvents = "auto";
+  } else DialogueBox.style.display = "flex";
+  NextDialogue();
+}
+
+// LOADING MAP FUNCTION
+
+export function load_map(new_map_data) {
+  maploaded.data = new_map_data;
+  
+  if (!gameLoaded.onload) {
+    window.cancelAnimationFrame(animateId);
+    let overlayListenerAdded = false;
+
+    gsap.to("#OverlappingDiv", {
+      opacity: 1,
+      duration: 0.3,
+      onComplete: () => {
+        //Attach listener ONLY ONCE after fade-in completes
+        if (!overlayListenerAdded) {
+          document.addEventListener("disable_overlay", handleOverlayDisable);
+          overlayListenerAdded = true;
+        }
+        // handleOverlayDisable();
+      },
+    });
+
+    function handleOverlayDisable() {
+      animate();
+      gsap.to("#OverlappingDiv", {
+        opacity: 0,
+        duration: 0.2,
+        delay: 1,
+        onComplete: () => {
+          audio[maploaded.data.id].play();
+          document.querySelector("#map_name").innerHTML = maploaded.data.name;
+
+          gsap.to("#map_name", {
+            top: "2%",
+            bottom: "85%",
+            duration: 0.6,
+            onComplete: () => {
+              gsap.to("#map_name", {
+                top: "-20%",
+                bottom: "101%",
+                delay: 3,
+              });
+            },
+          });
+          document.removeEventListener("disable_overlay", handleOverlayDisable);
+        },
+      });
+    }
+  }
+
+  // console.log(new_map_data);
+
+  offset.x = maploaded.data.camera.x;
+  offset.y = maploaded.data.camera.y;
+
+  collisionsMap.length = 0;
+  area_loaded = maploaded.data;
+  area_map = area_loaded.map;
+  map_width = area_loaded.width;
+
+  battleZonesMap.length = 0;
+  grass_map = area_loaded.grass;
+
+  for (let i = 0; i <= area_map.length; i += map_width) {
+    collisionsMap.push(area_map.slice(i, map_width + i));
+  }
+
+  for (let i = 0; i <= grass_map.length; i += map_width) {
+    battleZonesMap.push(grass_map.slice(i, map_width + i));
+  }
+
+  boundaries.length = 0;
+
+  collisionsMap.forEach((row, i) => {
+    row.forEach((symbol, j) => {
+      if (symbol === 1025)
+        boundaries.push(
+          new Boundary({
+            position: {
+              x: j * Boundary.width + offset.x,
+              y: i * Boundary.height + offset.y,
+            },
+          })
+        );
+    });
+  });
+
+  battleZones.length = 0;
+  grass_tiles.length = 0;
+
+  battleZonesMap.forEach((row, i) => {
+    row.forEach((symbol, j) => {
+      if (symbol === 1025) {
+        battleZones.push(
+          new Boundary({
+            position: {
+              x: j * Boundary.width + offset.x,
+              y: i * Boundary.height + offset.y,
+            },
+          })
+        );
+
+        grass_tiles.push(
+          new Sprite({
+            position: {
+              x: j * Boundary.width + offset.x,
+              y: i * Boundary.height + offset.y,
+            },
+            image: grass,
+            frames: {
+              max: 8,
+              hold: 8,
+            },
+            animate: true,
+            scale: 1.2,
+          })
+        );
+      }
+    });
+  });
+
+  background.position.x = offset.x;
+  background.position.y = offset.y;
+
+  foreground.position.x = offset.x;
+  foreground.position.y = offset.y;
+
+  background.image.src = maploaded.data.background_image;
+  foreground.image.src = maploaded.data.foreground_image;
+
+  movables.length = 0;
+
+  movables = [
+    dialogue_prompt,
+    background,
+    foreground,
+    ...boundaries,
+    // ...door_boundaries,
+    ...battleZones,
+    ...grass_tiles,
+  ];
+
+  map_npcs.length = 0;
+  all_npcs.forEach((npc) => {
+    let current_map = maploaded.data.name;
+
+    if (npc.map === current_map) {
+      movables.push(npc);
+      map_npcs.push(npc);
+    }
+  });
+
+  animated_objects = maploaded.data?.animated_objects || false;
+
+  map_campfire.length = 0;
+  (street_lightMap.length = 0), (street_light_tiles.length = 0);
+
+  Object.keys(animated_objects).forEach((object) => {
+    if (object === "campfire") {
+      map_campfire = animated_objects[object].position;
+
+      map_campfire = map_campfire.map(
+        (position) =>
+          new Sprite({
+            position: { x: offset.x + position.x, y: offset.y + position.y },
+            image: campfire,
+            scale: 1,
+            frames: {
+              max: 4,
+              hold: 8,
+            },
+            animate: true,
+          })
+      );
+
+      map_campfire.forEach((campfire) => {
+        movables.push(campfire);
+      });
+    } else if (object === "street_light") {
+      let map_streetLight = animated_objects[object];
+
+      for (let i = 0; i <= map_streetLight.length; i += map_width) {
+        street_lightMap.push(map_streetLight.slice(i, map_width + i));
+      }
+    }
+  });
+
+  if (street_lightMap.length) {
+    street_lightMap.forEach((row, i) => {
+      row.forEach((symbol, j) => {
+        if (symbol === 1025) {
+          street_light_tiles.push(
+            new Sprite({
+              position: {
+                x: j * Boundary.width + offset.x - 27,
+                y: i * Boundary.height + offset.y - 60,
+              },
+              image: street_light,
+              frames: {
+                max: 6,
+                hold: 8,
+              },
+              animate: true,
+              scale: 1,
+            })
+          );
+        }
+      });
+    });
+
+    street_light_tiles.forEach((street_light) => {
+      movables.push(street_light);
+    });
+  }
 }
 
 // Handle keydown events
@@ -1363,7 +1346,7 @@ window.addEventListener("keyup", (e) => {
 //   }
 // });
 
-animate();
+// animate();
 
 // initBattle();     //maintaining this order of calling the two function is must
 // animateBattle();

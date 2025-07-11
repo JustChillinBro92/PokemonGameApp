@@ -1,6 +1,7 @@
 import { audio } from "./data/audio.js";
 import { MAP } from "./data/map.js";
-import { all_npcs } from "./npc.js";
+import { scenes } from "./data/scenes.js";
+import { load_map, OpenSceneDialogue } from "./renderer.js";
 
 // MAIN MENU LOADING ANIMATION
 
@@ -31,18 +32,18 @@ export let maploaded = {
 document.querySelector("#map_name").innerHTML = maploaded.data.name;
 
 document.querySelector(".new_game").addEventListener("click", () => {
-  document.querySelector("#main_menu").style.display = "none";
-  audio.Map.play();
-
-
-  gsap.to("#map_name", {
-    top: 2 + "%",
-    bottom: 85 + "%",
-    duration: 0.6,
+  gsap.to("#main_menu", {
+    display: "none",
+    duration: 0.05,
     onComplete: () => {
-      gsap.to("#map_name", {
-        opacity: 0,
-        delay: 3,
+      gsap.to("#OverlappingDiv", {
+        opacity: 1,
+        onComplete: () => {
+          setTimeout(() => {
+            OpenSceneDialogue(scenes.petalwood_island.sailor, true);
+            document.addEventListener("start_anim", load_map(maploaded.data));
+          }, 1200)
+        },
       });
     },
   });
