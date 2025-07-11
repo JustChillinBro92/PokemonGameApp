@@ -1,6 +1,5 @@
 import { Boundary, Sprite, stats_tracker } from "./classes.js";
 import { door_collisions } from "./data/door_collisions.js";
-import { battleZonesData } from "./data/battlezones.js";
 import { audio } from "./data/audio.js";
 import { initBattle } from "./initiateBattle.js";
 import { animateBattle } from "./battlescene.js";
