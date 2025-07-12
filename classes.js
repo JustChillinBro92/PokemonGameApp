@@ -12,7 +12,10 @@ export class Boundary {
   static width = 36;
   static height = 36;
 
-  constructor({ position, scale = 1 }) {
+  constructor({ id, interact = false, dialogue, position, scale = 1 }) {
+    this.id = id;
+    this.interact = interact;
+    this.dialogue = dialogue;
     this.position = position;
     this.width = Boundary.width;
     this.height = Boundary.height;

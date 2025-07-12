@@ -1,5 +1,4 @@
 import { Boundary, Sprite, stats_tracker } from "./classes.js";
-import { door_collisions } from "./data/door_collisions.js";
 import { audio } from "./data/audio.js";
 import { initBattle } from "./initiateBattle.js";
 import { animateBattle } from "./battlescene.js";
@@ -23,13 +22,15 @@ let area_loaded = MAP.petalwood_island;
 let area_map = area_loaded.map;
 let map_width = area_loaded.width;
 
+let interactablesCollisionsMap = [];
+let interactable_map = area_loaded.interactables;
+
 let battleZonesMap = [];
 let grass_map = area_loaded.grass;
 
 export let boundaries = [];
+export let interactables_boundaries = [];
 export let offset = { x: maploaded.data.camera.x, y: maploaded.data.camera.y };
-
-export const door_boundaries = [];
 
 export let battleZones = [];
 export let grass_tiles = [];
@@ -158,7 +159,7 @@ let movables = [
   background,
   foreground,
   ...boundaries,
-  // ...door_boundaries,
+  ...interactables_boundaries,
   ...battleZones,
   ...grass_tiles,
 ];
@@ -180,14 +181,19 @@ function RectangularCollision({ rectangle1, rectangle2 }) {
     rectangle1.position.x + rectangle1.width >= rectangle2.position.x &&
     rectangle1.position.x <= rectangle2.position.x + rectangle2.width &&
     rectangle1.position.y + rectangle1.height >= rectangle2.position.y &&
-    rectangle1.position.y <= rectangle2.position.y + rectangle2.height
+    rectangle1.position.y + rectangle1.height / 2 <=
+      rectangle2.position.y + rectangle2.height
   );
 }
 
-function DoorRectangularCollision({ rectangle1, rectangle2 }) {
+function GrassRectangularCollision({ rectangle1, rectangle2 }) {
   return (
-    rectangle1.position.x + rectangle1.width >=
-    (rectangle2.position.x + rectangle2.width) / 2
+    rectangle1.position.x + rectangle1.width / 2 >= rectangle2.position.x &&
+    rectangle1.position.x + rectangle1.width / 2 <=
+      rectangle2.position.x + rectangle2.width &&
+    rectangle1.position.y + rectangle1.height / 2 >= rectangle2.position.y &&
+    rectangle1.position.y + rectangle1.height <=
+      rectangle2.position.y + rectangle2.height
   );
 }
 
@@ -207,7 +213,7 @@ var now;
 
 let animateId;
 
-// load_map(MAP.petalwood_island)
+load_map(MAP.petalwood_island);
 
 export function animate() {
   now = Date.now();
@@ -245,9 +251,9 @@ export function animate() {
       boundary.draw();
     });
 
-    // door_boundaries.forEach((door_Boundary) => {
-    //   door_Boundary.draw();
-    // });
+    interactables_boundaries.forEach((interactable_Boundary) => {
+      interactable_Boundary.draw();
+    });
 
     battleZones.forEach((battleZone) => {
       battleZone.draw();
@@ -257,8 +263,6 @@ export function animate() {
       grass.draw();
     });
 
-    player.draw();
-
     for (let npc of map_npcs) {
       npc.draw();
       checkNpcInteraction();
@@ -267,6 +271,8 @@ export function animate() {
       if (prompt_Npc && prompt_Npc.dialogue_available.value)
         dialogue_prompt.draw();
     }
+
+    player.draw();
 
     foreground.draw();
 
@@ -334,12 +340,13 @@ export function animate() {
             Math.max(player.position.y, battleZone.position.y));
 
         if (
-          RectangularCollision({
+          GrassRectangularCollision({
             rectangle1: player,
             rectangle2: battleZone,
-          }) &&
-          OverlappingArea > (player.height * player.width) / 2
+          })
         ) {
+          console.log("Grass");
+
           // inGrass = true;
           // player.sprites.right = playerRight_HalfImage;
           // player.sprites.left = playerLeft_HalfImage;
@@ -367,7 +374,7 @@ export function animate() {
             keys_active.val = false;
 
             audio.initBattle.play();
-            audio.battle.play(); 
+            audio.battle.play();
 
             //flashing animation on battle activation
             gsap.to("#OverlappingDiv", {
@@ -420,27 +427,49 @@ export function animate() {
           moving = false;
           break;
         }
+      }
 
-        //npc collision check
-        for (let npc of map_npcs) {
-          const isColliding = RectangularCollision({
+      //door collision check
+      for (let i = 0; i < interactables_boundaries.length; i++) {
+        const interactable_boundary = interactables_boundaries[i];
+
+        if (
+          RectangularCollision({
             rectangle1: player,
             rectangle2: {
-              ...npc,
+              ...interactable_boundary,
               position: {
-                x: npc.position.x,
-                y: npc.position.y + 3,
+                x: interactable_boundary.position.x,
+                y: interactable_boundary.position.y + 3,
               },
             },
-          });
+          })
+        ) {
+          console.log(interactable_boundary.id);
+          moving = false;
+          break;
+        }
+      }
 
-          if (isColliding) {
-            npc_collision = true;
-            colliding_npc[0] = npc;
+      //npc collision check
+      for (let npc of map_npcs) {
+        const isColliding = RectangularCollision({
+          rectangle1: player,
+          rectangle2: {
+            ...npc,
+            position: {
+              x: npc.position.x,
+              y: npc.position.y + 3,
+            },
+          },
+        });
 
-            moving = false;
-            break;
-          }
+        if (isColliding) {
+          npc_collision = true;
+          colliding_npc[0] = npc;
+
+          moving = false;
+          break;
         }
       }
 
@@ -475,27 +504,49 @@ export function animate() {
           moving = false;
           break;
         }
+      }
 
-        //npc collision check
-        for (let npc of map_npcs) {
-          const isColliding = RectangularCollision({
+      //door collision check
+      for (let i = 0; i < interactables_boundaries.length; i++) {
+        const interactable_boundary = interactables_boundaries[i];
+
+        if (
+          RectangularCollision({
             rectangle1: player,
             rectangle2: {
-              ...npc,
+              ...interactable_boundary,
               position: {
-                x: npc.position.x + 3,
-                y: npc.position.y,
+                x: interactable_boundary.position.x + 3,
+                y: interactable_boundary.position.y,
               },
             },
-          });
+          })
+        ) {
+          console.log(interactable_boundary.id);
+          moving = false;
+          break;
+        }
+      }
 
-          if (isColliding) {
-            npc_collision = true;
-            colliding_npc[0] = npc;
+      //npc collision check
+      for (let npc of map_npcs) {
+        const isColliding = RectangularCollision({
+          rectangle1: player,
+          rectangle2: {
+            ...npc,
+            position: {
+              x: npc.position.x + 3,
+              y: npc.position.y,
+            },
+          },
+        });
 
-            moving = false;
-            break;
-          }
+        if (isColliding) {
+          npc_collision = true;
+          colliding_npc[0] = npc;
+
+          moving = false;
+          break;
         }
       }
 
@@ -530,27 +581,49 @@ export function animate() {
           moving = false;
           break;
         }
+      }
 
-        //npc collision check
-        for (let npc of map_npcs) {
-          const isColliding = RectangularCollision({
+      //door collision check
+      for (let i = 0; i < interactables_boundaries.length; i++) {
+        const interactable_boundary = interactables_boundaries[i];
+
+        if (
+          RectangularCollision({
             rectangle1: player,
             rectangle2: {
-              ...npc,
+              ...interactable_boundary,
               position: {
-                x: npc.position.x,
-                y: npc.position.y - 3,
+                x: interactable_boundary.position.x,
+                y: interactable_boundary.position.y - 3,
               },
             },
-          });
+          })
+        ) {
+          console.log(interactable_boundary.id);
+          moving = false;
+          break;
+        }
+      }
 
-          if (isColliding) {
-            npc_collision = true;
-            colliding_npc[0] = npc;
+      //npc collision check
+      for (let npc of map_npcs) {
+        const isColliding = RectangularCollision({
+          rectangle1: player,
+          rectangle2: {
+            ...npc,
+            position: {
+              x: npc.position.x,
+              y: npc.position.y - 3,
+            },
+          },
+        });
 
-            moving = false;
-            break;
-          }
+        if (isColliding) {
+          npc_collision = true;
+          colliding_npc[0] = npc;
+
+          moving = false;
+          break;
         }
       }
 
@@ -585,47 +658,51 @@ export function animate() {
           moving = false;
           break;
         }
+      }
 
-        //npc collision check
-        for (let npc of map_npcs) {
-          const isColliding = RectangularCollision({
+      //door collision check
+      for (let i = 0; i < interactables_boundaries.length; i++) {
+        const interactable_boundary = interactables_boundaries[i];
+
+        if (
+          RectangularCollision({
             rectangle1: player,
             rectangle2: {
-              ...npc,
+              ...interactable_boundary,
               position: {
-                x: npc.position.x - 3,
-                y: npc.position.y,
+                x: interactable_boundary.position.x - 3,
+                y: interactable_boundary.position.y,
               },
             },
-          });
-
-          if (isColliding) {
-            npc_collision = true;
-            colliding_npc[0] = npc;
-
-            moving = false;
-            break;
-          }
+          })
+        ) {
+          console.log(interactable_boundary.id);
+          moving = false;
+          break;
         }
       }
 
-      // for(let i = 0; i <= door_boundaries.length; i++) {
-      //   const door_boundary = door_boundaries[i];
+      //npc collision check
+      for (let npc of map_npcs) {
+        const isColliding = RectangularCollision({
+          rectangle1: player,
+          rectangle2: {
+            ...npc,
+            position: {
+              x: npc.position.x - 3,
+              y: npc.position.y,
+            },
+          },
+        });
 
-      //   if(DoorRectangularCollision({
-      //     rectangle1: player,
-      //     rectangle2: {
-      //       ...door_boundary,
-      //       position: {
-      //         x: door_boundary.position.x - 3,
-      //         y: door_boundary.position.y
-      //       }
-      //     }
-      //   })
-      // ) {
-      //     console.log("DOOR");
-      //   }
-      // }
+        if (isColliding) {
+          npc_collision = true;
+          colliding_npc[0] = npc;
+
+          moving = false;
+          break;
+        }
+      }
 
       if (moving === true) {
         npc_collision = false;
@@ -744,11 +821,11 @@ function OpenDialogue(npc) {
   let yes = document.querySelector("#yes");
   let no = document.querySelector("#no");
 
-  document.querySelectorAll(".npc_name").forEach(e => {
+  document.querySelectorAll(".npc_name").forEach((e) => {
     e.textContent = npc.name;
   });
 
-  if(npc.name.length < 7)  NpcDialogue.style.left = 14 + "%";
+  if (npc.name.length < 7) NpcDialogue.style.left = 14 + "%";
   else NpcDialogue.style.left = 20 + "%";
 
   let teleport = npc.triggerTeleport?.area || false;
@@ -768,10 +845,12 @@ function OpenDialogue(npc) {
   let randomDialogue_triggered;
 
   if (randomDialogue_available && !randomDialogue_flag) {
-    NpcRandomDialogueBox = document.querySelector("#OverlappingDialogueBoxContainer");
+    NpcRandomDialogueBox = document.querySelector(
+      "#OverlappingDialogueBoxContainer"
+    );
     NpcRandomDialogue = document.querySelector("#OverlappingDialogueBox");
 
-    if(npc.name.length < 10)  NpcRandomDialogue.style.left = 14 + "%";
+    if (npc.name.length < 10) NpcRandomDialogue.style.left = 14 + "%";
     else NpcRandomDialogue.style.left = 20 + "%";
 
     randomDialogue_triggered = npc.randomDialogue.triggered;
@@ -950,12 +1029,11 @@ export function OpenSceneDialogue(speaker, newGame) {
   );
   let OverlapDialogue = document.querySelector("#OverlappingDialogueBox");
 
-  document.querySelectorAll(".npc_name").forEach(e => {
+  document.querySelectorAll(".npc_name").forEach((e) => {
     e.textContent = speaker.name;
   });
 
-
-  if(speaker.name.length < 7) OverlapDialogue.style.left = 14 + "%";
+  if (speaker.name.length < 7) OverlapDialogue.style.left = 14 + "%";
   else OverlapDialogue.style.left = 20 + "%";
 
   let dialogue_type = speaker.dialogue_type;
@@ -1041,7 +1119,7 @@ export function OpenSceneDialogue(speaker, newGame) {
 
 export function load_map(new_map_data) {
   maploaded.data = new_map_data;
-  
+
   if (!gameLoaded.onload) {
     window.cancelAnimationFrame(animateId);
     let overlayListenerAdded = false;
@@ -1051,11 +1129,11 @@ export function load_map(new_map_data) {
       duration: 0.3,
       onComplete: () => {
         //Attach listener ONLY ONCE after fade-in completes
-        if (!overlayListenerAdded) {
-          document.addEventListener("disable_overlay", handleOverlayDisable);
-          overlayListenerAdded = true;
-        }
-        // handleOverlayDisable();
+        // if (!overlayListenerAdded) {
+        //   document.addEventListener("disable_overlay", handleOverlayDisable);
+        //   overlayListenerAdded = true;
+        // }
+        handleOverlayDisable();
       },
     });
 
@@ -1097,18 +1175,24 @@ export function load_map(new_map_data) {
   area_map = area_loaded.map;
   map_width = area_loaded.width;
 
+  interactablesCollisionsMap.length = 0;
+  interactable_map = area_loaded.interactables;
+
   battleZonesMap.length = 0;
   grass_map = area_loaded.grass;
 
   for (let i = 0; i <= area_map.length; i += map_width) {
     collisionsMap.push(area_map.slice(i, map_width + i));
-  }
-
-  for (let i = 0; i <= grass_map.length; i += map_width) {
+    interactablesCollisionsMap.push(interactable_map.slice(i, map_width + i));
     battleZonesMap.push(grass_map.slice(i, map_width + i));
   }
 
+  // for (let i = 0; i <= grass_map.length; i += map_width) {
+  //   battleZonesMap.push(grass_map.slice(i, map_width + i));
+  // }
+
   boundaries.length = 0;
+  interactables_boundaries.length = 0;
 
   collisionsMap.forEach((row, i) => {
     row.forEach((symbol, j) => {
@@ -1121,6 +1205,25 @@ export function load_map(new_map_data) {
             },
           })
         );
+    });
+  });
+
+  let interactable_id = 1;
+  interactablesCollisionsMap.forEach((row, i) => {
+    row.forEach((symbol, j) => {
+      if (symbol === 1025) {
+        interactables_boundaries.push(
+          new Boundary({
+            position: {
+              x: j * Boundary.width + offset.x,
+              y: i * Boundary.height + offset.y,
+            },
+            id: interactable_id,
+          })
+        );
+
+        if (row[j + 1] != 1025) interactable_id += 1;
+      }
     });
   });
 
@@ -1174,7 +1277,7 @@ export function load_map(new_map_data) {
     background,
     foreground,
     ...boundaries,
-    // ...door_boundaries,
+    ...interactables_boundaries,
     ...battleZones,
     ...grass_tiles,
   ];
